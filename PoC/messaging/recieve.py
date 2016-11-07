@@ -1,17 +1,17 @@
-import pika
+import zmq
 
-connection = pika.BlockingConnection(pika.ConnectionParameters(
-        host='localhost'))
-channel = connection.channel()
+context = zmq.Context()
 
-channel.queue_declare(queue='hello')
+#  Socket to talk to server
+print("Connecting to hello world server")
+socket = context.socket(zmq.REQ)
+socket.connect("tcp://localhost:5555")
 
-def callback(ch, method, properties, body):
-    print(" [x] Received %r" % body)
+#  Do 10 requests, waiting each time for a response
+for request in range(10):
+    print("Sending request %s " % request)
+    socket.send(b"Hello")
 
-channel.basic_consume(callback,
-                      queue='hello',
-                      no_ack=True)
-
-print(' [*] Waiting for messages. To exit press CTRL+C')
-channel.start_consuming()
+    #  Get the reply.
+    message = socket.recv()
+    print("Received reply %s [ %s ]" % (request, message))

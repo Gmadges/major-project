@@ -1,15 +1,17 @@
-import pika
+import time
+import zmq
 
-connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+context = zmq.Context()
+socket = context.socket(zmq.REP)
+socket.bind("tcp://*:5555")
 
-channel = connection.channel()
+while True:
+    #  Wait for next request from client
+    message = socket.recv()
+    print("Received request: %s" % message)
 
-channel.queue_declare(queue='hello')
+    #  Do some 'work'
+    time.sleep(1)
 
-channel.basic_publish(exchange='',
-                      routing_key='hello',
-                      body='Hello World!')
-                      
-print(" [x] Sent 'Hello World!'")
-
-connection.close()
+    #  Send reply back to client
+    socket.send(b"World")
