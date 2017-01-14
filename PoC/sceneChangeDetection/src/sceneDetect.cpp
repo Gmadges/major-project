@@ -37,6 +37,7 @@
 #include <maya/MColor.h>
 #include <maya/MFnNurbsSurface.h>
 #include <maya/MIOStream.h>
+#include <maya/MPlugArray.h>
 
 class scanDag : public MPxCommand
 {
@@ -138,9 +139,23 @@ MStatus scanDag::doScan(const MItDag::TraversalType traversalType)
         MFnDependencyNode depNodeFn(meshNodeShape);
 
         // If the inMesh is connected, we have history
-          
         MPlug inMeshPlug = depNodeFn.findPlug("inMesh");
         fHasHistory = inMeshPlug.isConnected();
+
+		// Since we have history, look for what connections exist on the
+		// meshNode "inMesh" plug. "inMesh" plugs should only ever have one
+		// connection.
+		//
+
+		MPlugArray tempPlugArray;
+		inMeshPlug.connectedTo(tempPlugArray, true, false);
+
+		// ASSERT: Only one connection should exist on meshNodeShape.inMesh!
+		MPlug upstreamNodeSrcPlug = tempPlugArray[0];
+
+		// Construction history only deals with shapes, so we can grab the
+		// upstreamNodeShape off of the source plug.
+		MFnDependencyNode upstreamNodeFn(upstreamNodeSrcPlug.node());
 
         // Tweaks exist only if the multi "pnts" attribute contains
         // plugs that contain non-zero tweak values. Use false,
@@ -166,7 +181,7 @@ MStatus scanDag::doScan(const MItDag::TraversalType traversalType)
 			}
         }
 
-        MFnMesh mesh(dagPath, &status);
+        MFnMesh mesh(meshNodeShape);
 
         if (!status) {
             status.perror("MFnMesh:constructor");
@@ -174,6 +189,8 @@ MStatus scanDag::doScan(const MItDag::TraversalType traversalType)
         }
 
         resultString += ("\n Shape: " + mesh.name());
+		resultString += "\n Upstream: ";
+		resultString += upstreamNodeFn.name();
         if(fHasTweaks) resultString += ("\n tweaks: true");
         else resultString += ("\n tweaks: false");
         if(fHasHistory) resultString += ("\n history: true");
