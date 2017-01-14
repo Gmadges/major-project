@@ -49,11 +49,9 @@ public:
 private:
 
 	MStatus parseArgs(const MArgList& args,
-						MItDag::TraversalType&	traversalType,
-						MFn::Type& filter);
+						MItDag::TraversalType&	traversalType);
 	
-	MStatus doScan(const MItDag::TraversalType traversalType,
-					MFn::Type filter);
+	MStatus doScan(const MItDag::TraversalType traversalType);
 };
 
 scanDag::~scanDag() {}
@@ -69,16 +67,15 @@ MStatus	scanDag::doIt(const MArgList& args)
 	MFn::Type				filter = MFn::kInvalid;
 	MStatus					status;
 
-	status = parseArgs(args, traversalType, filter);
+	status = parseArgs(args, traversalType);
 	if (!status)
 		return status;
 
-	return doScan(traversalType, filter);
+	return doScan(traversalType);
 };
 
 MStatus scanDag::parseArgs(const MArgList& args,
-	MItDag::TraversalType& traversalType,
-	MFn::Type& filter)
+	MItDag::TraversalType& traversalType)
 {
 	MStatus     	stat;
 	MString     	arg;
@@ -106,12 +103,11 @@ MStatus scanDag::parseArgs(const MArgList& args,
 	return stat;
 }
 
-MStatus scanDag::doScan(const MItDag::TraversalType traversalType,
-	MFn::Type filter)
+MStatus scanDag::doScan(const MItDag::TraversalType traversalType)
 {
 	MStatus status;
 
-	MItDag dagIterator(traversalType, filter, &status);
+	MItDag dagIterator(traversalType, MFn::kMesh, &status);
 
 	if (!status) {
 		status.perror("MItDag constructor");
@@ -134,17 +130,55 @@ MStatus scanDag::doScan(const MItDag::TraversalType traversalType,
 			continue;
 		}
 
-		if (dagPath.hasFn(MFn::kMesh)) {
+        bool fHasHistory = false;
+        bool fHasTweaks = false;
 
-			MFnMesh mesh(dagPath, &status);
+        dagPath.extendToShape();
+        MObject meshNodeShape = dagPath.node();
+        MFnDependencyNode depNodeFn(meshNodeShape);
 
-			if (!status) {
-				status.perror("MFnMesh:constructor");
-				continue;
+        // If the inMesh is connected, we have history
+          
+        MPlug inMeshPlug = depNodeFn.findPlug("inMesh");
+        fHasHistory = inMeshPlug.isConnected();
+
+        // Tweaks exist only if the multi "pnts" attribute contains
+        // plugs that contain non-zero tweak values. Use false,
+        // until proven true search pattern.
+            
+        MPlug tweakPlug = depNodeFn.findPlug("pnts");
+        if (!tweakPlug.isNull())
+        {
+            // ASSERT : tweakPlug should be an array plug 
+            //MAssert(tweakPlug.isArray(), "tweakPlug.isArray()");
+            MPlug tweak;
+            MFloatVector tweakData;
+            int i;
+            int numElements = tweakPlug.numElements();
+            for (i = 0; i < numElements; i++)
+			{
+                tweak = tweakPlug.elementByPhysicalIndex(i, &status);
+                if (status == MS::kSuccess && !tweak.isNull())
+                {
+                    fHasTweaks = true;
+					break;
+				}
 			}
-			resultString += "found mesh!\n";
-			resultString += ("\n" + mesh.name());
-		}
+        }
+
+        MFnMesh mesh(dagPath, &status);
+
+        if (!status) {
+            status.perror("MFnMesh:constructor");
+	        continue;
+        }
+
+        resultString += ("\n Shape: " + mesh.name());
+        if(fHasTweaks) resultString += ("\n tweaks: true");
+        else resultString += ("\n tweaks: false");
+        if(fHasHistory) resultString += ("\n history: true");
+		else resultString += ("\n history: false");
+
 	}
 	setResult(resultString);
 	return MS::kSuccess;
