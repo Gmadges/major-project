@@ -53,6 +53,8 @@ private:
 						MItDag::TraversalType&	traversalType);
 	
 	MStatus doScan(const MItDag::TraversalType traversalType);
+
+	void findHistory(MString& string, MFnDependencyNode& node);
 };
 
 scanDag::~scanDag() {}
@@ -74,6 +76,37 @@ MStatus	scanDag::doIt(const MArgList& args)
 
 	return doScan(traversalType);
 };
+
+void scanDag::findHistory( MString& string, MFnDependencyNode& node)
+{
+	// If the inMesh is connected, we have history
+	MPlug inMeshPlug = node.findPlug("inputPolymesh");
+
+	if (inMeshPlug.isConnected())
+	{
+		// Since we have history, look for what connections exist on the
+		// meshNode "inMesh" plug. "inMesh" plugs should only ever have one
+		// connection.
+		//
+
+		MPlugArray tempPlugArray;
+		inMeshPlug.connectedTo(tempPlugArray, true, false);
+
+		// ASSERT: Only one connection should exist on meshNodeShape.inMesh!
+		MPlug upstreamNodeSrcPlug = tempPlugArray[0];
+
+		// Construction history only deals with shapes, so we can grab the
+		// upstreamNodeShape off of the source plug.
+		MFnDependencyNode upstreamNode(upstreamNodeSrcPlug.node());
+
+		string += "\n";
+		string += upstreamNode.typeName();
+		string += " | ";
+		string += upstreamNode.name();
+
+		findHistory(string, upstreamNode);
+	}
+}
 
 MStatus scanDag::parseArgs(const MArgList& args,
 	MItDag::TraversalType& traversalType)
@@ -130,33 +163,34 @@ MStatus scanDag::doScan(const MItDag::TraversalType traversalType)
 			status.perror("MFnDagNode constructor");
 			continue;
 		}
-
-        bool fHasHistory = false;
         bool fHasTweaks = false;
 
         dagPath.extendToShape();
         MObject meshNodeShape = dagPath.node();
         MFnDependencyNode depNodeFn(meshNodeShape);
 
-        // If the inMesh is connected, we have history
-        MPlug inMeshPlug = depNodeFn.findPlug("inMesh");
-        fHasHistory = inMeshPlug.isConnected();
+		// If the inMesh is connected, we have history
+		MString historyString;
+		MPlug inMeshPlug = depNodeFn.findPlug("inMesh");
+		if (inMeshPlug.isConnected())
+		{
+			MPlugArray tempPlugArray;
+			inMeshPlug.connectedTo(tempPlugArray, true, false);
 
-		// Since we have history, look for what connections exist on the
-		// meshNode "inMesh" plug. "inMesh" plugs should only ever have one
-		// connection.
-		//
+			// ASSERT: Only one connection should exist on meshNodeShape.inMesh!
+			MPlug upstreamNodeSrcPlug = tempPlugArray[0];
 
-		MPlugArray tempPlugArray;
-		inMeshPlug.connectedTo(tempPlugArray, true, false);
+			// Construction history only deals with shapes, so we can grab the
+			// upstreamNodeShape off of the source plug.
+			MFnDependencyNode upstreamNode(upstreamNodeSrcPlug.node());
 
-		// ASSERT: Only one connection should exist on meshNodeShape.inMesh!
-		MPlug upstreamNodeSrcPlug = tempPlugArray[0];
-
-		// Construction history only deals with shapes, so we can grab the
-		// upstreamNodeShape off of the source plug.
-		MFnDependencyNode upstreamNodeFn(upstreamNodeSrcPlug.node());
-
+			historyString += "\n";
+			historyString += upstreamNode.typeName();
+			historyString += " | ";
+			historyString += upstreamNode.name();
+			findHistory(historyString, upstreamNode);
+		}
+		
         // Tweaks exist only if the multi "pnts" attribute contains
         // plugs that contain non-zero tweak values. Use false,
         // until proven true search pattern.
@@ -189,12 +223,10 @@ MStatus scanDag::doScan(const MItDag::TraversalType traversalType)
         }
 
         resultString += ("\n Shape: " + mesh.name());
-		resultString += "\n Upstream: ";
-		resultString += upstreamNodeFn.name();
+		resultString += "\n history: ";
+		resultString += historyString;
         if(fHasTweaks) resultString += ("\n tweaks: true");
         else resultString += ("\n tweaks: false");
-        if(fHasHistory) resultString += ("\n history: true");
-		else resultString += ("\n history: false");
 
 	}
 	setResult(resultString);
