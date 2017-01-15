@@ -79,26 +79,20 @@ MStatus	scanDag::doIt(const MArgList& args)
 
 void scanDag::findHistory( MString& string, MFnDependencyNode& node)
 {
-	// If the inMesh is connected, we have history
+	// If the inpuPolymesh is connected, we have history
 	MPlug inMeshPlug = node.findPlug("inputPolymesh");
 
 	if (inMeshPlug.isConnected())
 	{
-		// Since we have history, look for what connections exist on the
-		// meshNode "inMesh" plug. "inMesh" plugs should only ever have one
-		// connection.
-		//
-
 		MPlugArray tempPlugArray;
 		inMeshPlug.connectedTo(tempPlugArray, true, false);
 
-		// ASSERT: Only one connection should exist on meshNodeShape.inMesh!
+		// Only one connection should exist on meshNodeShape.inMesh!
 		MPlug upstreamNodeSrcPlug = tempPlugArray[0];
 
-		// Construction history only deals with shapes, so we can grab the
-		// upstreamNodeShape off of the source plug.
 		MFnDependencyNode upstreamNode(upstreamNodeSrcPlug.node());
 
+		// testing strings
 		string += "\n";
 		string += upstreamNode.typeName();
 		string += " | ";
@@ -176,12 +170,7 @@ MStatus scanDag::doScan(const MItDag::TraversalType traversalType)
 		{
 			MPlugArray tempPlugArray;
 			inMeshPlug.connectedTo(tempPlugArray, true, false);
-
-			// ASSERT: Only one connection should exist on meshNodeShape.inMesh!
 			MPlug upstreamNodeSrcPlug = tempPlugArray[0];
-
-			// Construction history only deals with shapes, so we can grab the
-			// upstreamNodeShape off of the source plug.
 			MFnDependencyNode upstreamNode(upstreamNodeSrcPlug.node());
 
 			historyString += "\n";
