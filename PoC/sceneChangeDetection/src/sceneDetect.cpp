@@ -204,7 +204,7 @@ MStatus scanDag::doScan(const MItDag::TraversalType traversalType)
 			}
         }
 
-        MFnMesh mesh(meshNodeShape);
+        MFnMesh mesh(meshNodeShape, &status);
 
         if (!status) {
             status.perror("MFnMesh:constructor");
