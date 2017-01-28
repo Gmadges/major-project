@@ -1,13 +1,13 @@
 ////////////////////////////////////////////////////////////////////////
 // DESCRIPTION:
 // 
-// Produces the MEL command "ScanSend".
+// Produces the MEL command "scanDag".
 //
 // This plug-in demonstrates walking the DAG using the DAG iterator class.
 // 
 // To use it:
 //	(1) Create a number of objects anywhere in the scene.
-//	(2) Execute the command "ScanSend". This will traverse the DAG printing
+//	(2) Execute the command "scanDag". This will traverse the DAG printing
 //		information about each node it finds to the window from which you
 //		started Maya.
 //
@@ -37,48 +37,73 @@
 #include <maya/MColor.h>
 #include <maya/MFnNurbsSurface.h>
 #include <maya/MIOStream.h>
+#include <maya/MPlugArray.h>
 
-class ScanSend : public MPxCommand
+class scanDag : public MPxCommand
 {
 public:
-	ScanSend() {};
-	virtual	~ScanSend();
+	scanDag() {};
+	virtual	~scanDag();
 	static void* creator();
 	virtual MStatus	doIt(const MArgList&);
 
 private:
 
 	MStatus parseArgs(const MArgList& args,
-						MItDag::TraversalType&	traversalType,
-						MFn::Type& filter);
+						MItDag::TraversalType&	traversalType);
 	
-	MStatus doScan(const MItDag::TraversalType traversalType,
-					MFn::Type filter);
+	MStatus doScan(const MItDag::TraversalType traversalType);
+
+	void findHistory(MString& string, MFnDependencyNode& node);
 };
 
-ScanSend::~ScanSend() {}
+scanDag::~scanDag() {}
 
-void* ScanSend::creator()
+void* scanDag::creator()
 {
-	return new ScanSend;
+	return new scanDag;
 }
 
-MStatus	ScanSend::doIt(const MArgList& args)
+MStatus	scanDag::doIt(const MArgList& args)
 {
 	MItDag::TraversalType	traversalType = MItDag::kDepthFirst;
 	MFn::Type				filter = MFn::kInvalid;
 	MStatus					status;
 
-	status = parseArgs(args, traversalType, filter);
+	status = parseArgs(args, traversalType);
 	if (!status)
 		return status;
 
-	return doScan(traversalType, filter);
+	return doScan(traversalType);
 };
 
-MStatus ScanSend::parseArgs(const MArgList& args,
-	MItDag::TraversalType& traversalType,
-	MFn::Type& filter)
+void scanDag::findHistory( MString& string, MFnDependencyNode& node)
+{
+	// If the inpuPolymesh is connected, we have history
+	MPlug inMeshPlug = node.findPlug("inputPolymesh");
+
+	if (inMeshPlug.isConnected())
+	{
+		MPlugArray tempPlugArray;
+		inMeshPlug.connectedTo(tempPlugArray, true, false);
+
+		// Only one connection should exist on meshNodeShape.inMesh!
+		MPlug upstreamNodeSrcPlug = tempPlugArray[0];
+
+		MFnDependencyNode upstreamNode(upstreamNodeSrcPlug.node());
+
+		// testing strings
+		string += "\n";
+		string += upstreamNode.typeName();
+		string += " | ";
+		string += upstreamNode.name();
+
+		findHistory(string, upstreamNode);
+	}
+}
+
+MStatus scanDag::parseArgs(const MArgList& args,
+	MItDag::TraversalType& traversalType)
 {
 	MStatus     	stat;
 	MString     	arg;
@@ -106,12 +131,11 @@ MStatus ScanSend::parseArgs(const MArgList& args,
 	return stat;
 }
 
-MStatus ScanSend::doScan(const MItDag::TraversalType traversalType,
-	MFn::Type filter)
+MStatus scanDag::doScan(const MItDag::TraversalType traversalType)
 {
 	MStatus status;
 
-	MItDag dagIterator(traversalType, filter, &status);
+	MItDag dagIterator(traversalType, MFn::kMesh, &status);
 
 	if (!status) {
 		status.perror("MItDag constructor");
@@ -133,18 +157,66 @@ MStatus ScanSend::doScan(const MItDag::TraversalType traversalType,
 			status.perror("MFnDagNode constructor");
 			continue;
 		}
+        bool fHasTweaks = false;
 
-		if (dagPath.hasFn(MFn::kMesh)) {
+        dagPath.extendToShape();
+        MObject meshNodeShape = dagPath.node();
+        MFnDependencyNode depNodeFn(meshNodeShape);
 
-			MFnMesh mesh(dagPath, &status);
+		// If the inMesh is connected, we have history
+		MString historyString;
+		MPlug inMeshPlug = depNodeFn.findPlug("inMesh");
+		if (inMeshPlug.isConnected())
+		{
+			MPlugArray tempPlugArray;
+			inMeshPlug.connectedTo(tempPlugArray, true, false);
+			MPlug upstreamNodeSrcPlug = tempPlugArray[0];
+			MFnDependencyNode upstreamNode(upstreamNodeSrcPlug.node());
 
-			if (!status) {
-				status.perror("MFnMesh:constructor");
-				continue;
-			}
-			resultString += "found mesh!\n";
-			resultString += ("\n" + mesh.name());
+			historyString += "\n";
+			historyString += upstreamNode.typeName();
+			historyString += " | ";
+			historyString += upstreamNode.name();
+			findHistory(historyString, upstreamNode);
 		}
+		
+        // Tweaks exist only if the multi "pnts" attribute contains
+        // plugs that contain non-zero tweak values. Use false,
+        // until proven true search pattern.
+            
+        MPlug tweakPlug = depNodeFn.findPlug("pnts");
+        if (!tweakPlug.isNull())
+        {
+            // ASSERT : tweakPlug should be an array plug 
+            //MAssert(tweakPlug.isArray(), "tweakPlug.isArray()");
+            MPlug tweak;
+            MFloatVector tweakData;
+            int i;
+            int numElements = tweakPlug.numElements();
+            for (i = 0; i < numElements; i++)
+			{
+                tweak = tweakPlug.elementByPhysicalIndex(i, &status);
+                if (status == MS::kSuccess && !tweak.isNull())
+                {
+                    fHasTweaks = true;
+					break;
+				}
+			}
+        }
+
+        MFnMesh mesh(meshNodeShape, &status);
+
+        if (!status) {
+            status.perror("MFnMesh:constructor");
+	        continue;
+        }
+
+        resultString += ("\n Shape: " + mesh.name());
+		resultString += "\n history: ";
+		resultString += historyString;
+        if(fHasTweaks) resultString += ("\n tweaks: true");
+        else resultString += ("\n tweaks: false");
+
 	}
 	setResult(resultString);
 	return MS::kSuccess;
@@ -155,7 +227,7 @@ MStatus initializePlugin(MObject obj)
 	MStatus status;
 
 	MFnPlugin plugin(obj, PLUGIN_COMPANY, "3.0", "Any");
-	status = plugin.registerCommand("ScanSend", ScanSend::creator);
+	status = plugin.registerCommand("scanDag", scanDag::creator);
 	if (!status)
 		status.perror("registerCommand");
 
@@ -167,7 +239,7 @@ MStatus uninitializePlugin(MObject obj)
 	MStatus status;
 
 	MFnPlugin plugin(obj);
-	status = plugin.deregisterCommand("ScanSend");
+	status = plugin.deregisterCommand("scanDag");
 	if (!status)
 		status.perror("deregisterCommand");
 
