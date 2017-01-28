@@ -1,13 +1,13 @@
 ////////////////////////////////////////////////////////////////////////
 // DESCRIPTION:
 // 
-// Produces the MEL command "scanDag".
+// Produces the MEL command "ScanSend".
 //
 // This plug-in demonstrates walking the DAG using the DAG iterator class.
 // 
 // To use it:
 //	(1) Create a number of objects anywhere in the scene.
-//	(2) Execute the command "scanDag". This will traverse the DAG printing
+//	(2) Execute the command "ScanSend". This will traverse the DAG printing
 //		information about each node it finds to the window from which you
 //		started Maya.
 //
@@ -38,11 +38,11 @@
 #include <maya/MFnNurbsSurface.h>
 #include <maya/MIOStream.h>
 
-class scanDag : public MPxCommand
+class ScanSend : public MPxCommand
 {
 public:
-	scanDag() {};
-	virtual	~scanDag();
+	ScanSend() {};
+	virtual	~ScanSend();
 	static void* creator();
 	virtual MStatus	doIt(const MArgList&);
 
@@ -56,14 +56,14 @@ private:
 					MFn::Type filter);
 };
 
-scanDag::~scanDag() {}
+ScanSend::~ScanSend() {}
 
-void* scanDag::creator()
+void* ScanSend::creator()
 {
-	return new scanDag;
+	return new ScanSend;
 }
 
-MStatus	scanDag::doIt(const MArgList& args)
+MStatus	ScanSend::doIt(const MArgList& args)
 {
 	MItDag::TraversalType	traversalType = MItDag::kDepthFirst;
 	MFn::Type				filter = MFn::kInvalid;
@@ -76,7 +76,7 @@ MStatus	scanDag::doIt(const MArgList& args)
 	return doScan(traversalType, filter);
 };
 
-MStatus scanDag::parseArgs(const MArgList& args,
+MStatus ScanSend::parseArgs(const MArgList& args,
 	MItDag::TraversalType& traversalType,
 	MFn::Type& filter)
 {
@@ -106,7 +106,7 @@ MStatus scanDag::parseArgs(const MArgList& args,
 	return stat;
 }
 
-MStatus scanDag::doScan(const MItDag::TraversalType traversalType,
+MStatus ScanSend::doScan(const MItDag::TraversalType traversalType,
 	MFn::Type filter)
 {
 	MStatus status;
@@ -155,7 +155,7 @@ MStatus initializePlugin(MObject obj)
 	MStatus status;
 
 	MFnPlugin plugin(obj, PLUGIN_COMPANY, "3.0", "Any");
-	status = plugin.registerCommand("scanDag", scanDag::creator);
+	status = plugin.registerCommand("ScanSend", ScanSend::creator);
 	if (!status)
 		status.perror("registerCommand");
 
@@ -167,7 +167,7 @@ MStatus uninitializePlugin(MObject obj)
 	MStatus status;
 
 	MFnPlugin plugin(obj);
-	status = plugin.deregisterCommand("scanDag");
+	status = plugin.deregisterCommand("ScanSend");
 	if (!status)
 		status.perror("deregisterCommand");
 
