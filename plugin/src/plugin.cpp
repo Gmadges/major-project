@@ -18,25 +18,11 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-#include <maya/MFnDagNode.h>
-#include <maya/MItDag.h>
-#include <maya/MObject.h>
-#include <maya/MDagPath.h>
 #include <maya/MPxCommand.h>
 #include <maya/MStatus.h>
 #include <maya/MString.h>
 #include <maya/MFnPlugin.h>
-#include <maya/MFnMesh.h>
 #include <maya/MArgList.h>
-#include <maya/MFnCamera.h>
-#include <maya/MPoint.h>
-#include <maya/MVector.h>
-#include <maya/MMatrix.h>
-#include <maya/MTransformationMatrix.h>
-#include <maya/MFnLight.h>
-#include <maya/MColor.h>
-#include <maya/MFnNurbsSurface.h>
-#include <maya/MIOStream.h>
 
 #include <memory>
 #include "update.h"
