@@ -38,23 +38,26 @@
 #include <maya/MFnNurbsSurface.h>
 #include <maya/MIOStream.h>
 
+#include <memory>
+#include "update.h"
+
 class ScanSend : public MPxCommand
 {
 public:
-	ScanSend() {};
+	ScanSend();
 	virtual	~ScanSend();
 	static void* creator();
 	virtual MStatus	doIt(const MArgList&);
 
 private:
-
-	MStatus parseArgs(const MArgList& args,
-						MItDag::TraversalType&	traversalType,
-						MFn::Type& filter);
-	
-	MStatus doScan(const MItDag::TraversalType traversalType,
-					MFn::Type filter);
+	std::unique_ptr<Update> pUpdater;
 };
+
+ScanSend::ScanSend()
+	:
+	pUpdater(new Update())
+{
+}
 
 ScanSend::~ScanSend() {}
 
@@ -65,90 +68,8 @@ void* ScanSend::creator()
 
 MStatus	ScanSend::doIt(const MArgList& args)
 {
-	MItDag::TraversalType	traversalType = MItDag::kDepthFirst;
-	MFn::Type				filter = MFn::kInvalid;
-	MStatus					status;
-
-	status = parseArgs(args, traversalType, filter);
-	if (!status)
-		return status;
-
-	return doScan(traversalType, filter);
+	return pUpdater->doScan();
 };
-
-MStatus ScanSend::parseArgs(const MArgList& args,
-	MItDag::TraversalType& traversalType,
-	MFn::Type& filter)
-{
-	MStatus     	stat;
-	MString     	arg;
-	const MString	breadthFlag("-b");
-	const MString	breadthFlagLong("-breadthFirst");
-	const MString	depthFlag("-d");
-	const MString	depthFlagLong("-depthFirst");
-
-	// Parse the arguments.
-	for (unsigned int i = 0; i < args.length(); i++) {
-		arg = args.asString(i, &stat);
-		if (!stat)
-			continue;
-
-		if (arg == breadthFlag || arg == breadthFlagLong)
-			traversalType = MItDag::kBreadthFirst;
-		else if (arg == depthFlag || arg == depthFlagLong)
-			traversalType = MItDag::kDepthFirst;
-		else {
-			arg += ": unknown argument";
-			displayError(arg);
-			return MS::kFailure;
-		}
-	}
-	return stat;
-}
-
-MStatus ScanSend::doScan(const MItDag::TraversalType traversalType,
-	MFn::Type filter)
-{
-	MStatus status;
-
-	MItDag dagIterator(traversalType, filter, &status);
-
-	if (!status) {
-		status.perror("MItDag constructor");
-		return status;
-	}
-
-	MString resultString;
-	for (; !dagIterator.isDone(); dagIterator.next()) {
-
-		MDagPath dagPath;
-
-		status = dagIterator.getPath(dagPath);
-		if (!status) {
-			status.perror("MItDag::getPath");
-			continue;
-		}
-		MFnDagNode dagNode(dagPath, &status);
-		if (!status) {
-			status.perror("MFnDagNode constructor");
-			continue;
-		}
-
-		if (dagPath.hasFn(MFn::kMesh)) {
-
-			MFnMesh mesh(dagPath, &status);
-
-			if (!status) {
-				status.perror("MFnMesh:constructor");
-				continue;
-			}
-			resultString += "found mesh!\n";
-			resultString += ("\n" + mesh.name());
-		}
-	}
-	setResult(resultString);
-	return MS::kSuccess;
-}
 
 MStatus initializePlugin(MObject obj)
 {

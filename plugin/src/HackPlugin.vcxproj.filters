@@ -6,8 +6,14 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="sceneDetect.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+    <ClCompile Include="messaging.cpp" />
+    <ClCompile Include="plugin.cpp" />
+    <ClCompile Include="scan.cpp" />
+    <ClCompile Include="update.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="messaging.h" />
+    <ClInclude Include="scan.h" />
+    <ClInclude Include="update.h" />
   </ItemGroup>
 </Project>

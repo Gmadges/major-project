@@ -143,7 +143,15 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="sceneDetect.cpp" />
+    <ClCompile Include="messaging.cpp" />
+    <ClCompile Include="plugin.cpp" />
+    <ClCompile Include="scan.cpp" />
+    <ClCompile Include="update.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="messaging.h" />
+    <ClInclude Include="scan.h" />
+    <ClInclude Include="update.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
