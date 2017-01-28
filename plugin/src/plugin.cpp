@@ -25,6 +25,7 @@
 #include <maya/MArgList.h>
 
 #include <memory>
+#include "scan.h"
 #include "update.h"
 
 class ScanSend : public MPxCommand
@@ -36,12 +37,12 @@ public:
 	virtual MStatus	doIt(const MArgList&);
 
 private:
-	std::unique_ptr<Update> pUpdater;
+	std::unique_ptr<Scan> pScanner;
 };
 
 ScanSend::ScanSend()
 	:
-	pUpdater(new Update())
+	pScanner(new Scan())
 {
 }
 
@@ -54,8 +55,42 @@ void* ScanSend::creator()
 
 MStatus	ScanSend::doIt(const MArgList& args)
 {
-	return pUpdater->doScan();
+	return pScanner->doScan();
 };
+
+///////////////////////////////////////////////////////////// update
+
+class ReceiveUpdate : public MPxCommand
+{
+public:
+	ReceiveUpdate();
+	virtual	~ReceiveUpdate();
+	static void* creator();
+	virtual MStatus	doIt(const MArgList&);
+
+private:
+	std::unique_ptr<Update> pUpdater;
+};
+
+ReceiveUpdate::ReceiveUpdate()
+	:
+	pUpdater(new Update())
+{
+}
+
+ReceiveUpdate::~ReceiveUpdate() {}
+
+void* ReceiveUpdate::creator()
+{
+	return new ReceiveUpdate;
+}
+
+MStatus	ReceiveUpdate::doIt(const MArgList& args)
+{
+	return MStatus::kSuccess;
+};
+
+///////////////////////////////////////////////////////////// initialise
 
 MStatus initializePlugin(MObject obj)
 {
@@ -63,6 +98,10 @@ MStatus initializePlugin(MObject obj)
 
 	MFnPlugin plugin(obj, PLUGIN_COMPANY, "3.0", "Any");
 	status = plugin.registerCommand("ScanSend", ScanSend::creator);
+	if (!status)
+		status.perror("registerCommand");
+
+	status = plugin.registerCommand("ReceiveUpdate", ScanSend::creator);
 	if (!status)
 		status.perror("registerCommand");
 
@@ -77,6 +116,10 @@ MStatus uninitializePlugin(MObject obj)
 	status = plugin.deregisterCommand("ScanSend");
 	if (!status)
 		status.perror("deregisterCommand");
+	status = plugin.deregisterCommand("ReceiveUpdate");
+	if (!status)
+		status.perror("deregisterCommand");
+
 
 	return status;
 }
