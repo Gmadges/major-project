@@ -1,6 +1,8 @@
 #ifndef MESSAGING_H
 #define MESSAGING_H
 
+#include <zmq.hpp>
+
 class Messaging
 {
 public:
@@ -12,6 +14,8 @@ public:
 private:
 	int port;
 
+	zmq::context_t context;
+	zmq::socket_t socket;
 };
 
 #endif
