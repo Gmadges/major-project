@@ -16,6 +16,17 @@
 #include <maya/MPlug.h>
 #include <maya/MPlugArray.h>
 
+// hacky method to easily print
+#include <maya/MGlobal.h>
+void print(const char * text)
+{
+	MGlobal::displayInfo(text);
+}
+void print(MString& text)
+{
+	MGlobal::displayInfo(text);
+}
+
 Scan::Scan()
 {
 }
@@ -37,7 +48,6 @@ MStatus Scan::doScan()
 		return status;
 	}
 
-	MString resultString;
 	for (; !dagIterator.isDone(); dagIterator.next()) {
 
 		MDagPath dagPath;
@@ -57,23 +67,6 @@ MStatus Scan::doScan()
 		dagPath.extendToShape();
 		MObject meshNodeShape = dagPath.node();
 		MFnDependencyNode depNodeFn(meshNodeShape);
-
-		// If the inMesh is connected, we have history
-		MString historyString;
-		MPlug inMeshPlug = depNodeFn.findPlug("inMesh");
-		if (inMeshPlug.isConnected())
-		{
-			MPlugArray tempPlugArray;
-			inMeshPlug.connectedTo(tempPlugArray, true, false);
-			MPlug upstreamNodeSrcPlug = tempPlugArray[0];
-			MFnDependencyNode upstreamNode(upstreamNodeSrcPlug.node());
-
-			historyString += "\n";
-			historyString += upstreamNode.typeName();
-			historyString += " | ";
-			historyString += upstreamNode.name();
-			findHistory(historyString, upstreamNode);
-		}
 
 		// Tweaks exist only if the multi "pnts" attribute contains
 		// plugs that contain non-zero tweak values. Use false,
@@ -106,18 +99,32 @@ MStatus Scan::doScan()
 			continue;
 		}
 
-		resultString += ("\n Shape: " + mesh.name());
-		resultString += "\n history: ";
-		resultString += historyString;
-		if (fHasTweaks) resultString += ("\n tweaks: true");
-		else resultString += ("\n tweaks: false");
+		print("Shape: ");
+		print(mesh.name());
+		print("history: ");
+
+		// If the inMesh is connected, we have history
+		MPlug inMeshPlug = depNodeFn.findPlug("inMesh");
+		if (inMeshPlug.isConnected())
+		{
+			MPlugArray tempPlugArray;
+			inMeshPlug.connectedTo(tempPlugArray, true, false);
+			MPlug upstreamNodeSrcPlug = tempPlugArray[0];
+			MFnDependencyNode upstreamNode(upstreamNodeSrcPlug.node());
+
+			print(upstreamNode.typeName());
+			print(upstreamNode.name());
+			findHistory(upstreamNode);
+		}
+
+		if (fHasTweaks) print("tweaks: true");
+		else print("tweaks: false");
 
 	}
-	std::cout << resultString << std::endl;
 	return MS::kSuccess;
 }
 
-void Scan::findHistory(MString & string, MFnDependencyNode & node)
+void Scan::findHistory(MFnDependencyNode & node)
 {
 	// If the inpuPolymesh is connected, we have history
 	MPlug inMeshPlug = node.findPlug("inputPolymesh");
@@ -131,13 +138,11 @@ void Scan::findHistory(MString & string, MFnDependencyNode & node)
 		MPlug upstreamNodeSrcPlug = tempPlugArray[0];
 
 		MFnDependencyNode upstreamNode(upstreamNodeSrcPlug.node());
+		
+		print("----------");
+		print(upstreamNode.typeName());
+		print(upstreamNode.name());
 
-		// testing strings
-		string += "\n";
-		string += upstreamNode.typeName();
-		string += " | ";
-		string += upstreamNode.name();
-
-		findHistory(string, upstreamNode);
+		findHistory(upstreamNode);
 	}
 }

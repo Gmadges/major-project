@@ -15,7 +15,7 @@ public:
 
 private:
 
-	void findHistory(MString& string, MFnDependencyNode& node);
+	void findHistory(MFnDependencyNode& node);
 
 };
 
