@@ -9,3 +9,8 @@ Messaging::Messaging(int _port)
 Messaging::~Messaging()
 {
 }
+
+void Messaging::send()
+{
+
+}

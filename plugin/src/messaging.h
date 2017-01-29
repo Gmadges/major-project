@@ -7,6 +7,8 @@ public:
 	Messaging(int _port);
 	~Messaging();
 
+	void send();
+
 private:
 	int port;
 

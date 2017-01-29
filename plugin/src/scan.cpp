@@ -15,6 +15,7 @@
 #include <maya/MIOStream.h>
 #include <maya/MPlug.h>
 #include <maya/MPlugArray.h>
+#include <maya/MFnAttribute.h>
 
 // hacky method to easily print
 #include <maya/MGlobal.h>
@@ -27,7 +28,11 @@ void print(MString& text)
 	MGlobal::displayInfo(text);
 }
 
+#include "messaging.h"
+
 Scan::Scan()
+	:
+	pMessaging(new Messaging(8080))
 {
 }
 
@@ -143,6 +148,69 @@ void Scan::findHistory(MFnDependencyNode & node)
 		print(upstreamNode.typeName());
 		print(upstreamNode.name());
 
+		if (upstreamNode.typeName() == MString("polySplitRing"))
+		{
+			print("we have found a polysplit lets send it");
+			sendPolySplitNode(upstreamNode);
+		}
+
 		findHistory(upstreamNode);
 	}
+}
+
+void Scan::sendPolySplitNode(MFnDependencyNode & node)
+{
+	// this shows us all attributes.
+	// there are other ways of individually finding them using plugs
+	unsigned int numAttrib = node.attributeCount();
+	MStatus status;
+
+	for (unsigned int i = 0; i < numAttrib; i++)
+	{
+		MFnAttribute attrib(node.attribute(i));
+
+		MPlug plug = node.findPlug(attrib.shortName().asChar(), status);
+		
+		if (plug.isCompound())
+		{
+			//TODO
+		}
+
+		if (status == MStatus::kSuccess)
+		{
+			//MString value;
+			float fValue;
+			if (plug.getValue(fValue) == MStatus::kSuccess)
+			{
+				//object[attrib.shortName().asChar()] = fValue;
+			}
+
+			double dValue;
+			if (plug.getValue(dValue) == MStatus::kSuccess)
+			{
+				//object[attrib.shortName().asChar()] = dValue;
+			}
+
+			MString sValue;
+			if (plug.getValue(sValue) == MStatus::kSuccess)
+			{
+				//object[attrib.shortName().asChar()] = sValue.asChar();
+			}
+
+			int iValue;
+			if (plug.getValue(iValue) == MStatus::kSuccess)
+			{
+				//object[attrib.shortName().asChar()] = iValue;
+			}
+
+			bool bValue;
+			if (plug.getValue(bValue) == MStatus::kSuccess)
+			{
+				//object[attrib.shortName().asChar()] = bValue;
+			}
+		}
+	}
+
+	// lets send the data if we have some
+	pMessaging->send();
 }
