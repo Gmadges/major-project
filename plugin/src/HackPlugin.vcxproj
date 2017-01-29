@@ -39,15 +39,15 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Projects\major-project.git\PoC\sceneChangeDetection\src\Debug\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">SceneDetect.dir\Debug\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">sceneDetect</TargetName>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Projects\major-project.git\plugin\src\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">HackPlugin.dir\Debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">HackPluginDebug</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.mll</TargetExt>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateManifest>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Projects\major-project.git\PoC\sceneChangeDetection\src\Release\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">SceneDetect.dir\Release\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">sceneDetect</TargetName>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Projects\major-project.git\plugin\src\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">HackPlugin.dir\Release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">hackPlugin</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.mll</TargetExt>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateManifest>
@@ -87,8 +87,8 @@
       <AdditionalLibraryDirectories>C:/Program Files/Autodesk/Maya2016/lib;C:/Program Files/Autodesk/Maya2016/lib/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>C:/Projects/major-project.git/PoC/sceneChangeDetection/src/Debug/HelloWorld.lib</ImportLibrary>
-      <ProgramDataBaseFile>C:/Projects/major-project.git/PoC/sceneChangeDetection/src/Debug/HelloWorld.pdb</ProgramDataBaseFile>
+      <ImportLibrary>C:/Projects/major-project.git/plugin/src/Debug/HelloWorld.lib</ImportLibrary>
+      <ProgramDataBaseFile>C:/Projects/major-project.git/plugin/src/Debug/HelloWorld.pdb</ProgramDataBaseFile>
       <SubSystem>Console</SubSystem>
       <Version>
       </Version>
@@ -132,8 +132,8 @@
       <AdditionalLibraryDirectories>C:/Program Files/Autodesk/Maya2016/lib;C:/Program Files/Autodesk/Maya2016/lib/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>C:/Projects/major-project.git/PoC/sceneChangeDetection/src/Release/HelloWorld.lib</ImportLibrary>
-      <ProgramDataBaseFile>C:/Projects/major-project.git/PoC/sceneChangeDetection/src/Release/HelloWorld.pdb</ProgramDataBaseFile>
+      <ImportLibrary>C:/Projects/major-project.git/plugin/src/Release/HelloWorld.lib</ImportLibrary>
+      <ProgramDataBaseFile>C:/Projects/major-project.git/plugin/src/Release/HelloWorld.pdb</ProgramDataBaseFile>
       <SubSystem>Console</SubSystem>
       <Version>
       </Version>
