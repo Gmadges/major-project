@@ -32,7 +32,7 @@ void print(MString& text)
 
 Scan::Scan()
 	:
-	pMessaging(new Messaging(8080))
+	pMessaging(new Messaging("8080"))
 {
 }
 
