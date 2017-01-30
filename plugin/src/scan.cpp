@@ -212,5 +212,6 @@ void Scan::sendPolySplitNode(MFnDependencyNode & node)
 	}
 
 	// lets send the data if we have some
+	print("send poly split data");
 	pMessaging->send();
 }

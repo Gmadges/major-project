@@ -6,13 +6,13 @@
 class Messaging
 {
 public:
-	Messaging(int _port);
+	Messaging(std::string _port);
 	~Messaging();
 
 	void send();
 
 private:
-	int port;
+	std::string port;
 
 	zmq::context_t context;
 	zmq::socket_t socket;
