@@ -146,11 +146,13 @@
     <ClCompile Include="messaging.cpp" />
     <ClCompile Include="plugin.cpp" />
     <ClCompile Include="scan.cpp" />
+    <ClCompile Include="subscriber.cpp" />
     <ClCompile Include="update.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="messaging.h" />
     <ClInclude Include="scan.h" />
+    <ClInclude Include="subscriber.h" />
     <ClInclude Include="update.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

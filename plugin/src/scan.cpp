@@ -46,6 +46,7 @@ MStatus Scan::doScan()
 
 	MStatus status;
 
+	// filter to only meshes
 	MItDag dagIterator(traversalType, MFn::kMesh, &status);
 
 	if (!status) {
