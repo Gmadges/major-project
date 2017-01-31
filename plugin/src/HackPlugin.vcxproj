@@ -150,6 +150,7 @@
     <ClCompile Include="update.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="hackPrint.h" />
     <ClInclude Include="messaging.h" />
     <ClInclude Include="scan.h" />
     <ClInclude Include="subscriber.h" />

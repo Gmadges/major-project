@@ -11,6 +11,8 @@ public:
 	Update();
 	~Update();
 
+	void showUpdate();
+
 private:
 	std::unique_ptr<Subscriber> pSubscriber;
 };

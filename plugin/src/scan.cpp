@@ -17,18 +17,8 @@
 #include <maya/MPlugArray.h>
 #include <maya/MFnAttribute.h>
 
-// hacky method to easily print
-#include <maya/MGlobal.h>
-void print(const char * text)
-{
-	MGlobal::displayInfo(text);
-}
-void print(MString& text)
-{
-	MGlobal::displayInfo(text);
-}
-
 #include "messaging.h"
+#include "hackPrint.h"
 
 Scan::Scan()
 	:
@@ -105,9 +95,9 @@ MStatus Scan::doScan()
 			continue;
 		}
 
-		print("Shape: ");
-		print(mesh.name());
-		print("history: ");
+		HackPrint::print("Shape: ");
+		HackPrint::print(mesh.name());
+		HackPrint::print("history: ");
 
 		// If the inMesh is connected, we have history
 		MPlug inMeshPlug = depNodeFn.findPlug("inMesh");
@@ -118,13 +108,13 @@ MStatus Scan::doScan()
 			MPlug upstreamNodeSrcPlug = tempPlugArray[0];
 			MFnDependencyNode upstreamNode(upstreamNodeSrcPlug.node());
 
-			print(upstreamNode.typeName());
-			print(upstreamNode.name());
+			HackPrint::print(upstreamNode.typeName());
+			HackPrint::print(upstreamNode.name());
 			findHistory(upstreamNode);
 		}
 
-		if (fHasTweaks) print("tweaks: true");
-		else print("tweaks: false");
+		if (fHasTweaks) HackPrint::print("tweaks: true");
+		else HackPrint::print("tweaks: false");
 
 	}
 	return MS::kSuccess;
@@ -145,13 +135,13 @@ void Scan::findHistory(MFnDependencyNode & node)
 
 		MFnDependencyNode upstreamNode(upstreamNodeSrcPlug.node());
 		
-		print("----------");
-		print(upstreamNode.typeName());
-		print(upstreamNode.name());
+		HackPrint::print("----------");
+		HackPrint::print(upstreamNode.typeName());
+		HackPrint::print(upstreamNode.name());
 
 		if (upstreamNode.typeName() == MString("polySplitRing"))
 		{
-			print("we have found a polysplit lets send it");
+			HackPrint::print("we have found a polysplit lets send it");
 			sendPolySplitNode(upstreamNode);
 		}
 
@@ -213,6 +203,6 @@ void Scan::sendPolySplitNode(MFnDependencyNode & node)
 	}
 
 	// lets send the data if we have some
-	print("send poly split data");
+	HackPrint::print("send poly split data");
 	pMessaging->send();
 }

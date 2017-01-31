@@ -17,5 +17,6 @@
     <ClInclude Include="scan.h" />
     <ClInclude Include="update.h" />
     <ClInclude Include="subscriber.h" />
+    <ClInclude Include="hackPrint.h" />
   </ItemGroup>
 </Project>

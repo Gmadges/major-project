@@ -87,6 +87,8 @@ void* ReceiveUpdate::creator()
 
 MStatus	ReceiveUpdate::doIt(const MArgList& args)
 {
+	pUpdater->showUpdate();
+
 	return MStatus::kSuccess;
 };
 
@@ -101,7 +103,7 @@ MStatus initializePlugin(MObject obj)
 	if (!status)
 		status.perror("registerCommand");
 
-	status = plugin.registerCommand("ReceiveUpdate", ScanSend::creator);
+	status = plugin.registerCommand("ReceiveUpdate", ReceiveUpdate::creator);
 	if (!status)
 		status.perror("registerCommand");
 
