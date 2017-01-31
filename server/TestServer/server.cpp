@@ -4,10 +4,14 @@
 
 Server::Server(zmq::context_t& _context)
 	:
-	recieveSocket(_context, ZMQ_REP)
+	recieveSocket(_context, ZMQ_REP),
+	updateSocket(_context, ZMQ_PUB)
 {
 	// client socket that recieves changes
-	recieveSocket.bind("tcp://*:5555");
+	recieveSocket.bind("tcp://*:8080");
+
+	// publisher channel
+	updateSocket.bind("tcp://*:9000");
 }
 
 
@@ -30,5 +34,15 @@ int Server::run()
 		zmq::message_t reply(5);
 		memcpy(reply.data(), "World", 5);
 		recieveSocket.send(reply);
+
+		//testing
+		pushUpdate();
 	}
+}
+
+void Server::pushUpdate()
+{
+	zmq::message_t message(7);
+	memcpy(message.data(), "Update!", 7);
+	updateSocket.send(message);
 }

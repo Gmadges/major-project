@@ -11,10 +11,12 @@ public:
 	~Server();
 
 	int run();
+	void pushUpdate();
 
 private:
 
 	zmq::socket_t recieveSocket;
+	zmq::socket_t updateSocket;
 };
 
 #endif
