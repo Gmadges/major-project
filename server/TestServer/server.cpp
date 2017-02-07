@@ -21,28 +21,23 @@ Server::~Server()
 
 int Server::run()
 {
+	unsigned int count = 0;
+
 	while (true) {
 		zmq::message_t request;
 
 		//  Wait for next request from client
 		recieveSocket.recv(&request);
-		std::cout << "Received Hello" << std::endl;
+		std::cout << "Received Hello " << count << std::endl;
 
 		//  Do some 'work'
+		count++;
 
 		//  Send reply back to client
 		zmq::message_t reply(5);
 		memcpy(reply.data(), "World", 5);
 		recieveSocket.send(reply);
-
-		//testing
-		pushUpdate();
 	}
 }
 
-void Server::pushUpdate()
-{
-	zmq::message_t message(7);
-	memcpy(message.data(), "Update!", 7);
-	updateSocket.send(message);
-}
+

@@ -11,19 +11,13 @@ public:
 	Subscriber(std::string _port);
 	~Subscriber();
 
-	void listenForUpdates();
-
-public:
-	// testing
-	int updates;
+	void askForUpdates();
 
 private:
 
 	std::string port;
 	zmq::context_t context;
 	zmq::socket_t socket;
-	bool bListen;
-	std::thread listenThread;
 };
 
 #endif

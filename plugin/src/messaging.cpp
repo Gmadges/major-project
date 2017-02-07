@@ -6,7 +6,6 @@ Messaging::Messaging(std::string _port)
 	context(1),
 	socket(context, ZMQ_REQ)
 {
-	//socket.connect("tcp://localhost:" + port);
 	socket.connect("tcp://localhost:" + port);
 }
 
