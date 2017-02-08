@@ -1,10 +1,8 @@
-#include <zmq.hpp>
 #include "server.h"
 
 int main() 
 {	
-	zmq::context_t context(1);
-	Server server(context);
-	server.run();
+	Server test;
+	test.run();
 	return 0; 
 }
