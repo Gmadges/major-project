@@ -4,6 +4,9 @@
     <Filter Include="Source Files">
       <UniqueIdentifier>{742F221D-9623-44FE-8E17-B30EC8CB3CEA}</UniqueIdentifier>
     </Filter>
+    <Filter Include="common">
+      <UniqueIdentifier>{3446c6e6-bd01-46d0-80df-2ff93e74def4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="messaging.cpp" />
@@ -18,5 +21,8 @@
     <ClInclude Include="update.h" />
     <ClInclude Include="subscriber.h" />
     <ClInclude Include="hackPrint.h" />
+    <ClInclude Include="..\..\common\testTypes.hpp">
+      <Filter>common</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

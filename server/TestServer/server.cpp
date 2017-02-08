@@ -1,17 +1,16 @@
 #include "server.h"
 
 #include <iostream>
+#include <msgpack.hpp>
+
+#include "testTypes.hpp"
 
 Server::Server(zmq::context_t& _context)
 	:
-	recieveSocket(_context, ZMQ_REP),
-	updateSocket(_context, ZMQ_PUB)
+	recieveSocket(_context, ZMQ_REP)
 {
 	// client socket that recieves changes
 	recieveSocket.bind("tcp://*:8080");
-
-	// publisher channel
-	updateSocket.bind("tcp://*:9000");
 }
 
 
@@ -29,6 +28,34 @@ int Server::run()
 		//  Wait for next request from client
 		recieveSocket.recv(&request);
 		std::cout << "Received Hello " << count << std::endl;
+
+		// lets find out what this message is about
+
+		// TODO
+		
+		// 3 basic requests we can expect
+
+		// new scene data to store
+
+		// request the current version of the scene
+
+		// get available scenes to work with
+
+		// testing msgpack recieve
+
+		TestClass data;
+		msgpack::object_handle oh = msgpack::unpack(static_cast<char *>(request.data()), request.size());
+		oh.get().convert(data);
+
+		std::cout << "ID: " << data.getID() << std::endl;
+		std::cout << "TYPE: " << data.getType() << std::endl;
+
+		auto attribs = data.getAttribs();
+
+		for (auto it : attribs)
+		{
+			std::cout << it.first << " : " << it.second << std::endl;
+		}
 
 		//  Do some 'work'
 		count++;

@@ -14,22 +14,16 @@
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
     <Filter Include="common">
-      <UniqueIdentifier>{69a48cc8-ea91-47bd-adac-4a7df7d4224d}</UniqueIdentifier>
+      <UniqueIdentifier>{f321305e-84af-44c1-b695-83c423a69181}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="server.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="server.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\common\testTypes.hpp">
+    <ClInclude Include="..\..\..\common\testTypes.hpp">
       <Filter>common</Filter>
     </ClInclude>
   </ItemGroup>

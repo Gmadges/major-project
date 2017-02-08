@@ -20,6 +20,9 @@
 #include "messaging.h"
 #include "hackPrint.h"
 
+//test
+#include "testTypes.hpp"
+
 Scan::Scan()
 	:
 	pMessaging(new Messaging("8080"))
@@ -204,5 +207,5 @@ void Scan::sendPolySplitNode(MFnDependencyNode & node)
 
 	// lets send the data if we have some
 	HackPrint::print("send poly split data");
-	pMessaging->send();
+	pMessaging->send(TestClass(1, "BALLS"));
 }
