@@ -2,7 +2,6 @@
 
 int main() 
 {	
-	Server test;
-	test.run();
-	return 0; 
+	Server server;
+	return server.run(); 
 }

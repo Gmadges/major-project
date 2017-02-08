@@ -14,6 +14,9 @@ public:
 	int run();
 
 private:
+	void handleRequest();
+
+private:
 	zmq::context_t context;
 	zmq::socket_t recieveSocket;
 	zmq::socket_t workersSocket;
