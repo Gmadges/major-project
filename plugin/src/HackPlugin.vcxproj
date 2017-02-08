@@ -54,7 +54,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\mayaDevKit2016\include;C:\libs\libzmq\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\libs\msgpack\include;C:\Projects\major-project.git\common;C:\mayaDevKit2016\include;C:\libs\libzmq\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Debug/</AssemblerListingLocation>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <CompileAs>CompileAsCpp</CompileAs>
@@ -99,7 +99,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\mayaDevKit2016\include;C:\libs\libzmq\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\libs\msgpack\include;C:\Projects\major-project.git\common;C:\mayaDevKit2016\include;C:\libs\libzmq\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Release/</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -150,6 +150,7 @@
     <ClCompile Include="update.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\common\testTypes.hpp" />
     <ClInclude Include="hackPrint.h" />
     <ClInclude Include="messaging.h" />
     <ClInclude Include="scan.h" />
