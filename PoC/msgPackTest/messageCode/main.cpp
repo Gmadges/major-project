@@ -15,10 +15,10 @@ int main()
 	socket.connect("tcp://localhost:8080");
 
 	//  Do 10 requests, waiting each time for a response
-	for (int request_nbr = 0; request_nbr != 10; request_nbr++) {
+	for (int i = 0; i < 10; i++) {
 		
 		// create my class
-		TestClass test(request_nbr, "TEST");
+		TestClass test(i, "TEST");
 
 		// pack a message up
 		msgpack::sbuffer sbuf;
@@ -27,13 +27,13 @@ int main()
 		zmq::message_t request(sbuf.size());
 		std::memcpy(request.data(), sbuf.data(), sbuf.size());
 		
-		std::cout << "Sending Hello " << request_nbr << "…" << std::endl;
+		std::cout << "Sending Hello " << i << "…" << std::endl;
 		socket.send(request);
 
 		//  Get the reply.
 		zmq::message_t reply;
 		socket.recv(&reply);
-		std::cout << "Received World " << request_nbr << std::endl;
+		std::cout << "Received World " << i << std::endl;
 	}
 	return 0;
 }
