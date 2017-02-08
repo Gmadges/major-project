@@ -50,6 +50,13 @@ int Server::run()
 		std::cout << "ID: " << data.getID() << std::endl;
 		std::cout << "TYPE: " << data.getType() << std::endl;
 
+		auto attribs = data.getAttribs();
+
+		for (auto it : attribs)
+		{
+			std::cout << it.first << " : " << it.second << std::endl;
+		}
+
 		//  Do some 'work'
 		count++;
 
