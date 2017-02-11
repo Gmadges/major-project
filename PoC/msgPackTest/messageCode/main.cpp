@@ -18,7 +18,7 @@ int main()
 	for (int i = 0; i < 10; i++) {
 		
 		// create my class
-		TestClass test(i, "TEST");
+		TestClass test(i, SCENE_REQUEST);
 
 		// pack a message up
 		msgpack::sbuffer sbuf;
