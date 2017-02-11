@@ -86,19 +86,33 @@ void Server::handleRequest()
 		//}
 
 		// Type
-		if (data.getRequestType() == SCENE_UPDATE)
+		switch (data.getRequestType())
 		{
-			std::cout << "we got an update!" << std::endl;
-		}
-		else if (data.getRequestType() == SCENE_REQUEST)
-		{
-			std::cout << "ugh someone wants our data!" << std::endl;
-		}
+			case SCENE_UPDATE: 
+			{
+				std::cout << "we got an update!" << std::endl;
+				
+				//  Send reply back to client
+				zmq::message_t reply(7);
+				memcpy(reply.data(), "SUCCESS", 7);
+				socket.send(reply);
+				break;
+			}
+			case SCENE_REQUEST:
+			{
+				std::cout << "ugh someone wants our data!" << std::endl;
 
-		//  Send reply back to client
-		zmq::message_t reply(5);
-		memcpy(reply.data(), "World", 5);
-		socket.send(reply);
+				// get our current data
+				
+				//  Send reply back to client
+				zmq::message_t reply(5);
+				memcpy(reply.data(), "World", 5);
+				socket.send(reply);
+				break;
+			}
+		};
 	}
 }
+
+void 
 
