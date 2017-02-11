@@ -5,13 +5,18 @@
 
 #include <unordered_map>
 
+enum RequestType { TEST, SCENE_UPDATE, SCENE_REQUEST };
+
+MSGPACK_ADD_ENUM(RequestType);
+
 class TestClass
 {
 public:
-	TestClass(int _id, std::string _type)
+	TestClass(int _id, RequestType _req)
 		:
 		id(_id),
-		type(_type)
+		type("Test"),
+		reqType(_req)
 	{
 		attribs.insert({"Height", "50px"});
 		attribs.insert({ "Width", "100px" });
@@ -20,22 +25,25 @@ public:
 	TestClass()
 		:
 		id(0),
-		type("")
+		type(""),
+		reqType(TEST)
 	{
 
 	}
 
 	unsigned int getID() { return id; }
 	std::string getType() { return type; }
+	RequestType getRequestType() { return reqType; }
 	auto getAttribs() { return attribs; }
 
 private:
 	unsigned int id;
 	std::string type;
+	RequestType reqType;
 	std::unordered_map<std::string, std::string> attribs;
 
 public:
-	MSGPACK_DEFINE(id, type, attribs);
+	MSGPACK_DEFINE(id, type, attribs, reqType);
 };
 
 #endif

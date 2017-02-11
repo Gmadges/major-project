@@ -46,8 +46,6 @@ int Server::run()
 
 void Server::handleRequest() 
 {
-	unsigned int count = 0;
-
 	zmq::socket_t socket(context, ZMQ_REP);
 	socket.connect("inproc://workers");
 
@@ -75,19 +73,27 @@ void Server::handleRequest()
 		msgpack::object_handle oh = msgpack::unpack(static_cast<char *>(request.data()), request.size());
 		oh.get().convert(data);
 
+		// printing boi
 		std::cout << "THREAD: " << std::this_thread::get_id() << std::endl;
-		std::cout << "ID: " << data.getID() << std::endl;
-		std::cout << "TYPE: " << data.getType() << std::endl;
+		//std::cout << "ID: " << data.getID() << std::endl;
+		//std::cout << "TYPE: " << data.getType() << std::endl;
 
-		auto attribs = data.getAttribs();
+		//auto attribs = data.getAttribs();
 
-		for (auto it : attribs)
+		//for (auto it : attribs)
+		//{
+		//	std::cout << it.first << " : " << it.second << std::endl;
+		//}
+
+		// Type
+		if (data.getRequestType() == SCENE_UPDATE)
 		{
-			std::cout << it.first << " : " << it.second << std::endl;
+			std::cout << "we got an update!" << std::endl;
 		}
-
-		//  Do some 'work'
-		count++;
+		else if (data.getRequestType() == SCENE_REQUEST)
+		{
+			std::cout << "ugh someone wants our data!" << std::endl;
+		}
 
 		//  Send reply back to client
 		zmq::message_t reply(5);
