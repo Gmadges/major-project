@@ -13,13 +13,11 @@
     <ClCompile Include="plugin.cpp" />
     <ClCompile Include="scan.cpp" />
     <ClCompile Include="update.cpp" />
-    <ClCompile Include="subscriber.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="messaging.h" />
     <ClInclude Include="scan.h" />
     <ClInclude Include="update.h" />
-    <ClInclude Include="subscriber.h" />
     <ClInclude Include="hackPrint.h" />
     <ClInclude Include="..\..\common\testTypes.hpp">
       <Filter>common</Filter>

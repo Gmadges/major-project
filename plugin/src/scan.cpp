@@ -207,5 +207,5 @@ void Scan::sendPolySplitNode(MFnDependencyNode & node)
 
 	// lets send the data if we have some
 	HackPrint::print("send poly split data");
-	pMessaging->send(TestClass(1, "BALLS"));
+	pMessaging->send(TestClass(1, SCENE_UPDATE));
 }

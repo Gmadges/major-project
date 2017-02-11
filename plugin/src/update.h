@@ -14,7 +14,7 @@ public:
 	void showUpdate();
 
 private:
-	std::unique_ptr<Subscriber> pSubscriber;
+
 };
 
 #endif
