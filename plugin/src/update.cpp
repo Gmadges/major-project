@@ -32,5 +32,10 @@ MStatus	Update::doIt(const MArgList& args)
 	// and add it to the DAG
 
 	return MStatus::kSuccess;
-};
+}
+
+void Update::requestInfo()
+{
+
+}
 

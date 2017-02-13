@@ -113,6 +113,3 @@ void Server::handleRequest()
 		};
 	}
 }
-
-void 
-
