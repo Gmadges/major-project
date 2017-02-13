@@ -7,12 +7,36 @@
     <Filter Include="common">
       <UniqueIdentifier>{3446c6e6-bd01-46d0-80df-2ff93e74def4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="testCod">
+      <UniqueIdentifier>{28ca42eb-9f0b-4dea-8aa2-edc3b831d620}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="messaging.cpp" />
     <ClCompile Include="plugin.cpp" />
     <ClCompile Include="scan.cpp" />
     <ClCompile Include="update.cpp" />
+    <ClCompile Include="polyModifierNode.cpp">
+      <Filter>testCod</Filter>
+    </ClCompile>
+    <ClCompile Include="meshOpCmd.cpp">
+      <Filter>testCod</Filter>
+    </ClCompile>
+    <ClCompile Include="meshOpFty.cpp">
+      <Filter>testCod</Filter>
+    </ClCompile>
+    <ClCompile Include="meshOpFtyAction.cpp">
+      <Filter>testCod</Filter>
+    </ClCompile>
+    <ClCompile Include="meshOpNode.cpp">
+      <Filter>testCod</Filter>
+    </ClCompile>
+    <ClCompile Include="polyModifierCmd.cpp">
+      <Filter>testCod</Filter>
+    </ClCompile>
+    <ClCompile Include="polyModifierFty.cpp">
+      <Filter>testCod</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="messaging.h" />
@@ -21,6 +45,21 @@
     <ClInclude Include="hackPrint.h" />
     <ClInclude Include="..\..\common\testTypes.hpp">
       <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="polyModifierNode.h">
+      <Filter>testCod</Filter>
+    </ClInclude>
+    <ClInclude Include="meshOpCmd.h">
+      <Filter>testCod</Filter>
+    </ClInclude>
+    <ClInclude Include="meshOpFty.h">
+      <Filter>testCod</Filter>
+    </ClInclude>
+    <ClInclude Include="polyModifierCmd.h">
+      <Filter>testCod</Filter>
+    </ClInclude>
+    <ClInclude Include="polyModifierFty.h">
+      <Filter>testCod</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
