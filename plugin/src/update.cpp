@@ -1,7 +1,10 @@
 #include "update.h"
 #include "hackPrint.h"
+#include "messaging.h"
 
 Update::Update()
+	:
+	pMessenger(new Messaging("8080"))
 {
 }
 
