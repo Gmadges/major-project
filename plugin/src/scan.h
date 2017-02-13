@@ -1,6 +1,8 @@
 #ifndef SCAN_H
 #define SCAN_H
 
+#include <maya/MPxCommand.h>
+#include <maya/MArgList.h>
 #include <maya/MStatus.h>
 #include <maya/MString.h>
 #include <maya/MFnDependencyNode.h>
@@ -9,16 +11,16 @@
 
 class Messaging;
 
-class Scan
+class Scan : public MPxCommand
 {
 public:
 	Scan();
 	~Scan();
 
-	MStatus doScan();
+	static void* creator();
+	virtual MStatus	doIt(const MArgList&);
 
 private:
-
 	void findHistory(MFnDependencyNode& node);
 	void sendPolySplitNode(MFnDependencyNode& node);
 
