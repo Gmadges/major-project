@@ -92,7 +92,11 @@ void Server::handleRequest()
 			case SCENE_UPDATE: 
 			{
 				std::cout << "we got an update!" << std::endl;
-				
+				std::cout << "add to stack!" << std::endl;
+
+				// add to stack
+				msgStack.push_back(data);
+
 				//  Send reply back to client
 				zmq::message_t reply(7);
 				memcpy(reply.data(), "SUCCESS", 7);
@@ -104,11 +108,16 @@ void Server::handleRequest()
 				std::cout << "ugh someone wants our data!" << std::endl;
 
 				// get our current data
-				
-				//  Send reply back to client
-				zmq::message_t reply(5);
-				memcpy(reply.data(), "World", 5);
+				// pack a message up
+				msgpack::sbuffer sbuf;
+				msgpack::pack(sbuf, msgStack.back());
+
+				// send reply
+				zmq::message_t reply(sbuf.size());
+				std::memcpy(reply.data(), sbuf.data(), sbuf.size());
 				socket.send(reply);
+
+				msgStack.pop_back();
 				break;
 			}
 		};
