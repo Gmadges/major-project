@@ -129,6 +129,15 @@ MStatus	Scan::doIt(const MArgList& args)
 
 void Scan::findHistory(MFnDependencyNode & node)
 {
+	// check and send data about this node
+	if (node.typeName() == MString("polySplitRing"))
+	{
+		HackPrint::print("we have found a polysplit lets send it");
+		sendPolySplitNode(node);
+	}
+
+	// now lets see if it has a parent
+
 	// If the inpuPolymesh is connected, we have history
 	MPlug inMeshPlug = node.findPlug("inputPolymesh");
 
@@ -145,12 +154,6 @@ void Scan::findHistory(MFnDependencyNode & node)
 		HackPrint::print("----------");
 		HackPrint::print(upstreamNode.typeName());
 		HackPrint::print(upstreamNode.name());
-
-		if (upstreamNode.typeName() == MString("polySplitRing"))
-		{
-			HackPrint::print("we have found a polysplit lets send it");
-			sendPolySplitNode(upstreamNode);
-		}
 
 		findHistory(upstreamNode);
 	}
