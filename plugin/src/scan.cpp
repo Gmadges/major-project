@@ -33,7 +33,12 @@ Scan::~Scan()
 {
 }
 
-MStatus Scan::doScan()
+void* Scan::creator()
+{
+	return new Scan;
+}
+
+MStatus	Scan::doIt(const MArgList& args)
 {
 	MItDag::TraversalType	traversalType = MItDag::kDepthFirst;
 

@@ -1,17 +1,17 @@
 #ifndef UPDATE_H
 #define UPDATE_H
 
-#include <memory>
+#include "maya/MArgList.h"
+#include "maya/MPxCommand.h"
 
-class Subscriber;
-
-class Update
+class Update : public MPxCommand
 {
 public:
 	Update();
 	~Update();
 
-	void showUpdate();
+	static void* creator();
+	MStatus	doIt(const MArgList&);
 
 private:
 
