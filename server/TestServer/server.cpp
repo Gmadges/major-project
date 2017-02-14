@@ -107,6 +107,21 @@ void Server::handleRequest()
 			{
 				std::cout << "ugh someone wants our data!" << std::endl;
 
+				if (msgStack.empty())
+				{
+					GenericMessage msg;
+					msg.setNodeType(EMPTY);
+
+					msgpack::sbuffer sbuf;
+					msgpack::pack(sbuf, msg);
+
+					// send reply
+					zmq::message_t reply(sbuf.size());
+					std::memcpy(reply.data(), sbuf.data(), sbuf.size());
+					socket.send(reply);
+					break;
+				}
+
 				// get our current data
 				// pack a message up
 				msgpack::sbuffer sbuf;

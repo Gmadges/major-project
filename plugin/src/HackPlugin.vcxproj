@@ -149,11 +149,11 @@
     <ClCompile Include="update.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\common\genericMessage.h" />
     <ClInclude Include="..\..\common\testTypes.hpp" />
     <ClInclude Include="hackPrint.h" />
     <ClInclude Include="messaging.h" />
     <ClInclude Include="scan.h" />
-    <ClInclude Include="genericMessage.h" />
     <ClInclude Include="update.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

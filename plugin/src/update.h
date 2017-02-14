@@ -17,9 +17,6 @@ public:
 	MStatus	doIt(const MArgList&);
 
 private:
-	void requestInfo();
-
-private:
 	std::unique_ptr<Messaging> pMessenger;
 
 };

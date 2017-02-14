@@ -22,7 +22,7 @@
     <ClInclude Include="..\..\common\testTypes.hpp">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="genericMessage.h">
+    <ClInclude Include="..\..\common\genericMessage.h">
       <Filter>common</Filter>
     </ClInclude>
   </ItemGroup>

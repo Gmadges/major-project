@@ -2,6 +2,8 @@
 #include "hackPrint.h"
 #include "messaging.h"
 
+#include "genericMessage.h"
+
 Update::Update()
 	:
 	pMessenger(new Messaging("8080"))
@@ -19,11 +21,19 @@ void* Update::creator()
 
 MStatus	Update::doIt(const MArgList& args)
 {
-	//HackPrint::print("We have recieved ");
-	//HackPrint::print(std::to_string(pSubscriber->updates));
-	//HackPrint::print("updates");
+	MStatus status = MStatus::kSuccess;
 
-	// ask for update
+	// ask the server for any update
+	GenericMessage data = pMessenger->requestData();
+	
+	// is there actually anything?
+	if (data.getNodeType() == EMPTY)
+	{
+		HackPrint::print("Nothing to update");
+		return status;
+	}
+
+
 
 	// create a node of same type?
 
@@ -31,11 +41,6 @@ MStatus	Update::doIt(const MArgList& args)
 
 	// and add it to the DAG
 
-	return MStatus::kSuccess;
-}
-
-void Update::requestInfo()
-{
-
+	return status;
 }
 
