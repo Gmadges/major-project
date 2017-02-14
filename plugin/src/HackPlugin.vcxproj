@@ -156,6 +156,7 @@
     <ClCompile Include="update.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\common\genericMessage.h" />
     <ClInclude Include="..\..\common\testTypes.hpp" />
     <ClInclude Include="hackPrint.h" />
     <ClInclude Include="meshOpCmd.h" />

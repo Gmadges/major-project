@@ -3,6 +3,9 @@
 
 #include "maya/MArgList.h"
 #include "maya/MPxCommand.h"
+#include <memory>
+
+class Messaging;
 
 class Update : public MPxCommand
 {
@@ -14,6 +17,7 @@ public:
 	MStatus	doIt(const MArgList&);
 
 private:
+	std::unique_ptr<Messaging> pMessenger;
 
 };
 

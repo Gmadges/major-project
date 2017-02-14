@@ -5,6 +5,9 @@
 #include <vector>
 #include <thread>
 
+//test
+#include "genericMessage.h"
+
 class Server
 {
 public:
@@ -22,6 +25,9 @@ private:
 	zmq::socket_t workersSocket;
 
 	std::vector<std::thread> workers;
+
+	//testing
+	std::vector<GenericMessage> msgStack;
 };
 
 #endif

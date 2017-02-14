@@ -60,6 +60,8 @@
     </ClInclude>
     <ClInclude Include="polyModifierFty.h">
       <Filter>testCod</Filter>
+    <ClInclude Include="..\..\common\genericMessage.h">
+      <Filter>common</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

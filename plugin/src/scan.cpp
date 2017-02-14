@@ -20,8 +20,7 @@
 #include "messaging.h"
 #include "hackPrint.h"
 
-//test
-#include "testTypes.hpp"
+#include "genericMessage.h"
 
 Scan::Scan()
 	:
@@ -130,6 +129,15 @@ MStatus	Scan::doIt(const MArgList& args)
 
 void Scan::findHistory(MFnDependencyNode & node)
 {
+	// check and send data about this node
+	if (node.typeName() == MString("polySplitRing"))
+	{
+		HackPrint::print("we have found a polysplit lets send it");
+		sendPolySplitNode(node);
+	}
+
+	// now lets see if it has a parent
+
 	// If the inpuPolymesh is connected, we have history
 	MPlug inMeshPlug = node.findPlug("inputPolymesh");
 
@@ -147,12 +155,6 @@ void Scan::findHistory(MFnDependencyNode & node)
 		HackPrint::print(upstreamNode.typeName());
 		HackPrint::print(upstreamNode.name());
 
-		if (upstreamNode.typeName() == MString("polySplitRing"))
-		{
-			HackPrint::print("we have found a polysplit lets send it");
-			sendPolySplitNode(upstreamNode);
-		}
-
 		findHistory(upstreamNode);
 	}
 }
@@ -163,6 +165,8 @@ void Scan::sendPolySplitNode(MFnDependencyNode & node)
 	// there are other ways of individually finding them using plugs
 	unsigned int numAttrib = node.attributeCount();
 	MStatus status;
+
+	std::unordered_map<std::string, std::string> nodeAttribs;
 
 	for (unsigned int i = 0; i < numAttrib; i++)
 	{
@@ -181,36 +185,46 @@ void Scan::sendPolySplitNode(MFnDependencyNode & node)
 			float fValue;
 			if (plug.getValue(fValue) == MStatus::kSuccess)
 			{
-				//object[attrib.shortName().asChar()] = fValue;
+				// maybe use some type defs to make this nicer;
+				nodeAttribs.insert(std::pair<std::string, std::string>(std::string(attrib.shortName().asChar()), std::to_string(fValue)));
 			}
 
 			double dValue;
 			if (plug.getValue(dValue) == MStatus::kSuccess)
 			{
-				//object[attrib.shortName().asChar()] = dValue;
+				nodeAttribs.insert(std::pair<std::string, std::string>(std::string(attrib.shortName().asChar()), std::to_string(dValue)));
 			}
 
 			MString sValue;
 			if (plug.getValue(sValue) == MStatus::kSuccess)
 			{
-				//object[attrib.shortName().asChar()] = sValue.asChar();
+				nodeAttribs.insert(std::pair<std::string, std::string>(std::string(attrib.shortName().asChar()), std::string(sValue.asChar())));
 			}
 
 			int iValue;
 			if (plug.getValue(iValue) == MStatus::kSuccess)
 			{
-				//object[attrib.shortName().asChar()] = iValue;
+				nodeAttribs.insert(std::pair<std::string, std::string>(std::string(attrib.shortName().asChar()), std::to_string(iValue)));
 			}
 
 			bool bValue;
 			if (plug.getValue(bValue) == MStatus::kSuccess)
 			{
-				//object[attrib.shortName().asChar()] = bValue;
+				nodeAttribs.insert(std::pair<std::string, std::string>(std::string(attrib.shortName().asChar()), std::to_string(bValue)));
 			}
 		}
 	}
 
+	if (nodeAttribs.empty()) return;
+
+	GenericMessage msg;
+	msg.setName(std::string(node.name().asChar()));
+	msg.setNodeType(POLYSPLIT);
+	msg.setRequestType(SCENE_UPDATE);
+
+	msg.setAttribs(nodeAttribs);
+
 	// lets send the data if we have some
 	HackPrint::print("send poly split data");
-	pMessaging->send(TestClass(1, SCENE_UPDATE));
+	pMessaging->sendUpdate(msg);
 }
