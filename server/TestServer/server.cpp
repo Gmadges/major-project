@@ -4,7 +4,7 @@
 #include <iostream>
 #include <msgpack.hpp>
 
-#include "testTypes.hpp"
+#include "genericMessage.h"
 
 Server::Server()
 	:
@@ -69,21 +69,22 @@ void Server::handleRequest()
 
 		// testing msgpack recieve
 
-		TestClass data;
+		GenericMessage data;
 		msgpack::object_handle oh = msgpack::unpack(static_cast<char *>(request.data()), request.size());
 		oh.get().convert(data);
 
 		// printing boi
 		std::cout << "THREAD: " << std::this_thread::get_id() << std::endl;
-		//std::cout << "ID: " << data.getID() << std::endl;
-		//std::cout << "TYPE: " << data.getType() << std::endl;
+		std::cout << "NAME: " << data.getName() << std::endl;
+		std::cout << "NODE TYPE: " << data.getNodeType() << std::endl;
 
-		//auto attribs = data.getAttribs();
+		auto attribs = data.getAttribs();
 
-		//for (auto it : attribs)
-		//{
-		//	std::cout << it.first << " : " << it.second << std::endl;
-		//}
+		std::cout << "ATTRIBS:" << std::endl;
+		for (auto it : attribs)
+		{
+			std::cout << it.first << " : " << it.second << std::endl;
+		}
 
 		// Type
 		switch (data.getRequestType())
@@ -91,7 +92,11 @@ void Server::handleRequest()
 			case SCENE_UPDATE: 
 			{
 				std::cout << "we got an update!" << std::endl;
-				
+				std::cout << "add to stack!" << std::endl;
+
+				// add to stack
+				msgStack.push_back(data);
+
 				//  Send reply back to client
 				zmq::message_t reply(7);
 				memcpy(reply.data(), "SUCCESS", 7);
@@ -102,17 +107,34 @@ void Server::handleRequest()
 			{
 				std::cout << "ugh someone wants our data!" << std::endl;
 
+				if (msgStack.empty())
+				{
+					GenericMessage msg;
+					msg.setNodeType(EMPTY);
+
+					msgpack::sbuffer sbuf;
+					msgpack::pack(sbuf, msg);
+
+					// send reply
+					zmq::message_t reply(sbuf.size());
+					std::memcpy(reply.data(), sbuf.data(), sbuf.size());
+					socket.send(reply);
+					break;
+				}
+
 				// get our current data
-				
-				//  Send reply back to client
-				zmq::message_t reply(5);
-				memcpy(reply.data(), "World", 5);
+				// pack a message up
+				msgpack::sbuffer sbuf;
+				msgpack::pack(sbuf, msgStack.back());
+
+				// send reply
+				zmq::message_t reply(sbuf.size());
+				std::memcpy(reply.data(), sbuf.data(), sbuf.size());
 				socket.send(reply);
+
+				msgStack.pop_back();
 				break;
 			}
 		};
 	}
 }
-
-void 
-
