@@ -17,6 +17,7 @@ public:
 
 private:
 	bool pollForReply(std::function<void()> replyFunc, std::function<void()> sendFunc);
+	void resetSocket();
 
 private:
 	std::string port;

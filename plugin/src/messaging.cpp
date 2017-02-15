@@ -8,17 +8,28 @@ Messaging::Messaging(std::string _port)
 	socket(context, ZMQ_REQ)
 {
 	socket.connect("tcp://localhost:" + port);
+	int linger = 0;
+	socket.setsockopt(ZMQ_LINGER, &linger, sizeof(linger));
 }
 
 Messaging::~Messaging()
 {
 }
 
+void Messaging::resetSocket()
+{
+	socket = zmq::socket_t(context, ZMQ_REQ);
+	socket.connect("tcp://localhost:" + port);
+
+	int linger = 0;
+	socket.setsockopt(ZMQ_LINGER, &linger, sizeof(linger));
+}
+
 bool Messaging::pollForReply(std::function<void()> replyFunc, std::function<void()> sendFunc)
 {
 	//test hardcode
 	int numTries = 1;
-	int timeout = 2500; // miliseconds
+	int timeout = 1000; // miliseconds
 
 	for (int i = 0; i < numTries; i++)
 	{
@@ -36,14 +47,12 @@ bool Messaging::pollForReply(std::function<void()> replyFunc, std::function<void
 
 		// no reply
 		// lets try again maybe
+
+		// reset socket
+		resetSocket();
+		
 		if (i < (numTries - 1))
 		{
-			// reset socket
-			
-			//  Old socket will be confused; close it and open a new one
-			socket = zmq::socket_t(context, ZMQ_REQ);
-			socket.connect("tcp://localhost:" + port);
-			
 			// send again using send lambda
 			sendFunc();
 		}
