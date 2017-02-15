@@ -14,7 +14,7 @@ Messaging::~Messaging()
 {
 }
 
-bool Messaging::pollForReply(std::function<void()> replyFunc)
+bool Messaging::pollForReply(std::function<void()> replyFunc, std::function<void()> sendFunc)
 {
 	//test hardcode
 	int numTries = 1;
@@ -36,7 +36,7 @@ bool Messaging::pollForReply(std::function<void()> replyFunc)
 
 		// no reply
 		// lets try again maybe
-		if (i == (numTries - 1))
+		if (i < (numTries - 1))
 		{
 			// reset socket
 			
@@ -44,8 +44,8 @@ bool Messaging::pollForReply(std::function<void()> replyFunc)
 			socket = zmq::socket_t(context, ZMQ_REQ);
 			socket.connect("tcp://localhost:" + port);
 			
-			// TODO
-			// send again using send lambda;
+			// send again using send lambda
+			sendFunc();
 		}
 	}
 
@@ -62,22 +62,21 @@ bool Messaging::sendUpdate(const GenericMessage& data)
 	zmq::message_t request(sbuf.size());
 	std::memcpy(request.data(), sbuf.data(), sbuf.size());
 
-	socket.send(request);
-
-	// now we poll for a response
-
-	// we need a reply function to handle our reply
-
+	// packages the send request in a lambda to be used later
+	auto sendFunc = [this, &request](){
+		socket.send(request);
+	};
+	
 	auto replyFunc = [this](){
 		zmq::message_t reply;
 		socket.recv(&reply); 
 	};
 
-	//TODO if we plan on retrying
-	// we need a possible send function again?????
-	
+	// send
+	sendFunc();
+
 	// now lets try for a reply
-	return pollForReply(replyFunc);
+	return pollForReply(replyFunc, sendFunc);
 }
 
 GenericMessage Messaging::requestData()

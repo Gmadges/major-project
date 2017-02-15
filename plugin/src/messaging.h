@@ -16,7 +16,7 @@ public:
 	GenericMessage requestData();
 
 private:
-	bool pollForReply(std::function<void()> replyFunc);
+	bool pollForReply(std::function<void()> replyFunc, std::function<void()> sendFunc);
 
 private:
 	std::string port;
