@@ -24,7 +24,10 @@ MStatus	Update::doIt(const MArgList& args)
 	MStatus status = MStatus::kSuccess;
 
 	// ask the server for any update
-	GenericMessage data = pMessenger->requestData();
+	GenericMessage data;
+	
+	// if false then we couldnt connect to server
+	if (!pMessenger->requestData(data)) return MStatus::kFailure;
 	
 	// is there actually anything?
 	if (data.getNodeType() == EMPTY)
@@ -32,8 +35,6 @@ MStatus	Update::doIt(const MArgList& args)
 		HackPrint::print("Nothing to update");
 		return status;
 	}
-
-
 
 	// create a node of same type?
 
