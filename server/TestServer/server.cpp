@@ -110,7 +110,6 @@ void Server::handleRequest()
 				if (msgStack.empty())
 				{
 					GenericMessage msg;
-					msg.setNodeType(EMPTY);
 
 					msgpack::sbuffer sbuf;
 					msgpack::pack(sbuf, msg);

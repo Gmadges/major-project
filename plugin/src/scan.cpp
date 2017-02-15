@@ -219,7 +219,7 @@ void Scan::sendPolySplitNode(MFnDependencyNode & node)
 
 	GenericMessage msg;
 	msg.setName(std::string(node.name().asChar()));
-	msg.setNodeType(POLYSPLIT);
+	msg.setNodeType(node.typeName().asChar());
 	msg.setRequestType(SCENE_UPDATE);
 
 	msg.setAttribs(nodeAttribs);
