@@ -37,8 +37,16 @@ MStatus	Update::doIt(const MArgList& args)
 	}
 
 	// create a node of same type?
+	MString cmd;
+	cmd += "createNode \"";
+	cmd += data.getNodeType().c_str();
+	cmd += "\"";
 
-	// set all the write attributes
+	MStatus resultNodeName;
+	status = MGlobal::executeCommand(cmd, &resultNodeName);
+	if (!status) return status;
+
+	// rename and set correct details
 
 	// and add it to the DAG
 
