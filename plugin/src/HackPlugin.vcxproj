@@ -143,14 +143,9 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="meshOpCmd.cpp" />
-    <ClCompile Include="meshOpFty.cpp" />
-    <ClCompile Include="meshOpFtyAction.cpp" />
-    <ClCompile Include="meshOpNode.cpp" />
     <ClCompile Include="messaging.cpp" />
     <ClCompile Include="plugin.cpp" />
     <ClCompile Include="polyModifierCmd.cpp" />
-    <ClCompile Include="polyModifierFty.cpp" />
     <ClCompile Include="polyModifierNode.cpp" />
     <ClCompile Include="scan.cpp" />
     <ClCompile Include="update.cpp" />
@@ -159,12 +154,8 @@
     <ClInclude Include="..\..\common\genericMessage.h" />
     <ClInclude Include="..\..\common\testTypes.hpp" />
     <ClInclude Include="hackPrint.h" />
-    <ClInclude Include="meshOpCmd.h" />
-    <ClInclude Include="meshOpFty.h" />
-    <ClInclude Include="meshOpNode.h" />
     <ClInclude Include="messaging.h" />
     <ClInclude Include="polyModifierCmd.h" />
-    <ClInclude Include="polyModifierFty.h" />
     <ClInclude Include="polyModifierNode.h" />
     <ClInclude Include="scan.h" />
     <ClInclude Include="update.h" />

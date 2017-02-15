@@ -1,8 +1,9 @@
 #ifndef UPDATE_H
 #define UPDATE_H
 
+#include "polyModifierCmd.h"
+
 #include "maya/MArgList.h"
-#include "maya/MPxCommand.h"
 #include "maya/MFnDependencyNode.h"
 #include <memory>
 
@@ -10,7 +11,7 @@
 
 class Messaging;
 
-class Update : public MPxCommand
+class Update : public polyModifierCmd
 {
 public:
 	Update();

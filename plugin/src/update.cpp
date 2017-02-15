@@ -52,17 +52,31 @@ MStatus	Update::doIt(const MArgList& args)
 	if (!status) return status;
 
 	// lets get the node
-	MSelectionList selectList;
-	selectList.add(resultNodeName);
-	MGlobal::getActiveSelectionList(selectList);
+	HackPrint::print(resultNodeName);
+	
+	MSelectionList sList;
+	sList.add(resultNodeName);
 
-	MDagPath d;
-	selectList.getDagPath(0, d);
-	MFnDependencyNode node(d.node());
+	MObject newNode;
+	status = sList.getDependNode(0, newNode);
+	HackPrint::print(newNode.apiTypeStr());
+	if (!status) return status;
 
-	setNodeValues(node, data);
+	MFnDependencyNode depNode(newNode);
 
-	// and add it to the DAG
+	//setNodeValues(depNode, data);
+
+	//// TEST
+	//// hard code
+	//MSelectionList selList;
+	//MString toMatch("pCube*|pCubeShape*");
+	//MGlobal::getSelectionListByName(toMatch, selList);
+	//MDagPath dagpath;
+	//selList.getDagPath(0, dagpath);
+	//setMeshNode(dagpath);
+
+	//// and add it to the DAG
+	//doModifyPoly(node.object());
 
 	return status;
 }

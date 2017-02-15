@@ -93,52 +93,12 @@
 polyModifierCmd::polyModifierCmd()
 {
 	fDagPathInitialized = false;
-	fModifierNodeTypeInitialized = false;
-	fModifierNodeNameInitialized = false;
 }
 
 polyModifierCmd::~polyModifierCmd()
 {}
 
-///////////////////////
-// Protected Methods //
-///////////////////////
-
-MStatus polyModifierCmd::initModifierNode( MObject /* modifierNode */ )
-//
-//	Description:
-//
-//		Override this method in a derived class to set input attributes on the
-//		modifier node. If not overidden, the modifier node will remain in it's
-//		default state upon construction.
-//
-//		The argument 'MObject modifierNode', is not used by this base class
-//		implementation. However, it may be used by derived classes. To avoid
-//		compiler warnings of unreferenced parameters, we comment out the parameter
-//		name.
-//
-{
-	return MS::kSuccess;
-}
-
-MStatus polyModifierCmd::directModifier( MObject /* mesh */ )
-//
-//	Description:
-//
-//		Override this method in a derived class to provide an implementation for
-//		directly modifying the mesh (writing on the mesh itself). This method is
-//		only called in the case where history does not exist and history is turned
-//		off (ie. DG operations are not desirable).
-//
-//		The argument 'MObject mesh', is not used by this base class implementation.
-//		However, it may be used by derived classes. To avoid compiler warnings
-//		of unreferenced parameters, we comment out the parameter name.
-//
-{
-	return MS::kSuccess;
-}
-
-MStatus polyModifierCmd::doModifyPoly()
+MStatus polyModifierCmd::doModifyPoly(MObject& node)
 {
 	MStatus status = MS::kFailure;
 
@@ -148,83 +108,10 @@ MStatus polyModifierCmd::doModifyPoly()
 		//
 		collectNodeState();
 
-		if( !fHasHistory && !fHasRecordHistory )
+		if( fHasHistory && fHasRecordHistory )
 		{
-			MObject meshNode = fDagPath.node();
-
-			// Pre-process the mesh - Cache old mesh (including tweaks, if applicable)
-			//
-			cacheMeshData();
-			cacheMeshTweaks();
-
-			// Call the directModifier
-			//
-			status = directModifier( meshNode );
+			status = connectNodes(node);
 		}
-		else
-		{
-			MObject modifierNode;
-			createModifierNode( modifierNode );
-			initModifierNode( modifierNode );
-			status = connectNodes( modifierNode );
-		}
-	}
-
-	return status;
-}
-
-MStatus polyModifierCmd::redoModifyPoly()
-{
-	MStatus status = MS::kSuccess;
-
-	if( !fHasHistory && !fHasRecordHistory )
-	{
-		MObject meshNode = fDagPath.node();
-
-		// Call the directModifier - No need to pre-process the mesh data again
-		//							 since we already have it.
-		//
-		status = directModifier( meshNode );
-	}
-	else
-	{
-		// Call the redo on the DG and DAG modifiers
-		//
-		if( !fHasHistory )
-		{
-			fDagModifier.doIt();
-		}
-		status = fDGModifier.doIt();
-	}
-
-	return status;
-}
-
-MStatus polyModifierCmd::undoModifyPoly()
-{
-	MStatus status = MS::kSuccess;
-
-	if( !fHasHistory && !fHasRecordHistory )
-	{
-		status = undoDirectModifier();
-	}
-	else
-	{
-		fDGModifier.undoIt();
-
-		// undoCachedMesh must be called before undoTweakProcessing because 
-		// undoCachedMesh copies the original mesh *without* tweaks back onto
-		// the existing mesh. Any changes done before the copy will be lost.
-		//
-		if( !fHasHistory )
-		{
-			status = undoCachedMesh();
-			MCheckStatus( status, "undoCachedMesh" );
-			fDagModifier.undoIt();
-		}
-
-		status = undoTweakProcessing();
-		MCheckStatus( status, "undoTweakProcessing" );
 	}
 
 	return status;
@@ -249,13 +136,6 @@ bool polyModifierCmd::isCommandDataValid()
 		}
 	}
 	else
-	{
-		valid = false;
-	}
-
-	// Check the validity of the Modifier node type/name
-	//
-	if( !fModifierNodeTypeInitialized && !fModifierNodeNameInitialized )
 	{
 		valid = false;
 	}
@@ -320,40 +200,6 @@ void polyModifierCmd::collectNodeState()
 	int result;
 	MGlobal::executeCommand( "constructionHistory -q -tgl", result );
 	fHasRecordHistory = (0 != result);
-}
-
-MStatus polyModifierCmd::createModifierNode( MObject& modifierNode )
-{
-	MStatus status = MS::kFailure;
-
-	if( fModifierNodeTypeInitialized || fModifierNodeNameInitialized )
-	{
-		if( fModifierNodeTypeInitialized )
-		{
-			modifierNode = fDGModifier.createNode( fModifierNodeType, &status );
-		}
-		else if( fModifierNodeNameInitialized )
-		{
-			modifierNode = fDGModifier.createNode( fModifierNodeName, &status );
-		}
-
-		// Check to make sure that we have a modifier node of the appropriate type.
-		// Requires an inMesh and outMesh attribute.
-		//
-		MFnDependencyNode depNodeFn( modifierNode );
-		MObject inMeshAttr;
-		MObject outMeshAttr;
-		inMeshAttr = depNodeFn.attribute( "inMesh" );
-		outMeshAttr = depNodeFn.attribute( "outMesh" );
-
-		if( inMeshAttr.isNull() || outMeshAttr.isNull() )
-		{
-			displayError( "Invalid Modifier Node: inMesh and outMesh attributes are required." );
-			status = MS::kFailure;
-		}
-	}
-	
-	return status;
 }
 
 MStatus polyModifierCmd::processMeshNode( modifyPolyData& data )

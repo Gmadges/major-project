@@ -8,10 +8,6 @@
 #include "scan.h"
 #include "update.h"
 
-//TEST
-#include "meshOpCmd.h"
-#include "meshOpNode.h"
-
 // initialise our plugin and commands
 
 MStatus initializePlugin(MObject obj)
