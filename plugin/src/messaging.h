@@ -4,14 +4,20 @@
 #include <zmq.hpp>
 #include "genericMessage.h"
 
+#include <functional>
+
 class Messaging
 {
 public:
 	Messaging(std::string _port);
 	~Messaging();
 	
-	void sendUpdate(const GenericMessage& data);
+	bool sendUpdate(const GenericMessage& data);
 	GenericMessage requestData();
+
+private:
+	bool pollForReply(std::function<void()> replyFunc, std::function<void()> sendFunc);
+	void resetSocket();
 
 private:
 	std::string port;
