@@ -4,6 +4,11 @@
 
 #include "genericMessage.h"
 
+#include "maya/MSelectionList.h"
+#include "maya/MDagPath.h"
+#include "maya/MFnDependencyNode.h"
+#include "maya/MPlug.h"
+
 Update::Update()
 	:
 	pMessenger(new Messaging("8080"))
@@ -42,14 +47,43 @@ MStatus	Update::doIt(const MArgList& args)
 	cmd += data.getNodeType().c_str();
 	cmd += "\"";
 
-	MStatus resultNodeName;
-	status = MGlobal::executeCommand(cmd, &resultNodeName);
+	MString resultNodeName;
+	status = MGlobal::executeCommand(cmd, resultNodeName);
 	if (!status) return status;
 
-	// rename and set correct details
+	// lets get the node
+	MSelectionList selectList;
+	selectList.add(resultNodeName);
+	MGlobal::getActiveSelectionList(selectList);
+
+	MDagPath d;
+	selectList.getDagPath(0, d);
+	MFnDependencyNode node(d.node());
+
+	setNodeValues(node, data);
 
 	// and add it to the DAG
 
 	return status;
 }
 
+void Update::setNodeValues(MFnDependencyNode & node, GenericMessage & data)
+{
+	// rename and set correct details
+	node.setName(MString(data.getName().c_str()));
+
+	// this shows us all attributes.
+	// there are other ways of individually finding them using plugs
+	auto dataAttribs = data.getAttribs();
+	MStatus status;
+
+	for ( auto atr : dataAttribs )
+	{
+		MPlug plug = node.findPlug(atr.first.c_str(), status);
+
+		if (status == MStatus::kSuccess)
+		{
+			plug.setValue(atr.second.c_str());
+		}
+	}
+}
