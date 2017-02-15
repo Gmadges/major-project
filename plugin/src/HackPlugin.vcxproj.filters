@@ -1,67 +1,30 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{742F221D-9623-44FE-8E17-B30EC8CB3CEA}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="common">
-      <UniqueIdentifier>{3446c6e6-bd01-46d0-80df-2ff93e74def4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="testCod">
-      <UniqueIdentifier>{28ca42eb-9f0b-4dea-8aa2-edc3b831d620}</UniqueIdentifier>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
+    <ClCompile Include="meshOpCmd.cpp" />
+    <ClCompile Include="meshOpFty.cpp" />
+    <ClCompile Include="meshOpFtyAction.cpp" />
+    <ClCompile Include="meshOpNode.cpp" />
     <ClCompile Include="messaging.cpp" />
     <ClCompile Include="plugin.cpp" />
+    <ClCompile Include="polyModifierCmd.cpp" />
+    <ClCompile Include="polyModifierFty.cpp" />
+    <ClCompile Include="polyModifierNode.cpp" />
     <ClCompile Include="scan.cpp" />
     <ClCompile Include="update.cpp" />
-    <ClCompile Include="polyModifierNode.cpp">
-      <Filter>testCod</Filter>
-    </ClCompile>
-    <ClCompile Include="meshOpCmd.cpp">
-      <Filter>testCod</Filter>
-    </ClCompile>
-    <ClCompile Include="meshOpFty.cpp">
-      <Filter>testCod</Filter>
-    </ClCompile>
-    <ClCompile Include="meshOpFtyAction.cpp">
-      <Filter>testCod</Filter>
-    </ClCompile>
-    <ClCompile Include="meshOpNode.cpp">
-      <Filter>testCod</Filter>
-    </ClCompile>
-    <ClCompile Include="polyModifierCmd.cpp">
-      <Filter>testCod</Filter>
-    </ClCompile>
-    <ClCompile Include="polyModifierFty.cpp">
-      <Filter>testCod</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\common\genericMessage.h" />
+    <ClInclude Include="..\..\common\testTypes.hpp" />
+    <ClInclude Include="hackPrint.h" />
+    <ClInclude Include="meshOpCmd.h" />
+    <ClInclude Include="meshOpFty.h" />
     <ClInclude Include="messaging.h" />
+    <ClInclude Include="polyModifierCmd.h" />
+    <ClInclude Include="polyModifierFty.h" />
+    <ClInclude Include="polyModifierNode.h" />
     <ClInclude Include="scan.h" />
     <ClInclude Include="update.h" />
-    <ClInclude Include="hackPrint.h" />
-    <ClInclude Include="..\..\common\testTypes.hpp">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="polyModifierNode.h">
-      <Filter>testCod</Filter>
-    </ClInclude>
-    <ClInclude Include="meshOpCmd.h">
-      <Filter>testCod</Filter>
-    </ClInclude>
-    <ClInclude Include="meshOpFty.h">
-      <Filter>testCod</Filter>
-    </ClInclude>
-    <ClInclude Include="polyModifierCmd.h">
-      <Filter>testCod</Filter>
-    </ClInclude>
-    <ClInclude Include="polyModifierFty.h">
-      <Filter>testCod</Filter>
-    <ClInclude Include="..\..\common\genericMessage.h">
-      <Filter>common</Filter>
-    </ClInclude>
+    <ClInclude Include="meshOpNode.h" />
   </ItemGroup>
 </Project>

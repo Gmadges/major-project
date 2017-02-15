@@ -161,6 +161,7 @@
     <ClInclude Include="hackPrint.h" />
     <ClInclude Include="meshOpCmd.h" />
     <ClInclude Include="meshOpFty.h" />
+    <ClInclude Include="meshOpNode.h" />
     <ClInclude Include="messaging.h" />
     <ClInclude Include="polyModifierCmd.h" />
     <ClInclude Include="polyModifierFty.h" />
