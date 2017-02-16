@@ -166,7 +166,7 @@ void Scan::sendPolySplitNode(MFnDependencyNode & node)
 	unsigned int numAttrib = node.attributeCount();
 	MStatus status;
 
-	std::unordered_map<std::string, std::string> nodeAttribs;
+	attribMap nodeAttribs;
 
 	for (unsigned int i = 0; i < numAttrib; i++)
 	{
@@ -186,31 +186,46 @@ void Scan::sendPolySplitNode(MFnDependencyNode & node)
 			if (plug.getValue(fValue) == MStatus::kSuccess)
 			{
 				// maybe use some type defs to make this nicer;
-				nodeAttribs.insert(std::pair<std::string, std::string>(std::string(attrib.shortName().asChar()), std::to_string(fValue)));
+				std::string attibName(attrib.shortName().asChar());
+				attribType value(attibName, msgpack::object(fValue));
+				nodeAttribs.insert(value);
+				continue;
 			}
 
 			double dValue;
 			if (plug.getValue(dValue) == MStatus::kSuccess)
 			{
-				nodeAttribs.insert(std::pair<std::string, std::string>(std::string(attrib.shortName().asChar()), std::to_string(dValue)));
+				std::string attibName(attrib.shortName().asChar());
+				attribType value(attibName, msgpack::object(dValue));
+				nodeAttribs.insert(value);
+				continue;
 			}
 
 			MString sValue;
 			if (plug.getValue(sValue) == MStatus::kSuccess)
 			{
-				nodeAttribs.insert(std::pair<std::string, std::string>(std::string(attrib.shortName().asChar()), std::string(sValue.asChar())));
+				std::string attibName(attrib.shortName().asChar());
+				attribType value(attibName, msgpack::object(sValue.asChar()));
+				nodeAttribs.insert(value);
+				continue;
 			}
 
 			int iValue;
 			if (plug.getValue(iValue) == MStatus::kSuccess)
 			{
-				nodeAttribs.insert(std::pair<std::string, std::string>(std::string(attrib.shortName().asChar()), std::to_string(iValue)));
+				std::string attibName(attrib.shortName().asChar());
+				attribType value(attibName, msgpack::object(iValue));
+				nodeAttribs.insert(value);
+				continue;
 			}
 
 			bool bValue;
 			if (plug.getValue(bValue) == MStatus::kSuccess)
 			{
-				nodeAttribs.insert(std::pair<std::string, std::string>(std::string(attrib.shortName().asChar()), std::to_string(bValue)));
+				std::string attibName(attrib.shortName().asChar());
+				attribType value(attibName, msgpack::object(bValue));
+				nodeAttribs.insert(value);
+				continue;
 			}
 		}
 	}

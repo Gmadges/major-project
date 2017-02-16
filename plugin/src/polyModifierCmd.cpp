@@ -349,8 +349,11 @@ MStatus polyModifierCmd::processModifierNode( MObject modifierNode,
 	MStatus status = MS::kSuccess;
 
 	MFnDependencyNode depNodeFn ( modifierNode );
-	data.modifierNodeSrcAttr = depNodeFn.attribute( "outMesh" );
-	data.modifierNodeDestAttr = depNodeFn.attribute( "inMesh" );
+
+	// these are specific for polysplitRing node
+
+	data.modifierNodeSrcAttr = depNodeFn.attribute( "out" , &status);
+	data.modifierNodeDestAttr = depNodeFn.attribute( "inputPolymesh" , &status);
 
 	return status;
 }

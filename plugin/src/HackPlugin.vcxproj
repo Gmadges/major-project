@@ -58,7 +58,7 @@
       <AssemblerListingLocation>Debug/</AssemblerListingLocation>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <CompileAs>CompileAsCpp</CompileAs>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <ExceptionHandling>Sync</ExceptionHandling>
       <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
       <Optimization>Disabled</Optimization>
@@ -66,7 +66,7 @@
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;REQUIRE_IOSTREAM;_BOOL;NT_PLUGIN;CMAKE_INTDIR="Debug";HelloWorld_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;REQUIRE_IOSTREAM;_BOOL;NT_PLUGIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <ResourceCompile>
@@ -87,11 +87,12 @@
       <AdditionalLibraryDirectories>C:\libs\libzmq\bin\x64\Debug\v140\dynamic;C:/Program Files/Autodesk/Maya2017/lib;C:/Program Files/Autodesk/Maya2017/lib/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>C:/Projects/major-project.git/plugin/src/Debug/HelloWorld.lib</ImportLibrary>
-      <ProgramDataBaseFile>C:/Projects/major-project.git/plugin/src/Debug/HelloWorld.pdb</ProgramDataBaseFile>
+      <ImportLibrary>C:/Projects/major-project.git/plugin/src/Debug/HackPlugin.lib</ImportLibrary>
+      <ProgramDataBaseFile>C:\Projects\major-project.git\plugin\src\Debug\HackPluginDebug.pdb</ProgramDataBaseFile>
       <SubSystem>Console</SubSystem>
       <Version>
       </Version>
+      <MapExports>true</MapExports>
     </Link>
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>

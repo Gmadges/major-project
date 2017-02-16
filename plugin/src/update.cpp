@@ -47,6 +47,9 @@ MStatus	Update::doIt(const MArgList& args)
 	cmd += data.getNodeType().c_str();
 	cmd += "\"";
 
+	//TEST
+	cmd += " -n \"TmpNode\"";
+
 	MString resultNodeName;
 	status = MGlobal::executeCommand(cmd, resultNodeName);
 	if (!status) return status;
@@ -62,21 +65,21 @@ MStatus	Update::doIt(const MArgList& args)
 	HackPrint::print(newNode.apiTypeStr());
 	if (!status) return status;
 
-	MFnDependencyNode depNode(newNode);
-
 	//setNodeValues(depNode, data);
 
-	//// TEST
-	//// hard code
-	//MSelectionList selList;
-	//MString toMatch("pCube*|pCubeShape*");
-	//MGlobal::getSelectionListByName(toMatch, selList);
-	//MDagPath dagpath;
-	//selList.getDagPath(0, dagpath);
-	//setMeshNode(dagpath);
+	// TEST
+	// hard code
+	MSelectionList selList;
+	selList.add("pCube1|pCubeShape1");
+	MDagPath dagpath;
+	selList.getDagPath(0, dagpath);
+	dagpath.extendToShape();
+	setMeshNode(dagpath);
+
+	HackPrint::print(dagpath.fullPathName());
 
 	//// and add it to the DAG
-	//doModifyPoly(node.object());
+	doModifyPoly(newNode);
 
 	return status;
 }
@@ -93,11 +96,42 @@ void Update::setNodeValues(MFnDependencyNode & node, GenericMessage & data)
 
 	for ( auto atr : dataAttribs )
 	{
+		if (atr.first.compare("out") == 0 || atr.first.compare("ip") == 0) continue;
+
 		MPlug plug = node.findPlug(atr.first.c_str(), status);
 
 		if (status == MStatus::kSuccess)
 		{
-			plug.setValue(atr.second.c_str());
+			switch (atr.second.type)
+			{
+				case msgpack::type::BOOLEAN:
+				{
+					//plug.setBool(atr.second.via.boolean);
+					break;
+				}
+				case msgpack::type::FLOAT:
+				{
+					//plug.setFloat(atr.second.via.f64);
+					break;
+				}
+				case msgpack::type::STR :
+				{
+					std::string val;
+					atr.second.convert(val);
+					//plug.setString(MString(val.c_str()));
+					break;
+				}
+				case msgpack::type::NEGATIVE_INTEGER:
+				{
+					//plug.setInt(atr.second.via.i64);
+					break;
+				}
+				case msgpack::type::POSITIVE_INTEGER:
+				{
+					//plug.setInt(atr.second.via.i64);
+					break;
+				}
+			}
 		}
 	}
 }
