@@ -22,26 +22,29 @@ public:
 	}
 
 	//setters
-	void setName(std::string& _name)			{ name = _name; }
+	void setMeshName(std::string& _name)		{ meshName = _name; }
+	void setNodeName(std::string& _name)		{ nodeName = _name; }
 	void setRequestType(RequestType _type)		{ reqType = _type; }
 	void setNodeType(std::string _type)			{ nodeType = _type; }
 	void setAttribs(attribMap _attribs)			{ attribs = _attribs; }
 
 	// getters
-	std::string getName()			{ return name; }
+	std::string getMeshName()		{ return meshName; }
+	std::string getNodeName()		{ return nodeName; }
 	RequestType getRequestType()	{ return reqType; }
 	std::string getNodeType()		{ return nodeType; }
 	auto getAttribs()				{ return attribs; }
 
 private:
 
-	std::string name;
+	std::string meshName;
+	std::string nodeName;
 	std::string nodeType;
 	RequestType reqType;
 	attribMap attribs;
 
 public:
-	MSGPACK_DEFINE(name, nodeType, reqType, attribs);
+	MSGPACK_DEFINE(meshName, nodeName, nodeType, reqType, attribs);
 };
 
 #endif

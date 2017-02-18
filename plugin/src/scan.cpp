@@ -133,7 +133,14 @@ void Scan::findHistory(MFnDependencyNode & node)
 	if (node.typeName() == MString("polySplitRing"))
 	{
 		HackPrint::print("we have found a polysplit lets send it");
-		sendPolySplitNode(node);
+		sendNode(node);
+	}
+
+	// need a niver wya of doing this with types over strings.
+	if (node.typeName() == MString("polyCube"))
+	{
+		HackPrint::print("Found a cube, what do?");
+		sendNode(node);
 	}
 
 	// now lets see if it has a parent
@@ -159,7 +166,7 @@ void Scan::findHistory(MFnDependencyNode & node)
 	}
 }
 
-void Scan::sendPolySplitNode(MFnDependencyNode & node)
+void Scan::sendNode(MFnDependencyNode & node)
 {
 	// this shows us all attributes.
 	// there are other ways of individually finding them using plugs
@@ -233,7 +240,7 @@ void Scan::sendPolySplitNode(MFnDependencyNode & node)
 	if (nodeAttribs.empty()) return;
 
 	GenericMessage msg;
-	msg.setName(std::string(node.name().asChar()));
+	msg.setNodeName(std::string(node.name().asChar()));
 	msg.setNodeType(node.typeName().asChar());
 	msg.setRequestType(SCENE_UPDATE);
 

@@ -22,7 +22,7 @@ public:
 
 private:
 	void findHistory(MFnDependencyNode& node);
-	void sendPolySplitNode(MFnDependencyNode& node);
+	void sendNode(MFnDependencyNode& node);
 
 	std::unique_ptr<Messaging> pMessaging;
 };

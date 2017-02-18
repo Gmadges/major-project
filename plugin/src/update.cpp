@@ -70,7 +70,7 @@ MStatus	Update::doIt(const MArgList& args)
 	// TEST
 	// hard code
 	MSelectionList selList;
-	selList.add("pCube1|pCubeShape1");
+	selList.add(MString(data.getMeshName().c_str()));
 	MDagPath dagpath;
 	selList.getDagPath(0, dagpath);
 	dagpath.extendToShape();
@@ -79,12 +79,17 @@ MStatus	Update::doIt(const MArgList& args)
 	//// and add it to the DAG
 	doModifyPoly(newNode);
 
-	MString connectCmd;
-	connectCmd += "connectAttr pCubeShape1.worldMatrix[0] ";
-	connectCmd += data.getName().c_str();
-	connectCmd += ".manipMatrix;";
-
-	MGlobal::executeCommand( connectCmd );
+	// this check for now
+	if (data.getNodeType().compare("polySplitRing") == 0)
+	{
+		MString connectCmd;
+		connectCmd += "connectAttr ";
+		connectCmd += data.getMeshName().c_str();
+		connectCmd += ".worldMatrix[0] ";
+		connectCmd += data.getNodeName().c_str();
+		connectCmd += ".manipMatrix;";
+		MGlobal::executeCommand(connectCmd);
+	}
 
 	return status;
 }
@@ -94,7 +99,7 @@ void Update::setNodeValues(MObject & node, GenericMessage & data)
 	// rename and set correct details
 	MFnDependencyNode depNode(node);
 
-	depNode.setName(MString(data.getName().c_str()));
+	depNode.setName(MString(data.getNodeName().c_str()));
 
 	// this shows us all attributes.
 	// there are other ways of individually finding them using plugs
