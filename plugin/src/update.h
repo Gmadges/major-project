@@ -21,7 +21,7 @@ public:
 	MStatus	doIt(const MArgList&);
 
 private:
-	void setNodeValues(MFnDependencyNode & node, GenericMessage & data);
+	void setNodeValues(MObject & node, GenericMessage & data);
 
 private:
 	std::unique_ptr<Messaging> pMessenger;

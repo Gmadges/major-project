@@ -65,7 +65,7 @@ MStatus	Update::doIt(const MArgList& args)
 	HackPrint::print(newNode.apiTypeStr());
 	if (!status) return status;
 
-	//setNodeValues(depNode, data);
+	setNodeValues(newNode, data);
 
 	// TEST
 	// hard code
@@ -76,18 +76,25 @@ MStatus	Update::doIt(const MArgList& args)
 	dagpath.extendToShape();
 	setMeshNode(dagpath);
 
-	HackPrint::print(dagpath.fullPathName());
-
 	//// and add it to the DAG
 	doModifyPoly(newNode);
+
+	MString connectCmd;
+	connectCmd += "connectAttr pCubeShape1.worldMatrix[0] ";
+	connectCmd += data.getName().c_str();
+	connectCmd += ".manipMatrix;";
+
+	MGlobal::executeCommand( connectCmd );
 
 	return status;
 }
 
-void Update::setNodeValues(MFnDependencyNode & node, GenericMessage & data)
+void Update::setNodeValues(MObject & node, GenericMessage & data)
 {
 	// rename and set correct details
-	node.setName(MString(data.getName().c_str()));
+	MFnDependencyNode depNode(node);
+
+	depNode.setName(MString(data.getName().c_str()));
 
 	// this shows us all attributes.
 	// there are other ways of individually finding them using plugs
@@ -96,39 +103,52 @@ void Update::setNodeValues(MFnDependencyNode & node, GenericMessage & data)
 
 	for ( auto atr : dataAttribs )
 	{
-		if (atr.first.compare("out") == 0 || atr.first.compare("ip") == 0) continue;
+		//if (atr.first.compare("out") == 0 || atr.first.compare("ip") == 0) continue;
+		if (atr.first.compare("re") != 0 ) continue;
 
-		MPlug plug = node.findPlug(atr.first.c_str(), status);
+		MPlug plug = depNode.findPlug(atr.first.c_str(), status);
 
 		if (status == MStatus::kSuccess)
 		{
+			HackPrint::print(plug.name());
+
 			switch (atr.second.type)
 			{
 				case msgpack::type::BOOLEAN:
 				{
-					//plug.setBool(atr.second.via.boolean);
+					HackPrint::print("bool");
+					plug.setBool(atr.second.via.boolean);
 					break;
 				}
 				case msgpack::type::FLOAT:
 				{
-					//plug.setFloat(atr.second.via.f64);
+					HackPrint::print("float");
+					HackPrint::print(std::to_string(atr.second.via.f64));
+					plug.setFloat(atr.second.via.f64);
 					break;
 				}
 				case msgpack::type::STR :
 				{
 					std::string val;
 					atr.second.convert(val);
-					//plug.setString(MString(val.c_str()));
+					HackPrint::print(val);
+					plug.setString(MString(val.c_str()));
 					break;
 				}
 				case msgpack::type::NEGATIVE_INTEGER:
 				{
-					//plug.setInt(atr.second.via.i64);
+					HackPrint::print("Neg Int");
+					int val;
+					atr.second.convert(val);
+					HackPrint::print(std::to_string(val));
+					plug.setInt(val);
 					break;
 				}
 				case msgpack::type::POSITIVE_INTEGER:
 				{
-					//plug.setInt(atr.second.via.i64);
+					HackPrint::print("Pos int");
+					HackPrint::print(std::to_string(atr.second.via.i64));
+					plug.setInt64(atr.second.via.i64);
 					break;
 				}
 			}
