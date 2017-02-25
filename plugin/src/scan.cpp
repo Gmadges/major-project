@@ -211,6 +211,31 @@ MStatus Scan::getAttribFromPlug(MPlug& _plug, attribType& _attrib)
 {
 
 	std::string attribName = _plug.partialName().asChar();
+	
+	if (_plug.isArray())
+	{
+		HackPrint::print(_plug.name());
+
+		attribMap map;
+
+		for (unsigned int i = 0; i<_plug.numElements(); ++i)
+		{
+			// get the MPlug for the i'th array element
+			MPlug elemPlug = _plug.elementByPhysicalIndex(i);
+
+			HackPrint::print(elemPlug.name());
+
+			attribType values;
+			if (getAttribFromPlug(elemPlug, values) == MStatus::kSuccess)
+			{
+				map.insert(values);
+			}
+		}
+
+		msgpack::zone zone;
+		_attrib = attribType(attribName, msgpack::object(map, zone));
+		return MStatus::kSuccess;
+	}
 
 	if (_plug.isCompound())
 	{
@@ -277,6 +302,8 @@ MStatus Scan::getAttribFromPlug(MPlug& _plug, attribType& _attrib)
         _attrib = attribType(attribName, msgpack::object(bValue));
 		return MStatus::kSuccess;
     }
+
+	// TODO more maya data types
 
 	return MStatus::kFailure;
 }
