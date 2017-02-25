@@ -75,7 +75,7 @@ void Server::handleRequest()
 
 		// printing boi
 		std::cout << "THREAD: " << std::this_thread::get_id() << std::endl;
-		std::cout << "NAME: " << data.getName() << std::endl;
+		std::cout << "NAME: " << data.getNodeName() << std::endl;
 		std::cout << "NODE TYPE: " << data.getNodeType() << std::endl;
 
 		auto attribs = data.getAttribs();
