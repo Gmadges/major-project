@@ -6,6 +6,7 @@
 #include <maya/MStatus.h>
 #include <maya/MString.h>
 #include <maya/MFnDependencyNode.h>
+#include <maya/MFnMesh.h>
 
 #include <memory>
 
@@ -21,8 +22,8 @@ public:
 	virtual MStatus	doIt(const MArgList&);
 
 private:
-	void findHistory(MFnDependencyNode& node);
-	void sendNode(MFnDependencyNode& node);
+	void findHistory(MFnDependencyNode& node, MFnMesh& mesh);
+	void sendNode(MFnDependencyNode& node, MFnMesh& mesh);
 
 	std::unique_ptr<Messaging> pMessaging;
 };

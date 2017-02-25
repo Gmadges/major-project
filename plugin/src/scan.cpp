@@ -117,7 +117,7 @@ MStatus	Scan::doIt(const MArgList& args)
 
 			HackPrint::print(upstreamNode.typeName());
 			HackPrint::print(upstreamNode.name());
-			findHistory(upstreamNode);
+			findHistory(upstreamNode, mesh);
 		}
 
 		if (fHasTweaks) HackPrint::print("tweaks: true");
@@ -127,20 +127,20 @@ MStatus	Scan::doIt(const MArgList& args)
 	return MS::kSuccess;
 }
 
-void Scan::findHistory(MFnDependencyNode & node)
+void Scan::findHistory(MFnDependencyNode & node, MFnMesh & mesh)
 {
 	// check and send data about this node
 	if (node.typeName() == MString("polySplitRing"))
 	{
 		HackPrint::print("we have found a polysplit lets send it");
-		sendNode(node);
+		sendNode(node, mesh);
 	}
 
 	// need a niver wya of doing this with types over strings.
 	if (node.typeName() == MString("polyCube"))
 	{
 		HackPrint::print("Found a cube, what do?");
-		sendNode(node);
+		sendNode(node, mesh);
 	}
 
 	// now lets see if it has a parent
@@ -162,11 +162,11 @@ void Scan::findHistory(MFnDependencyNode & node)
 		HackPrint::print(upstreamNode.typeName());
 		HackPrint::print(upstreamNode.name());
 
-		findHistory(upstreamNode);
+		findHistory(upstreamNode, mesh);
 	}
 }
 
-void Scan::sendNode(MFnDependencyNode & node)
+void Scan::sendNode(MFnDependencyNode & node, MFnMesh & mesh)
 {
 	// this shows us all attributes.
 	// there are other ways of individually finding them using plugs
@@ -240,14 +240,12 @@ void Scan::sendNode(MFnDependencyNode & node)
 	if (nodeAttribs.empty()) return;
 
 	GenericMessage msg;
+	msg.setMeshName(std::string(mesh.name().asChar()));
 	msg.setNodeName(std::string(node.name().asChar()));
 	msg.setNodeType(node.typeName().asChar());
 	msg.setRequestType(SCENE_UPDATE);
 
 	msg.setAttribs(nodeAttribs);
-
-	// lets send the data if we have some
-	HackPrint::print("send poly split data");
 	
 	if (pMessaging->sendUpdate(msg))
 	{
