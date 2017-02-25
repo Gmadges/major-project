@@ -20,8 +20,6 @@
 #include "messaging.h"
 #include "hackPrint.h"
 
-#include "genericMessage.h"
-
 Scan::Scan()
 	:
 	pMessaging(new Messaging("8080"))
@@ -181,59 +179,12 @@ void Scan::sendNode(MFnDependencyNode & node, MFnMesh & mesh)
 
 		MPlug plug = node.findPlug(attrib.shortName().asChar(), status);
 		
-		if (plug.isCompound())
+		if (status != MStatus::kSuccess) continue;
+
+		attribType values;
+		if (getAttribFromPlug(plug, values) == MStatus::kSuccess)
 		{
-			//TODO
-		}
-
-		if (status == MStatus::kSuccess)
-		{
-			//MString value;
-			float fValue;
-			if (plug.getValue(fValue) == MStatus::kSuccess)
-			{
-				// maybe use some type defs to make this nicer;
-				std::string attibName(attrib.shortName().asChar());
-				attribType value(attibName, msgpack::object(fValue));
-				nodeAttribs.insert(value);
-				continue;
-			}
-
-			double dValue;
-			if (plug.getValue(dValue) == MStatus::kSuccess)
-			{
-				std::string attibName(attrib.shortName().asChar());
-				attribType value(attibName, msgpack::object(dValue));
-				nodeAttribs.insert(value);
-				continue;
-			}
-
-			MString sValue;
-			if (plug.getValue(sValue) == MStatus::kSuccess)
-			{
-				std::string attibName(attrib.shortName().asChar());
-				attribType value(attibName, msgpack::object(sValue.asChar()));
-				nodeAttribs.insert(value);
-				continue;
-			}
-
-			int iValue;
-			if (plug.getValue(iValue) == MStatus::kSuccess)
-			{
-				std::string attibName(attrib.shortName().asChar());
-				attribType value(attibName, msgpack::object(iValue));
-				nodeAttribs.insert(value);
-				continue;
-			}
-
-			bool bValue;
-			if (plug.getValue(bValue) == MStatus::kSuccess)
-			{
-				std::string attibName(attrib.shortName().asChar());
-				attribType value(attibName, msgpack::object(bValue));
-				nodeAttribs.insert(value);
-				continue;
-			}
+			nodeAttribs.insert(values);
 		}
 	}
 
@@ -254,4 +205,78 @@ void Scan::sendNode(MFnDependencyNode & node, MFnMesh & mesh)
 	}
 
 	HackPrint::print("Cannot send to Server!");
+}
+
+MStatus Scan::getAttribFromPlug(MPlug& _plug, attribType& _attrib)
+{
+
+	std::string attribName = _plug.partialName().asChar();
+
+	if (_plug.isCompound())
+	{
+		// if the plug is a compound then it has a number of children plugs we need to grab
+		unsigned int numChild = _plug.numChildren();
+
+		attribMap map;
+
+		//HackPrint::print(_plug.name());
+
+		for(unsigned int i = 0; i < numChild; ++i)
+		{
+			MPlug childPlug = _plug.child(i);
+			
+			//HackPrint::print(childPlug.name());
+
+			// get values
+			// and store too
+			attribType values;
+			if (getAttribFromPlug(childPlug, values) == MStatus::kSuccess)
+			{
+				map.insert(values);
+			}
+		}
+
+		// not sure what i should be doing with zone.
+		msgpack::zone zone;
+		_attrib = attribType(attribName, msgpack::object(map, zone));
+		return MStatus::kSuccess;
+	}
+
+    //MString value;
+    float fValue;
+    if (_plug.getValue(fValue) == MStatus::kSuccess)
+    {
+		_attrib = attribType(attribName, msgpack::object(fValue));
+		return MStatus::kSuccess;
+    }
+
+    double dValue;
+    if (_plug.getValue(dValue) == MStatus::kSuccess)
+    {
+        _attrib = attribType(attribName, msgpack::object(dValue));
+		return MStatus::kSuccess;
+    }
+
+    MString sValue;
+    if (_plug.getValue(sValue) == MStatus::kSuccess)
+    {
+        _attrib = attribType(attribName, msgpack::object(sValue.asChar()));
+		return MStatus::kSuccess;
+    }
+
+    int iValue;
+    if (_plug.getValue(iValue) == MStatus::kSuccess)
+    {
+        _attrib = attribType(attribName, msgpack::object(iValue));
+		return MStatus::kSuccess;
+    }
+
+    bool bValue;
+    if (_plug.getValue(bValue) == MStatus::kSuccess)
+    {
+        _attrib = attribType(attribName, msgpack::object(bValue));
+		return MStatus::kSuccess;
+    }
+
+	return MStatus::kFailure;
 }

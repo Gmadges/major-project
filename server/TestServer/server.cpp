@@ -84,6 +84,16 @@ void Server::handleRequest()
 		std::cout << "ATTRIBS:" << std::endl;
 		for (auto it : attribs)
 		{
+			if (it.second.type == msgpack::type::MAP)
+			{
+				std::cout << "MAP START:" << std::endl;
+				for (auto itr : it.second.via.map)
+				{
+					std::cout << itr.key << " : " << itr.val << std::endl;
+				}
+				std::cout << "END MAP" << std::endl;
+				continue;
+			}
 			std::cout << it.first << " : " << it.second << std::endl;
 		}
 

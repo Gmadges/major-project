@@ -7,6 +7,9 @@
 #include <maya/MString.h>
 #include <maya/MFnDependencyNode.h>
 #include <maya/MFnMesh.h>
+#include <maya/MPlug.h>
+
+#include "genericMessage.h"
 
 #include <memory>
 
@@ -24,6 +27,8 @@ public:
 private:
 	void findHistory(MFnDependencyNode& node, MFnMesh& mesh);
 	void sendNode(MFnDependencyNode& node, MFnMesh& mesh);
+
+	MStatus getAttribFromPlug(MPlug& _plug, attribType& attrib);
 
 	std::unique_ptr<Messaging> pMessaging;
 };
