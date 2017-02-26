@@ -140,7 +140,7 @@ void Update::setNodeValues(MObject & node, GenericMessage & data)
 	for ( auto atr : dataAttribs )
 	{
 		//if (atr.first.compare("out") == 0 || atr.first.compare("ip") == 0) continue;
-		if (atr.first.compare("axx") != 0 ) continue;
+		//if (atr.first.compare("axx") != 0 ) continue;
 
 		MPlug plug = depNode.findPlug(atr.first.c_str(), status);
 
