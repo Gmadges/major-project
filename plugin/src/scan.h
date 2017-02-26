@@ -28,7 +28,7 @@ private:
 	void findHistory(MFnDependencyNode& node, MFnMesh& mesh);
 	void sendNode(MFnDependencyNode& node, MFnMesh& mesh);
 
-	MStatus getAttribFromPlug(MPlug& _plug, attribType& attrib);
+	MStatus getAttribFromPlug(MPlug& _plug, attribMap& _attribs);
 
 	std::unique_ptr<Messaging> pMessaging;
 };

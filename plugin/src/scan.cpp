@@ -181,10 +181,10 @@ void Scan::sendNode(MFnDependencyNode & node, MFnMesh & mesh)
 		
 		if (status != MStatus::kSuccess) continue;
 
-		attribType values;
+		attribMap values;
 		if (getAttribFromPlug(plug, values) == MStatus::kSuccess)
 		{
-			nodeAttribs.insert(values);
+			nodeAttribs.insert(values.begin(), values.end());
 		}
 	}
 
@@ -207,16 +207,13 @@ void Scan::sendNode(MFnDependencyNode & node, MFnMesh & mesh)
 	HackPrint::print("Cannot send to Server!");
 }
 
-MStatus Scan::getAttribFromPlug(MPlug& _plug, attribType& _attrib)
+MStatus Scan::getAttribFromPlug(MPlug& _plug, attribMap& _attribs)
 {
-
 	std::string attribName = _plug.partialName().asChar();
 	
 	if (_plug.isArray())
 	{
 		HackPrint::print(_plug.name());
-
-		attribMap map;
 
 		for (unsigned int i = 0; i<_plug.numElements(); ++i)
 		{
@@ -225,15 +222,15 @@ MStatus Scan::getAttribFromPlug(MPlug& _plug, attribType& _attrib)
 
 			HackPrint::print(elemPlug.name());
 
-			attribType values;
+			attribMap values;
 			if (getAttribFromPlug(elemPlug, values) == MStatus::kSuccess)
 			{
-				map.insert(values);
+				_attribs.insert(values.begin(), values.end());
 			}
 		}
 
-		msgpack::zone zone;
-		_attrib = attribType(attribName, msgpack::object(map, zone));
+		// need to ad somethinf with a bit more info
+		_attribs.insert(attribType(attribName, msgpack::object()));
 		return MStatus::kSuccess;
 	}
 
@@ -242,28 +239,23 @@ MStatus Scan::getAttribFromPlug(MPlug& _plug, attribType& _attrib)
 		// if the plug is a compound then it has a number of children plugs we need to grab
 		unsigned int numChild = _plug.numChildren();
 
-		attribMap map;
-
-		//HackPrint::print(_plug.name());
-
 		for(unsigned int i = 0; i < numChild; ++i)
 		{
 			MPlug childPlug = _plug.child(i);
-			
 			//HackPrint::print(childPlug.name());
 
 			// get values
 			// and store too
-			attribType values;
+			attribMap values;
 			if (getAttribFromPlug(childPlug, values) == MStatus::kSuccess)
 			{
-				map.insert(values);
+				_attribs.insert(values.begin(), values.end());
 			}
 		}
 
 		// not sure what i should be doing with zone.
-		msgpack::zone zone;
-		_attrib = attribType(attribName, msgpack::object(map, zone));
+		// should put something about this
+		_attribs.insert(attribType(attribName, msgpack::object()));
 		return MStatus::kSuccess;
 	}
 
@@ -271,39 +263,62 @@ MStatus Scan::getAttribFromPlug(MPlug& _plug, attribType& _attrib)
     float fValue;
     if (_plug.getValue(fValue) == MStatus::kSuccess)
     {
-		_attrib = attribType(attribName, msgpack::object(fValue));
+		_attribs.insert(attribType(attribName, msgpack::object(fValue)));
 		return MStatus::kSuccess;
     }
 
     double dValue;
     if (_plug.getValue(dValue) == MStatus::kSuccess)
     {
-        _attrib = attribType(attribName, msgpack::object(dValue));
+		_attribs.insert(attribType(attribName, msgpack::object(dValue)));
 		return MStatus::kSuccess;
     }
 
     MString sValue;
     if (_plug.getValue(sValue) == MStatus::kSuccess)
     {
-        _attrib = attribType(attribName, msgpack::object(sValue.asChar()));
+		_attribs.insert(attribType(attribName, msgpack::object(sValue.asChar())));
 		return MStatus::kSuccess;
     }
 
     int iValue;
     if (_plug.getValue(iValue) == MStatus::kSuccess)
     {
-        _attrib = attribType(attribName, msgpack::object(iValue));
+		_attribs.insert(attribType(attribName, msgpack::object(iValue)));
 		return MStatus::kSuccess;
     }
 
     bool bValue;
     if (_plug.getValue(bValue) == MStatus::kSuccess)
     {
-        _attrib = attribType(attribName, msgpack::object(bValue));
+		_attribs.insert(attribType(attribName, msgpack::object(bValue)));
 		return MStatus::kSuccess;
     }
 
-	// TODO more maya data types
+	//// TODO more maya data types
+	//MAngle MAngleValue();
+	//if (_plug.getValue(bValue) == MStatus::kSuccess)
+	//{
+	//	_attribs.insert(attribType(attribName, msgpack::object(bValue)));
+	//	return MStatus::kSuccess;
+	//}
+
+	//MDistance DistenceValue();
+	//if (_plug.getValue(bValue) == MStatus::kSuccess)
+	//{
+	//	_attribs.insert(attribType(attribName, msgpack::object(bValue)));
+	//	return MStatus::kSuccess;
+	//}
+
+
+	//MTime TimeValue();
+	//if (_plug.getValue(bValue) == MStatus::kSuccess)
+	//{
+	//	_attribs.insert(attribType(attribName, msgpack::object(bValue)));
+	//	return MStatus::kSuccess;
+	//}
+
+	//// TODO look at handling data and objects possibly.
 
 	return MStatus::kFailure;
 }
