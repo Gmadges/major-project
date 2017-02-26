@@ -41,55 +41,86 @@ MStatus	Update::doIt(const MArgList& args)
 		return status;
 	}
 
-	// create a node of same type?
-	MString cmd;
-	cmd += "createNode \"";
-	cmd += data.getNodeType().c_str();
-	cmd += "\"";
+	// check if node exists
+	MString objExistsCmd;
+	objExistsCmd += "objExists \"";
+	objExistsCmd += data.getNodeName().c_str();
+	objExistsCmd += "\"";
 
-	//TEST
-	cmd += " -n \"TmpNode\"";
+	HackPrint::print(objExistsCmd);
 
-	MString resultNodeName;
-	status = MGlobal::executeCommand(cmd, resultNodeName);
-	if (!status) return status;
+	int exists = 0;
+	status = MGlobal::executeCommand(objExistsCmd, exists);
+	if (status != MStatus::kSuccess) return status;
 
-	// lets get the node
-	HackPrint::print(resultNodeName);
-	
-	MSelectionList sList;
-	sList.add(resultNodeName);
-
-	MObject newNode;
-	status = sList.getDependNode(0, newNode);
-	HackPrint::print(newNode.apiTypeStr());
-	if (!status) return status;
-
-	setNodeValues(newNode, data);
-
-	// TEST
-	// hard code
-	MSelectionList selList;
-	selList.add(MString(data.getMeshName().c_str()));
-	MDagPath dagpath;
-	selList.getDagPath(0, dagpath);
-	dagpath.extendToShape();
-	setMeshNode(dagpath);
-
-	//// and add it to the DAG
-	doModifyPoly(newNode);
-
-	// this check for now
-	if (data.getNodeType().compare("polySplitRing") == 0)
+	if (!exists)
 	{
-		MString connectCmd;
-		connectCmd += "connectAttr ";
-		connectCmd += data.getMeshName().c_str();
-		connectCmd += ".worldMatrix[0] ";
-		connectCmd += data.getNodeName().c_str();
-		connectCmd += ".manipMatrix;";
-		MGlobal::executeCommand(connectCmd);
+		HackPrint::print("Node doesnt exist");
+
+		// create a node of same type?
+		MString cmd;
+		cmd += "createNode \"";
+		cmd += data.getNodeType().c_str();
+		cmd += "\"";
+
+		// node name
+		cmd += " -n \"";
+		cmd += data.getNodeName().c_str();
+		cmd +=	"\"";
+
+		status = MGlobal::executeCommand(cmd);
+		if (status != MStatus::kSuccess) return status;
+
+		MSelectionList sList;
+		sList.add(data.getNodeName().c_str());
+
+		MObject newNode;
+		status = sList.getDependNode(0, newNode);
+		HackPrint::print(newNode.apiTypeStr());
+		if (!status) return status;
+
+		setNodeValues(newNode, data);
+
+		// if its not a mesh we'll have to wire it in
+		if (data.getNodeType().compare("polyCube") != 0)
+		{
+			MSelectionList selList;
+			selList.add(MString(data.getMeshName().c_str()));
+			MDagPath dagpath;
+			selList.getDagPath(0, dagpath);
+			dagpath.extendToShape();
+			setMeshNode(dagpath);
+
+			//// and add it to the DAG
+			doModifyPoly(newNode);
+
+			// this check for now
+			if (data.getNodeType().compare("polySplitRing") == 0)
+			{
+				MString connectCmd;
+				connectCmd += "connectAttr ";
+				connectCmd += data.getMeshName().c_str();
+				connectCmd += ".worldMatrix[0] ";
+				connectCmd += data.getNodeName().c_str();
+				connectCmd += ".manipMatrix;";
+				MGlobal::executeCommand(connectCmd);
+			}
+		}
+
+		return status;
 	}
+
+	HackPrint::print("node exists");
+
+	// no need to worry about re-wireing anything
+	// just change the values
+	MSelectionList sList;
+	sList.add(data.getNodeName().c_str());
+	MObject node;
+	status = sList.getDependNode(0, node);
+	if (status != MStatus::kSuccess) return status;
+	
+	setNodeValues(node, data);
 
 	return status;
 }
@@ -109,7 +140,7 @@ void Update::setNodeValues(MObject & node, GenericMessage & data)
 	for ( auto atr : dataAttribs )
 	{
 		//if (atr.first.compare("out") == 0 || atr.first.compare("ip") == 0) continue;
-		if (atr.first.compare("re") != 0 ) continue;
+		if (atr.first.compare("axx") != 0 ) continue;
 
 		MPlug plug = depNode.findPlug(atr.first.c_str(), status);
 
