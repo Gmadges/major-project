@@ -1,29 +1,59 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{742F221D-9623-44FE-8E17-B30EC8CB3CEA}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="common">
-      <UniqueIdentifier>{3446c6e6-bd01-46d0-80df-2ff93e74def4}</UniqueIdentifier>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="messaging.cpp" />
     <ClCompile Include="plugin.cpp" />
-    <ClCompile Include="scan.cpp" />
-    <ClCompile Include="update.cpp" />
+    <ClCompile Include="scan.cpp">
+      <Filter>scan</Filter>
+    </ClCompile>
+    <ClCompile Include="polyModifierCmd.cpp">
+      <Filter>update</Filter>
+    </ClCompile>
+    <ClCompile Include="update.cpp">
+      <Filter>update</Filter>
+    </ClCompile>
+    <ClCompile Include="messaging.cpp">
+      <Filter>message</Filter>
+    </ClCompile>
+    <ClCompile Include="polyModifierNode.cpp">
+      <Filter>update</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="messaging.h" />
-    <ClInclude Include="scan.h" />
-    <ClInclude Include="update.h" />
     <ClInclude Include="hackPrint.h" />
+    <ClInclude Include="scan.h">
+      <Filter>scan</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\common\testTypes.hpp">
       <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="..\..\common\genericMessage.h">
       <Filter>common</Filter>
     </ClInclude>
+    <ClInclude Include="update.h">
+      <Filter>update</Filter>
+    </ClInclude>
+    <ClInclude Include="polyModifierCmd.h">
+      <Filter>update</Filter>
+    </ClInclude>
+    <ClInclude Include="messaging.h">
+      <Filter>message</Filter>
+    </ClInclude>
+    <ClInclude Include="polyModifierNode.h">
+      <Filter>update</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="scan">
+      <UniqueIdentifier>{156d3de9-f0f9-4682-96dd-be2679a97dd2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="common">
+      <UniqueIdentifier>{4259fb9a-4b9e-4a3c-8218-7fa06f2ce1d8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="update">
+      <UniqueIdentifier>{5428d30f-54ff-431d-a528-db434b93969c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="message">
+      <UniqueIdentifier>{0b43f097-faa6-4a22-bd7c-ad8c94c201a2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>

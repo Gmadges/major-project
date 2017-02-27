@@ -54,11 +54,11 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\libs\msgpack\include;C:\Projects\major-project.git\common;C:\mayaDevKit2016\include;C:\libs\libzmq\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\libs\msgpack\include;..\..\common;C:\mayaDevKit2017\include;C:\libs\libzmq\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Debug/</AssemblerListingLocation>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <CompileAs>CompileAsCpp</CompileAs>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <ExceptionHandling>Sync</ExceptionHandling>
       <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
       <Optimization>Disabled</Optimization>
@@ -66,15 +66,15 @@
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;REQUIRE_IOSTREAM;_BOOL;NT_PLUGIN;CMAKE_INTDIR="Debug";HelloWorld_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;REQUIRE_IOSTREAM;_BOOL;NT_PLUGIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;REQUIRE_IOSTREAM;_BOOL;NT_PLUGIN;CMAKE_INTDIR=\"Debug\";HelloWorld_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\mayaDevKit2016\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\mayaDevKit2017\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>C:\mayaDevKit2016\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\mayaDevKit2017\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -83,15 +83,16 @@
     </Midl>
     <Link>
       <AdditionalOptions> /machine:x64 /debug /export:initializePlugin /export:uninitializePlugin %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;C:\Program Files\Autodesk\Maya2016\lib\OpenMaya.lib;C:\Program Files\Autodesk\Maya2016\lib\OpenMayaAnim.lib;C:\Program Files\Autodesk\Maya2016\lib\OpenMayaFX.lib;C:\Program Files\Autodesk\Maya2016\lib\OpenMayaRender.lib;C:\Program Files\Autodesk\Maya2016\lib\OpenMayaUI.lib;C:\Program Files\Autodesk\Maya2016\lib\Foundation.lib;C:\Program Files\Autodesk\Maya2016\lib\clew.lib;libzmq.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\libs\libzmq\bin\x64\Debug\v140\dynamic;C:/Program Files/Autodesk/Maya2016/lib;C:/Program Files/Autodesk/Maya2016/lib/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;C:\Program Files\Autodesk\Maya2017\lib\OpenMaya.lib;C:\Program Files\Autodesk\Maya2017\lib\OpenMayaAnim.lib;C:\Program Files\Autodesk\Maya2017\lib\OpenMayaFX.lib;C:\Program Files\Autodesk\Maya2017\lib\OpenMayaRender.lib;C:\Program Files\Autodesk\Maya2017\lib\OpenMayaUI.lib;C:\Program Files\Autodesk\Maya2017\lib\Foundation.lib;C:\Program Files\Autodesk\Maya2017\lib\clew.lib;libzmq.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\libs\libzmq\bin\x64\Debug\v140\dynamic;C:/Program Files/Autodesk/Maya2017/lib;C:/Program Files/Autodesk/Maya2017/lib/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>C:/Projects/major-project.git/plugin/src/Debug/HelloWorld.lib</ImportLibrary>
-      <ProgramDataBaseFile>C:/Projects/major-project.git/plugin/src/Debug/HelloWorld.pdb</ProgramDataBaseFile>
+      <ImportLibrary>C:/Projects/major-project.git/plugin/src/Debug/HackPlugin.lib</ImportLibrary>
+      <ProgramDataBaseFile>C:\Projects\major-project.git\plugin\src\Debug\HackPluginDebug.pdb</ProgramDataBaseFile>
       <SubSystem>Console</SubSystem>
       <Version>
       </Version>
+      <MapExports>true</MapExports>
     </Link>
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
@@ -99,7 +100,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\libs\msgpack\include;C:\Projects\major-project.git\common;C:\mayaDevKit2016\include;C:\libs\libzmq\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\libs\msgpack\include;..\..\common;C:\mayaDevKit2017\include;C:\libs\libzmq\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Release/</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -116,10 +117,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;REQUIRE_IOSTREAM;_BOOL;NT_PLUGIN;CMAKE_INTDIR=\"Release\";HelloWorld_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\mayaDevKit2016\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\mayaDevKit2017\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>C:\mayaDevKit2016\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\mayaDevKit2017\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -128,8 +129,8 @@
     </Midl>
     <Link>
       <AdditionalOptions> /machine:x64 /export:initializePlugin /export:uninitializePlugin %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;C:\Program Files\Autodesk\Maya2016\lib\OpenMaya.lib;C:\Program Files\Autodesk\Maya2016\lib\OpenMayaAnim.lib;C:\Program Files\Autodesk\Maya2016\lib\OpenMayaFX.lib;C:\Program Files\Autodesk\Maya2016\lib\OpenMayaRender.lib;C:\Program Files\Autodesk\Maya2016\lib\OpenMayaUI.lib;C:\Program Files\Autodesk\Maya2016\lib\Foundation.lib;C:\Program Files\Autodesk\Maya2016\lib\clew.lib;libzmq.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\libs\libzmq\bin\x64\Release\v140\dynamic;C:/Program Files/Autodesk/Maya2016/lib;C:/Program Files/Autodesk/Maya2016/lib/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;C:\Program Files\Autodesk\Maya2017\lib\OpenMaya.lib;C:\Program Files\Autodesk\Maya2017\lib\OpenMayaAnim.lib;C:\Program Files\Autodesk\Maya2017\lib\OpenMayaFX.lib;C:\Program Files\Autodesk\Maya2017\lib\OpenMayaRender.lib;C:\Program Files\Autodesk\Maya2017\lib\OpenMayaUI.lib;C:\Program Files\Autodesk\Maya2017\lib\Foundation.lib;C:\Program Files\Autodesk\Maya2017\lib\clew.lib;libzmq.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\libs\libzmq\bin\x64\Release\v140\dynamic;C:/Program Files/Autodesk/Maya2017/lib;C:/Program Files/Autodesk/Maya2017/lib/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ImportLibrary>C:/Projects/major-project.git/plugin/src/Release/HelloWorld.lib</ImportLibrary>
@@ -145,6 +146,8 @@
   <ItemGroup>
     <ClCompile Include="messaging.cpp" />
     <ClCompile Include="plugin.cpp" />
+    <ClCompile Include="polyModifierCmd.cpp" />
+    <ClCompile Include="polyModifierNode.cpp" />
     <ClCompile Include="scan.cpp" />
     <ClCompile Include="update.cpp" />
   </ItemGroup>
@@ -153,6 +156,8 @@
     <ClInclude Include="..\..\common\testTypes.hpp" />
     <ClInclude Include="hackPrint.h" />
     <ClInclude Include="messaging.h" />
+    <ClInclude Include="polyModifierCmd.h" />
+    <ClInclude Include="polyModifierNode.h" />
     <ClInclude Include="scan.h" />
     <ClInclude Include="update.h" />
   </ItemGroup>

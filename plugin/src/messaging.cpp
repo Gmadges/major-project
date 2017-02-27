@@ -25,11 +25,14 @@ void Messaging::resetSocket()
 	socket.setsockopt(ZMQ_LINGER, &linger, sizeof(linger));
 }
 
-bool Messaging::pollForReply(std::function<void()> replyFunc, std::function<void()> sendFunc)
+bool Messaging::send(zmq::message_t& msg, zmq::message_t& reply)
 {
 	//test hardcode
 	int numTries = 1;
 	int timeout = 1000; // miliseconds
+
+	// send message
+	socket.send(msg);
 
 	for (int i = 0; i < numTries; i++)
 	{
@@ -41,7 +44,7 @@ bool Messaging::pollForReply(std::function<void()> replyFunc, std::function<void
 		if (items[0].revents & ZMQ_POLLIN)
 		{
 			// we have a response to perform the required code;
-			replyFunc();
+			socket.recv(&reply);
 			return true;
 		}
 
@@ -51,11 +54,13 @@ bool Messaging::pollForReply(std::function<void()> replyFunc, std::function<void
 		// reset socket
 		resetSocket();
 		
-		if (i < (numTries - 1))
-		{
-			// send again using send lambda
-			sendFunc();
-		}
+		//if (i < (numTries - 1))
+		//{
+		//	// send again using send lambda
+		//	
+		//	// Not gonna use do repeat tries for now
+		//	//sendFunc()
+		//}
 	}
 
 	// we couldnt connect return false
@@ -71,24 +76,13 @@ bool Messaging::sendUpdate(const GenericMessage& data)
 	zmq::message_t request(sbuf.size());
 	std::memcpy(request.data(), sbuf.data(), sbuf.size());
 
-	// packages the send request in a lambda to be used later
-	auto sendFunc = [this, &request](){
-		socket.send(request);
-	};
-	
-	auto replyFunc = [this](){
-		zmq::message_t reply;
-		socket.recv(&reply); 
-	};
+	zmq::message_t reply;
 
-	// send
-	sendFunc();
-
-	// now lets try for a reply
-	return pollForReply(replyFunc, sendFunc);
+	// return this value because i dont do anything with the reply yet.
+	return send(request, reply);
 }
 
-GenericMessage Messaging::requestData()
+bool Messaging::requestData(GenericMessage& data)
 {
 	GenericMessage msg;
 	msg.setRequestType(SCENE_REQUEST);
@@ -99,16 +93,15 @@ GenericMessage Messaging::requestData()
 
 	zmq::message_t request(sbuf.size());
 	std::memcpy(request.data(), sbuf.data(), sbuf.size());
-
-	socket.send(request);
-
+	
 	zmq::message_t reply;
-	socket.recv(&reply);
+	if (send(request, reply))
+	{
+		// unpack the data and return it
+		msgpack::object_handle oh = msgpack::unpack(static_cast<char *>(reply.data()), reply.size());
+		oh.get().convert(data);
+		return true;
+	}
 
-	// unpack the data and return it
-	GenericMessage data;
-	msgpack::object_handle oh = msgpack::unpack(static_cast<char *>(reply.data()), reply.size());
-	oh.get().convert(data);
-
-	return data;
+	return false;
 }

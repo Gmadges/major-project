@@ -8,10 +8,6 @@
 #include <maya/MFnMesh.h>
 #include <maya/MArgList.h>
 #include <maya/MPoint.h>
-#include <maya/MVector.h>
-#include <maya/MMatrix.h>
-#include <maya/MTransformationMatrix.h>
-#include <maya/MColor.h>
 #include <maya/MIOStream.h>
 #include <maya/MPlug.h>
 #include <maya/MPlugArray.h>
@@ -19,8 +15,6 @@
 
 #include "messaging.h"
 #include "hackPrint.h"
-
-#include "genericMessage.h"
 
 Scan::Scan()
 	:
@@ -67,6 +61,8 @@ MStatus	Scan::doIt(const MArgList& args)
 		}
 		bool fHasTweaks = false;
 
+		MFnDependencyNode transformNode(dagPath.transform());
+
 		dagPath.extendToShape();
 		MObject meshNodeShape = dagPath.node();
 		MFnDependencyNode depNodeFn(meshNodeShape);
@@ -74,7 +70,6 @@ MStatus	Scan::doIt(const MArgList& args)
 		// Tweaks exist only if the multi "pnts" attribute contains
 		// plugs that contain non-zero tweak values. Use false,
 		// until proven true search pattern.
-
 		MPlug tweakPlug = depNodeFn.findPlug("pnts");
 		if (!tweakPlug.isNull())
 		{
@@ -102,23 +97,10 @@ MStatus	Scan::doIt(const MArgList& args)
 			continue;
 		}
 
-		HackPrint::print("Shape: ");
-		HackPrint::print(mesh.name());
-		HackPrint::print("history: ");
+		// send transform first
+		sendNode(transformNode, mesh);
 
-		// If the inMesh is connected, we have history
-		MPlug inMeshPlug = depNodeFn.findPlug("inMesh");
-		if (inMeshPlug.isConnected())
-		{
-			MPlugArray tempPlugArray;
-			inMeshPlug.connectedTo(tempPlugArray, true, false);
-			MPlug upstreamNodeSrcPlug = tempPlugArray[0];
-			MFnDependencyNode upstreamNode(upstreamNodeSrcPlug.node());
-
-			HackPrint::print(upstreamNode.typeName());
-			HackPrint::print(upstreamNode.name());
-			findHistory(upstreamNode);
-		}
+		traverseHistory(depNodeFn, mesh);
 
 		if (fHasTweaks) HackPrint::print("tweaks: true");
 		else HackPrint::print("tweaks: false");
@@ -127,105 +109,77 @@ MStatus	Scan::doIt(const MArgList& args)
 	return MS::kSuccess;
 }
 
-void Scan::findHistory(MFnDependencyNode & node)
+void Scan::traverseHistory(MFnDependencyNode & node, MFnMesh & mesh)
 {
-	// check and send data about this node
-	if (node.typeName() == MString("polySplitRing"))
+	HackPrint::print(node.name());
+	HackPrint::print(node.typeName());
+	
+	if (node.typeName() == MString("transform") ||
+		node.typeName() == MString("mesh") ||
+		//node.typeName() == MString("polySplitRing") ||
+		node.typeName() == MString("polyCube"))
 	{
-		HackPrint::print("we have found a polysplit lets send it");
-		sendPolySplitNode(node);
+		sendNode(node, mesh);
 	}
 
 	// now lets see if it has a parent
 
 	// If the inpuPolymesh is connected, we have history
-	MPlug inMeshPlug = node.findPlug("inputPolymesh");
+	MStatus status;
+	MPlug inMeshPlug;
+	inMeshPlug = node.findPlug("inputPolymesh", &status);
+	
+	// if it doesnt have that plug try this one
+	if (status != MStatus::kSuccess)
+	{
+		inMeshPlug = node.findPlug("inMesh");
+	}
 
 	if (inMeshPlug.isConnected())
 	{
 		MPlugArray tempPlugArray;
 		inMeshPlug.connectedTo(tempPlugArray, true, false);
-
 		// Only one connection should exist on meshNodeShape.inMesh!
 		MPlug upstreamNodeSrcPlug = tempPlugArray[0];
-
 		MFnDependencyNode upstreamNode(upstreamNodeSrcPlug.node());
-		
-		HackPrint::print("----------");
-		HackPrint::print(upstreamNode.typeName());
-		HackPrint::print(upstreamNode.name());
 
-		findHistory(upstreamNode);
+		traverseHistory(upstreamNode, mesh);
 	}
 }
 
-void Scan::sendPolySplitNode(MFnDependencyNode & node)
+void Scan::sendNode(MFnDependencyNode & node, MFnMesh & mesh)
 {
 	// this shows us all attributes.
 	// there are other ways of individually finding them using plugs
 	unsigned int numAttrib = node.attributeCount();
 	MStatus status;
 
-	std::unordered_map<std::string, std::string> nodeAttribs;
+	attribMap nodeAttribs;
 
 	for (unsigned int i = 0; i < numAttrib; i++)
 	{
 		MFnAttribute attrib(node.attribute(i));
 
-		MPlug plug = node.findPlug(attrib.shortName().asChar(), status);
+		MPlug plug = node.findPlug(attrib.shortName().asChar(), &status);
 		
-		if (plug.isCompound())
+		if (status != MStatus::kSuccess) continue;
+
+		attribMap values;
+		if (getAttribFromPlug(plug, values) == MStatus::kSuccess)
 		{
-			//TODO
-		}
-
-		if (status == MStatus::kSuccess)
-		{
-			//MString value;
-			float fValue;
-			if (plug.getValue(fValue) == MStatus::kSuccess)
-			{
-				// maybe use some type defs to make this nicer;
-				nodeAttribs.insert(std::pair<std::string, std::string>(std::string(attrib.shortName().asChar()), std::to_string(fValue)));
-			}
-
-			double dValue;
-			if (plug.getValue(dValue) == MStatus::kSuccess)
-			{
-				nodeAttribs.insert(std::pair<std::string, std::string>(std::string(attrib.shortName().asChar()), std::to_string(dValue)));
-			}
-
-			MString sValue;
-			if (plug.getValue(sValue) == MStatus::kSuccess)
-			{
-				nodeAttribs.insert(std::pair<std::string, std::string>(std::string(attrib.shortName().asChar()), std::string(sValue.asChar())));
-			}
-
-			int iValue;
-			if (plug.getValue(iValue) == MStatus::kSuccess)
-			{
-				nodeAttribs.insert(std::pair<std::string, std::string>(std::string(attrib.shortName().asChar()), std::to_string(iValue)));
-			}
-
-			bool bValue;
-			if (plug.getValue(bValue) == MStatus::kSuccess)
-			{
-				nodeAttribs.insert(std::pair<std::string, std::string>(std::string(attrib.shortName().asChar()), std::to_string(bValue)));
-			}
+			nodeAttribs.insert(values.begin(), values.end());
 		}
 	}
 
 	if (nodeAttribs.empty()) return;
 
 	GenericMessage msg;
-	msg.setName(std::string(node.name().asChar()));
-	msg.setNodeType(POLYSPLIT);
+	msg.setMeshName(std::string(mesh.name().asChar()));
+	msg.setNodeName(std::string(node.name().asChar()));
+	msg.setNodeType(node.typeName().asChar());
 	msg.setRequestType(SCENE_UPDATE);
 
 	msg.setAttribs(nodeAttribs);
-
-	// lets send the data if we have some
-	HackPrint::print("send poly split data");
 	
 	if (pMessaging->sendUpdate(msg))
 	{
@@ -234,4 +188,114 @@ void Scan::sendPolySplitNode(MFnDependencyNode & node)
 	}
 
 	HackPrint::print("Cannot send to Server!");
+}
+
+MStatus Scan::getAttribFromPlug(MPlug& _plug, attribMap& _attribs)
+{
+	std::string attribName = _plug.partialName().asChar();
+
+	if (_plug.isArray())
+	{
+		for (unsigned int i = 0; i < _plug.numConnectedElements(); i++)
+		{
+			// get the MPlug for the i'th array element
+			MPlug elemPlug = _plug.connectionByPhysicalIndex(i);
+
+			attribMap values;
+			if (getAttribFromPlug(elemPlug, values) == MStatus::kSuccess)
+			{
+				_attribs.insert(values.begin(), values.end());
+			}
+		}
+
+		// need to ad somethinf with a bit more info
+		_attribs.insert(attribType(attribName, msgpack::object()));
+		return MStatus::kSuccess;
+	}
+
+	if (_plug.isCompound())
+	{
+		// if the plug is a compound then it has a number of children plugs we need to grab
+		unsigned int numChild = _plug.numChildren();
+
+		for(unsigned int i = 0; i < numChild; ++i)
+		{
+			MPlug childPlug = _plug.child(i);
+
+			// get values
+			// and store too
+			attribMap values;
+			if (getAttribFromPlug(childPlug, values) == MStatus::kSuccess)
+			{
+				_attribs.insert(values.begin(), values.end());
+			}
+		}
+
+		// should put something about this
+		_attribs.insert(attribType(attribName, msgpack::object()));
+		return MStatus::kSuccess;
+	}
+
+    //MString value;
+    float fValue;
+    if (_plug.getValue(fValue) == MStatus::kSuccess)
+    {
+		_attribs.insert(attribType(attribName, msgpack::object(fValue)));
+		return MStatus::kSuccess;
+    }
+
+    double dValue;
+    if (_plug.getValue(dValue) == MStatus::kSuccess)
+    {
+		_attribs.insert(attribType(attribName, msgpack::object(dValue)));
+		return MStatus::kSuccess;
+    }
+
+    MString sValue;
+    if (_plug.getValue(sValue) == MStatus::kSuccess)
+    {
+		_attribs.insert(attribType(attribName, msgpack::object(sValue.asChar())));
+		return MStatus::kSuccess;
+    }
+
+    int iValue;
+    if (_plug.getValue(iValue) == MStatus::kSuccess)
+    {
+		_attribs.insert(attribType(attribName, msgpack::object(iValue)));
+		return MStatus::kSuccess;
+    }
+
+    bool bValue;
+    if (_plug.getValue(bValue) == MStatus::kSuccess)
+    {
+		_attribs.insert(attribType(attribName, msgpack::object(bValue)));
+		return MStatus::kSuccess;
+    }
+
+	//// TODO more maya data types
+	//MAngle MAngleValue();
+	//if (_plug.getValue(bValue) == MStatus::kSuccess)
+	//{
+	//	_attribs.insert(attribType(attribName, msgpack::object(bValue)));
+	//	return MStatus::kSuccess;
+	//}
+
+	//MDistance DistenceValue();
+	//if (_plug.getValue(bValue) == MStatus::kSuccess)
+	//{
+	//	_attribs.insert(attribType(attribName, msgpack::object(bValue)));
+	//	return MStatus::kSuccess;
+	//}
+
+
+	//MTime TimeValue();
+	//if (_plug.getValue(bValue) == MStatus::kSuccess)
+	//{
+	//	_attribs.insert(attribType(attribName, msgpack::object(bValue)));
+	//	return MStatus::kSuccess;
+	//}
+
+	//// TODO look at handling data and objects possibly.
+
+	return MStatus::kFailure;
 }

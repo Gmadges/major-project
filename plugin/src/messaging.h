@@ -13,10 +13,10 @@ public:
 	~Messaging();
 	
 	bool sendUpdate(const GenericMessage& data);
-	GenericMessage requestData();
+	bool requestData(GenericMessage& data);
 
 private:
-	bool pollForReply(std::function<void()> replyFunc, std::function<void()> sendFunc);
+	bool send(zmq::message_t& msg, zmq::message_t& reply);
 	void resetSocket();
 
 private:

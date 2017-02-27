@@ -5,43 +5,46 @@
 #include <unordered_map>
 
 enum RequestType { REQTEST, SCENE_UPDATE, SCENE_REQUEST };
-enum NodeType { EMPTY, POLYSPLIT };
 
 MSGPACK_ADD_ENUM(RequestType);
-MSGPACK_ADD_ENUM(NodeType);
+
+// typedefs for easy
+typedef std::pair<std::string, msgpack::object> attribType;
+typedef std::unordered_map<std::string, msgpack::object> attribMap;
 
 class GenericMessage
 {
 public:
 	GenericMessage()
 		:
-		name(""),
-		nodeType(EMPTY),
 		reqType(REQTEST)
 	{
 	}
 
 	//setters
-	void setName(std::string& _name)										{ name = _name; }
-	void setRequestType(RequestType _type)									{ reqType = _type; }
-	void setNodeType(NodeType _type)										{ nodeType = _type; }
-	void setAttribs(std::unordered_map<std::string, std::string> _attribs)	{ attribs = _attribs; }
+	void setMeshName(std::string& _name)		{ meshName = _name; }
+	void setNodeName(std::string& _name)		{ nodeName = _name; }
+	void setRequestType(RequestType _type)		{ reqType = _type; }
+	void setNodeType(std::string _type)			{ nodeType = _type; }
+	void setAttribs(attribMap _attribs)			{ attribs = _attribs; }
 
 	// getters
-	std::string getName()			{ return name; }
+	std::string getMeshName()		{ return meshName; }
+	std::string getNodeName()		{ return nodeName; }
 	RequestType getRequestType()	{ return reqType; }
-	NodeType getNodeType()			{ return nodeType; }
+	std::string getNodeType()		{ return nodeType; }
 	auto getAttribs()				{ return attribs; }
 
 private:
 
-	std::string name;
-	NodeType nodeType;
+	std::string meshName;
+	std::string nodeName;
+	std::string nodeType;
 	RequestType reqType;
-	std::unordered_map<std::string, std::string> attribs;
+	attribMap attribs;
 
 public:
-	MSGPACK_DEFINE(name, nodeType, reqType, attribs);
+	MSGPACK_DEFINE(meshName, nodeName, nodeType, reqType, attribs);
 };
 
 #endif
