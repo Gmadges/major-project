@@ -65,6 +65,8 @@ MStatus	Scan::doIt(const MArgList& args)
 		}
 		bool fHasTweaks = false;
 
+		MFnDependencyNode transformNode(dagPath.transform());
+
 		dagPath.extendToShape();
 		MObject meshNodeShape = dagPath.node();
 		MFnDependencyNode depNodeFn(meshNodeShape);
@@ -104,6 +106,9 @@ MStatus	Scan::doIt(const MArgList& args)
 		HackPrint::print(mesh.name());
 		HackPrint::print("history: ");
 
+		// send transform first
+		sendNode(transformNode, mesh);
+
 		traverseHistory(depNodeFn, mesh);
 
 		if (fHasTweaks) HackPrint::print("tweaks: true");
@@ -115,25 +120,15 @@ MStatus	Scan::doIt(const MArgList& args)
 
 void Scan::traverseHistory(MFnDependencyNode & node, MFnMesh & mesh)
 {
+	HackPrint::print(node.name());
 	HackPrint::print(node.typeName());
-
-	if (node.typeName() == MString("mesh"))
+	
+	if (node.typeName() == MString("transform") ||
+		node.typeName() == MString("mesh") ||
+		//node.typeName() == MString("polySplitRing") ||
+		node.typeName() == MString("polyCube"))
 	{
-		HackPrint::print("mesh transform send it!");
-		sendNode(node, mesh);
-	}
-
-	// check and send data about this node
-	if (node.typeName() == MString("polySplitRing"))
-	{
-		HackPrint::print("we have found a polysplit lets send it");
-		sendNode(node, mesh);
-	}
-
-	// need a niver wya of doing this with types over strings.
-	if (node.typeName() == MString("polyCube"))
-	{
-		HackPrint::print("Found a cube, what do?");
+		HackPrint::print("Found Something we're interested in, send it");
 		sendNode(node, mesh);
 	}
 
