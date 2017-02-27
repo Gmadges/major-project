@@ -104,19 +104,7 @@ MStatus	Scan::doIt(const MArgList& args)
 		HackPrint::print(mesh.name());
 		HackPrint::print("history: ");
 
-		// If the inMesh is connected, we have history
-		MPlug inMeshPlug = depNodeFn.findPlug("inMesh");
-		if (inMeshPlug.isConnected())
-		{
-			MPlugArray tempPlugArray;
-			inMeshPlug.connectedTo(tempPlugArray, true, false);
-			MPlug upstreamNodeSrcPlug = tempPlugArray[0];
-			MFnDependencyNode upstreamNode(upstreamNodeSrcPlug.node());
-
-			HackPrint::print(upstreamNode.typeName());
-			HackPrint::print(upstreamNode.name());
-			findHistory(upstreamNode, mesh);
-		}
+		traverseHistory(depNodeFn, mesh);
 
 		if (fHasTweaks) HackPrint::print("tweaks: true");
 		else HackPrint::print("tweaks: false");
@@ -125,8 +113,16 @@ MStatus	Scan::doIt(const MArgList& args)
 	return MS::kSuccess;
 }
 
-void Scan::findHistory(MFnDependencyNode & node, MFnMesh & mesh)
+void Scan::traverseHistory(MFnDependencyNode & node, MFnMesh & mesh)
 {
+	HackPrint::print(node.typeName());
+
+	if (node.typeName() == MString("mesh"))
+	{
+		HackPrint::print("mesh transform send it!");
+		sendNode(node, mesh);
+	}
+
 	// check and send data about this node
 	if (node.typeName() == MString("polySplitRing"))
 	{
@@ -144,23 +140,25 @@ void Scan::findHistory(MFnDependencyNode & node, MFnMesh & mesh)
 	// now lets see if it has a parent
 
 	// If the inpuPolymesh is connected, we have history
-	MPlug inMeshPlug = node.findPlug("inputPolymesh");
+	MStatus status;
+	MPlug inMeshPlug;
+	inMeshPlug = node.findPlug("inputPolymesh", &status);
+	
+	// if it doesnt have that plug try this one
+	if (status != MStatus::kSuccess)
+	{
+		inMeshPlug = node.findPlug("inMesh");
+	}
 
 	if (inMeshPlug.isConnected())
 	{
 		MPlugArray tempPlugArray;
 		inMeshPlug.connectedTo(tempPlugArray, true, false);
-
 		// Only one connection should exist on meshNodeShape.inMesh!
 		MPlug upstreamNodeSrcPlug = tempPlugArray[0];
-
 		MFnDependencyNode upstreamNode(upstreamNodeSrcPlug.node());
-		
-		HackPrint::print("----------");
-		HackPrint::print(upstreamNode.typeName());
-		HackPrint::print(upstreamNode.name());
 
-		findHistory(upstreamNode, mesh);
+		traverseHistory(upstreamNode, mesh);
 	}
 }
 
@@ -177,7 +175,7 @@ void Scan::sendNode(MFnDependencyNode & node, MFnMesh & mesh)
 	{
 		MFnAttribute attrib(node.attribute(i));
 
-		MPlug plug = node.findPlug(attrib.shortName().asChar(), status);
+		MPlug plug = node.findPlug(attrib.shortName().asChar(), &status);
 		
 		if (status != MStatus::kSuccess) continue;
 
@@ -210,17 +208,20 @@ void Scan::sendNode(MFnDependencyNode & node, MFnMesh & mesh)
 MStatus Scan::getAttribFromPlug(MPlug& _plug, attribMap& _attribs)
 {
 	std::string attribName = _plug.partialName().asChar();
-	
+
+	//HackPrint::print(_plug.name());
+	//HackPrint::print(_plug.partialName());
+
+	//if (_plug.partialName() == MString("iog") || _plug.partialName() == MString("iog[-1].og")) return MStatus::kFailure;
+
 	if (_plug.isArray())
 	{
-		HackPrint::print(_plug.name());
+		//HackPrint::print(_plug.name());
 
-		for (unsigned int i = 0; i<_plug.numElements(); ++i)
+		for (unsigned int i = 0; i < _plug.numConnectedElements(); i++)
 		{
 			// get the MPlug for the i'th array element
-			MPlug elemPlug = _plug.elementByPhysicalIndex(i);
-
-			HackPrint::print(elemPlug.name());
+			MPlug elemPlug = _plug.connectionByPhysicalIndex(i);
 
 			attribMap values;
 			if (getAttribFromPlug(elemPlug, values) == MStatus::kSuccess)

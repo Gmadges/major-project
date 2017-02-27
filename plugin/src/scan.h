@@ -25,7 +25,7 @@ public:
 	virtual MStatus	doIt(const MArgList&);
 
 private:
-	void findHistory(MFnDependencyNode& node, MFnMesh& mesh);
+	void traverseHistory(MFnDependencyNode& node, MFnMesh& mesh);
 	void sendNode(MFnDependencyNode& node, MFnMesh& mesh);
 
 	MStatus getAttribFromPlug(MPlug& _plug, attribMap& _attribs);

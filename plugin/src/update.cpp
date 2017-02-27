@@ -146,20 +146,20 @@ void Update::setNodeValues(MObject & node, GenericMessage & data)
 
 		if (status == MStatus::kSuccess)
 		{
-			HackPrint::print(plug.name());
+			//HackPrint::print(plug.name());
 
 			switch (atr.second.type)
 			{
 				case msgpack::type::BOOLEAN:
 				{
-					HackPrint::print("bool");
+					//HackPrint::print("bool");
 					plug.setBool(atr.second.via.boolean);
 					break;
 				}
 				case msgpack::type::FLOAT:
 				{
-					HackPrint::print("float");
-					HackPrint::print(std::to_string(atr.second.via.f64));
+					//HackPrint::print("float");
+					//HackPrint::print(std::to_string(atr.second.via.f64));
 					plug.setFloat(atr.second.via.f64);
 					break;
 				}
@@ -167,23 +167,23 @@ void Update::setNodeValues(MObject & node, GenericMessage & data)
 				{
 					std::string val;
 					atr.second.convert(val);
-					HackPrint::print(val);
+					//HackPrint::print(val);
 					plug.setString(MString(val.c_str()));
 					break;
 				}
 				case msgpack::type::NEGATIVE_INTEGER:
 				{
-					HackPrint::print("Neg Int");
+					//HackPrint::print("Neg Int");
 					int val;
 					atr.second.convert(val);
-					HackPrint::print(std::to_string(val));
+					//HackPrint::print(std::to_string(val));
 					plug.setInt(val);
 					break;
 				}
 				case msgpack::type::POSITIVE_INTEGER:
 				{
-					HackPrint::print("Pos int");
-					HackPrint::print(std::to_string(atr.second.via.i64));
+					//HackPrint::print("Pos int");
+					//HackPrint::print(std::to_string(atr.second.via.i64));
 					plug.setInt64(atr.second.via.i64);
 					break;
 				}
