@@ -8,10 +8,6 @@
 #include <maya/MFnMesh.h>
 #include <maya/MArgList.h>
 #include <maya/MPoint.h>
-#include <maya/MVector.h>
-#include <maya/MMatrix.h>
-#include <maya/MTransformationMatrix.h>
-#include <maya/MColor.h>
 #include <maya/MIOStream.h>
 #include <maya/MPlug.h>
 #include <maya/MPlugArray.h>
@@ -74,7 +70,6 @@ MStatus	Scan::doIt(const MArgList& args)
 		// Tweaks exist only if the multi "pnts" attribute contains
 		// plugs that contain non-zero tweak values. Use false,
 		// until proven true search pattern.
-
 		MPlug tweakPlug = depNodeFn.findPlug("pnts");
 		if (!tweakPlug.isNull())
 		{
@@ -102,10 +97,6 @@ MStatus	Scan::doIt(const MArgList& args)
 			continue;
 		}
 
-		HackPrint::print("Shape: ");
-		HackPrint::print(mesh.name());
-		HackPrint::print("history: ");
-
 		// send transform first
 		sendNode(transformNode, mesh);
 
@@ -128,7 +119,6 @@ void Scan::traverseHistory(MFnDependencyNode & node, MFnMesh & mesh)
 		//node.typeName() == MString("polySplitRing") ||
 		node.typeName() == MString("polyCube"))
 	{
-		HackPrint::print("Found Something we're interested in, send it");
 		sendNode(node, mesh);
 	}
 
@@ -204,15 +194,8 @@ MStatus Scan::getAttribFromPlug(MPlug& _plug, attribMap& _attribs)
 {
 	std::string attribName = _plug.partialName().asChar();
 
-	//HackPrint::print(_plug.name());
-	//HackPrint::print(_plug.partialName());
-
-	//if (_plug.partialName() == MString("iog") || _plug.partialName() == MString("iog[-1].og")) return MStatus::kFailure;
-
 	if (_plug.isArray())
 	{
-		//HackPrint::print(_plug.name());
-
 		for (unsigned int i = 0; i < _plug.numConnectedElements(); i++)
 		{
 			// get the MPlug for the i'th array element
@@ -238,7 +221,6 @@ MStatus Scan::getAttribFromPlug(MPlug& _plug, attribMap& _attribs)
 		for(unsigned int i = 0; i < numChild; ++i)
 		{
 			MPlug childPlug = _plug.child(i);
-			//HackPrint::print(childPlug.name());
 
 			// get values
 			// and store too
@@ -249,7 +231,6 @@ MStatus Scan::getAttribFromPlug(MPlug& _plug, attribMap& _attribs)
 			}
 		}
 
-		// not sure what i should be doing with zone.
 		// should put something about this
 		_attribs.insert(attribType(attribName, msgpack::object()));
 		return MStatus::kSuccess;
