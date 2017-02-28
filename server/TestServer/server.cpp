@@ -4,7 +4,7 @@
 #include <iostream>
 #include <msgpack.hpp>
 
-#include "genericMessage.h"
+#include "genericMeshMessage.h"
 
 Server::Server()
 	:
@@ -69,22 +69,28 @@ void Server::handleRequest()
 
 		// testing msgpack recieve
 
-		GenericMessage data;
+		GenericMesh data;
 		msgpack::object_handle oh = msgpack::unpack(static_cast<char *>(request.data()), request.size());
 		oh.get().convert(data);
 
 		// printing boi
 		std::cout << "THREAD: " << std::this_thread::get_id() << std::endl;
 		std::cout << "MESH NAME: " << data.getMeshName() << std::endl;
-		std::cout << "NODE NAME: " << data.getNodeName() << std::endl;
-		std::cout << "NODE TYPE: " << data.getNodeType() << std::endl;
 
-		auto attribs = data.getAttribs();
+		auto nodes = data.getNodes();
 
-		std::cout << "ATTRIBS:" << std::endl;
-		for (auto it : attribs)
+		std::cout << "Nodes:" << std::endl;
+		for (auto it : nodes)
 		{
-			std::cout << it.first << " : " << it.second << std::endl;
+			std::cout << "Node name: "<< it.getNodeName() << std::endl;
+
+			auto attribs = it.getAttribs();
+
+			std::cout << "ATTRIBS:" << std::endl;
+			for (auto it : attribs)
+			{
+				std::cout << it.first << " : " << it.second << std::endl;
+			}
 		}
 
 		// Type
@@ -110,7 +116,7 @@ void Server::handleRequest()
 
 				if (msgStack.empty())
 				{
-					GenericMessage msg;
+					GenericMesh msg;
 
 					msgpack::sbuffer sbuf;
 					msgpack::pack(sbuf, msg);

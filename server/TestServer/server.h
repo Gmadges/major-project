@@ -5,8 +5,7 @@
 #include <vector>
 #include <thread>
 
-//test
-#include "genericMessage.h"
+#include "genericMeshMessage.h"
 
 class Server
 {
@@ -27,7 +26,7 @@ private:
 	std::vector<std::thread> workers;
 
 	//testing
-	std::vector<GenericMessage> msgStack;
+	std::vector<GenericMesh> msgStack;
 };
 
 #endif

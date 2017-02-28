@@ -32,7 +32,10 @@
     <ClInclude Include="..\..\common\testTypes.hpp">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\common\genericMessage.h">
+    <ClInclude Include="..\..\common\genericMeshMessage.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\genericNodeMessage.h">
       <Filter>common</Filter>
     </ClInclude>
   </ItemGroup>
