@@ -9,9 +9,10 @@
 class Messaging
 {
 public:
-	Messaging(std::string _port);
+	Messaging(std::string _address, int _port);
 	~Messaging();
 	
+	void resetSocket(std::string _address, int _port);
 	bool sendUpdate(const GenericMessage& data);
 	bool requestData(GenericMessage& data);
 
@@ -20,7 +21,8 @@ private:
 	void resetSocket();
 
 private:
-	std::string port;
+	std::string ipAddress;
+	int port;
 
 	zmq::context_t context;
 	zmq::socket_t socket;

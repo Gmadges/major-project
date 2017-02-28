@@ -8,10 +8,11 @@
 #include "maya/MDagPath.h"
 #include "maya/MFnDependencyNode.h"
 #include "maya/MPlug.h"
+#include "maya/MArgDatabase.h"
 
 Update::Update()
 	:
-	pMessenger(new Messaging("8080"))
+	pMessenger(new Messaging("localhost",8080))
 {
 }
 
@@ -24,9 +25,31 @@ void* Update::creator()
 	return new Update;
 }
 
+MSyntax Update::newSyntax()
+{
+	MSyntax syn;
+
+	syn.addFlag("-a", "-address", MSyntax::kString);
+	syn.addFlag("-p", "-port", MSyntax::kUnsigned);
+
+	return syn;
+}
+
 MStatus	Update::doIt(const MArgList& args)
 {
 	MStatus status = MStatus::kSuccess;
+
+	// reset socket
+	MString addr;
+	int port;
+	status = getArgs(args, addr, port);
+	if (status != MStatus::kSuccess)
+	{
+		HackPrint::print("no input values specified");
+		return status;
+	}
+
+	pMessenger->resetSocket(std::string(addr.asChar()), port);
 
 	// ask the server for any update
 	GenericMessage data;
@@ -121,6 +144,35 @@ MStatus	Update::doIt(const MArgList& args)
 	if (status != MStatus::kSuccess) return status;
 	
 	setNodeValues(node, data);
+
+	return status;
+}
+
+MStatus Update::getArgs(const MArgList& args, MString& address, int& port)
+{
+	MStatus status = MStatus::kSuccess;
+	MArgDatabase parser(syntax(), args, &status);
+
+	if (status != MS::kSuccess) return status;
+
+	// get the command line arguments that were specified
+	if (parser.isFlagSet("-p"))
+	{
+		parser.getFlagArgument("-p", 0, port);
+	}
+	else
+	{
+		status = MStatus::kFailure;
+	}
+
+	if (parser.isFlagSet("-a"))
+	{
+		parser.getFlagArgument("-a", 0, address);
+	}
+	else
+	{
+		status = MStatus::kFailure;
+	}
 
 	return status;
 }

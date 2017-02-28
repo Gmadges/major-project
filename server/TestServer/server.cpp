@@ -6,14 +6,14 @@
 
 #include "genericMessage.h"
 
-Server::Server()
+Server::Server(int _port)
 	:
 	context(1),
 	recieveSocket(context, ZMQ_ROUTER),
-	workersSocket(context, ZMQ_DEALER)
+	workersSocket(context, ZMQ_DEALER),
+	port(_port)
 {
 }
-
 
 Server::~Server()
 {
@@ -22,7 +22,7 @@ Server::~Server()
 int Server::run()
 {
 	// client socket that recieves changes
-	recieveSocket.bind("tcp://*:8080");
+	recieveSocket.bind("tcp://*:"+std::to_string(port));
 	workersSocket.bind("inproc://workers");
 
 	unsigned int maxThreads = std::thread::hardware_concurrency();

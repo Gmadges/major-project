@@ -8,6 +8,7 @@
 #include <maya/MFnDependencyNode.h>
 #include <maya/MFnMesh.h>
 #include <maya/MPlug.h>
+#include <maya/MSyntax.h>
 
 #include "genericMessage.h"
 
@@ -22,9 +23,11 @@ public:
 	~Scan();
 
 	static void* creator();
+	static MSyntax newSyntax();
 	virtual MStatus	doIt(const MArgList&);
 
 private:
+	MStatus getArgs(const MArgList& args, MString& address, int& port);
 	void traverseHistory(MFnDependencyNode& node, MFnMesh& mesh);
 	void sendNode(MFnDependencyNode& node, MFnMesh& mesh);
 

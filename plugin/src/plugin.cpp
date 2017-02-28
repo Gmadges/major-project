@@ -16,13 +16,13 @@ MStatus initializePlugin(MObject obj)
 
 	MFnPlugin plugin(obj, PLUGIN_COMPANY, "5.0", "Any");
 
-	status = plugin.registerCommand("ScanSend", Scan::creator);
+	status = plugin.registerCommand("ScanSend", Scan::creator, Scan::newSyntax);
 	if (!status)
 	{
 		status.perror("registerCommand");
 	}
 
-	status = plugin.registerCommand("ReceiveUpdate", Update::creator);
+	status = plugin.registerCommand("ReceiveUpdate", Update::creator, Update::newSyntax);
 	if (!status)
 	{
 		status.perror("registerCommand");

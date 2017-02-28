@@ -5,6 +5,7 @@
 
 #include "maya/MArgList.h"
 #include "maya/MFnDependencyNode.h"
+#include <maya/MSyntax.h>
 #include <memory>
 
 #include "genericMessage.h"
@@ -18,9 +19,11 @@ public:
 	~Update();
 
 	static void* creator();
+	static MSyntax Update::newSyntax();
 	MStatus	doIt(const MArgList&);
 
 private:
+	MStatus getArgs(const MArgList& args, MString& address, int& port);
 	void setNodeValues(MObject & node, GenericMessage & data);
 
 private:

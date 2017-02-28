@@ -11,7 +11,7 @@
 class Server
 {
 public:
-	Server();
+	Server(int _port);
 	~Server();
 
 	int run();
@@ -23,6 +23,7 @@ private:
 	zmq::context_t context;
 	zmq::socket_t recieveSocket;
 	zmq::socket_t workersSocket;
+	int port;
 
 	std::vector<std::thread> workers;
 
