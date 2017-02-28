@@ -67,7 +67,7 @@ bool Messaging::send(zmq::message_t& msg, zmq::message_t& reply)
 	return false;
 }
 
-bool Messaging::sendUpdate(const GenericMessage& data)
+bool Messaging::sendUpdate(const GenericMesh& data)
 {
 	// pack a message up
 	msgpack::sbuffer sbuf;
@@ -82,9 +82,9 @@ bool Messaging::sendUpdate(const GenericMessage& data)
 	return send(request, reply);
 }
 
-bool Messaging::requestData(GenericMessage& data)
+bool Messaging::requestData(GenericMesh& data)
 {
-	GenericMessage msg;
+	GenericMesh msg;
 	msg.setRequestType(SCENE_REQUEST);
 
 	// pack a message up

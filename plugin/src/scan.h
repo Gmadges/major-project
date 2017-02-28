@@ -9,7 +9,7 @@
 #include <maya/MFnMesh.h>
 #include <maya/MPlug.h>
 
-#include "genericMessage.h"
+#include "genericMeshMessage.h"
 
 #include <memory>
 
@@ -25,10 +25,10 @@ public:
 	virtual MStatus	doIt(const MArgList&);
 
 private:
-	void traverseHistory(MFnDependencyNode& node, MFnMesh& mesh);
-	void sendNode(MFnDependencyNode& node, MFnMesh& mesh);
-
+	void traverseHistory(MFnDependencyNode & node, std::vector<GenericNode>& nodeList);
+	MStatus getGenericNode(MFnDependencyNode & _inNode, GenericNode & _outNode);
 	MStatus getAttribFromPlug(MPlug& _plug, attribMap& _attribs);
+	MStatus sendMesh(MDagPath & meshNode);
 
 	std::unique_ptr<Messaging> pMessaging;
 };

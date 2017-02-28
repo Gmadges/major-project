@@ -2,7 +2,7 @@
 #define MESSAGING_H
 
 #include <zmq.hpp>
-#include "genericMessage.h"
+#include "genericMeshMessage.h"
 
 #include <functional>
 
@@ -12,8 +12,8 @@ public:
 	Messaging(std::string _port);
 	~Messaging();
 	
-	bool sendUpdate(const GenericMessage& data);
-	bool requestData(GenericMessage& data);
+	bool sendUpdate(const GenericMesh& data);
+	bool requestData(GenericMesh& data);
 
 private:
 	bool send(zmq::message_t& msg, zmq::message_t& reply);
