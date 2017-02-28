@@ -124,9 +124,13 @@ MStatus Scan::sendMesh(MDagPath & meshDAGPath)
 
 	meshMessage.setMeshName(std::string(mesh.name().asChar()));
 	meshMessage.setRequestType(SCENE_UPDATE);
+
+	// hardcode for now
 	meshMessage.setMeshType(CUBE);
+
 	meshMessage.setNodes(nodeList);
 
+	HackPrint::print("sending " + mesh.name());
 	if (pMessaging->sendUpdate(meshMessage))
 	{
 		HackPrint::print("mesh sent succesfully");
