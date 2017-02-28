@@ -11,7 +11,7 @@
 
 Update::Update()
 	:
-	pMessenger(new Messaging("8080"))
+	pMessenger(new Messaging("localhost",8080))
 {
 }
 
