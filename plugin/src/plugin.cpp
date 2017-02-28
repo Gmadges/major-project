@@ -22,7 +22,7 @@ MStatus initializePlugin(MObject obj)
 		status.perror("registerCommand");
 	}
 
-	status = plugin.registerCommand("ReceiveUpdate", Update::creator);
+	status = plugin.registerCommand("ReceiveUpdate", Update::creator, Update::newSyntax);
 	if (!status)
 	{
 		status.perror("registerCommand");
