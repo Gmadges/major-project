@@ -42,9 +42,9 @@ MStatus	Update::doIt(const MArgList& args)
 	}
 
 	// check if mesh exists
-	bool Meshexists = doesItExist(MString(data.getMeshName().c_str()));
+	bool meshexists = doesItExist(MString(data.getMeshName().c_str()));
 
-	if (!Meshexists)
+	if (!meshexists)
 	{
 		HackPrint::print("Mesh doesnt exist");
 
@@ -64,12 +64,14 @@ MStatus	Update::doIt(const MArgList& args)
 
 		if (!nodeExists)
 		{
+			HackPrint::print("Creating Node: " + nodeName);
 			// create set and wire
 			createNode(itr);
 			setNodeValues(itr);
 			setConnections(data, itr);
+			continue;
 		}
-
+		HackPrint::print("No need to create " + nodeName);
 		// set values
 		// no need to worry about re-wireing anything
 		// just change the values
@@ -154,8 +156,27 @@ MStatus Update::setNodeValues(GenericNode & data)
 
 MStatus Update::createMesh(GenericMesh& _mesh)
 {
+	MStatus status;
+
 	// create a mesh
-	//TODO
+	switch (_mesh.getMeshType())
+	{
+		case MeshType::CUBE:
+		{
+			MString cmd;
+			cmd += "polyCube ";
+
+			// mesh name
+			cmd += " -n \"";
+			cmd += _mesh.getMeshName().c_str();
+			cmd += "\"";
+
+			HackPrint::print(cmd);
+			status = MGlobal::executeCommand(cmd);
+			return status;
+		}
+	}
+
 	return MStatus::kFailure;
 }
 

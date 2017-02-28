@@ -122,7 +122,7 @@ MStatus Scan::sendMesh(MDagPath & meshDAGPath)
 	// transform, shape and mesh
 	if (nodeList.size() < 3) return MStatus::kFailure;
 
-	meshMessage.setMeshName(std::string(mesh.name().asChar()));
+	meshMessage.setMeshName(std::string(transformNode.name().asChar()));
 	meshMessage.setRequestType(SCENE_UPDATE);
 
 	// hardcode for now
@@ -130,7 +130,7 @@ MStatus Scan::sendMesh(MDagPath & meshDAGPath)
 
 	meshMessage.setNodes(nodeList);
 
-	HackPrint::print("sending " + mesh.name());
+	HackPrint::print("sending " + meshMessage.getMeshName());
 	if (pMessaging->sendUpdate(meshMessage))
 	{
 		HackPrint::print("mesh sent succesfully");

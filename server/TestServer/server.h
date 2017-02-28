@@ -2,7 +2,7 @@
 #define SERVER_H
 
 #include <zmq.hpp>
-#include <vector>
+#include <queue>
 #include <thread>
 
 #include "genericMeshMessage.h"
@@ -26,7 +26,7 @@ private:
 	std::vector<std::thread> workers;
 
 	//testing
-	std::vector<GenericMesh> msgStack;
+	std::queue<GenericMesh> msgQueue;
 };
 
 #endif

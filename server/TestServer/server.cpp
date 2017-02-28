@@ -102,7 +102,7 @@ void Server::handleRequest()
 				std::cout << "add to stack!" << std::endl;
 
 				// add to stack
-				msgStack.push_back(data);
+				msgQueue.push(data);
 
 				//  Send reply back to client
 				zmq::message_t reply(7);
@@ -114,7 +114,7 @@ void Server::handleRequest()
 			{
 				std::cout << "ugh someone wants our data!" << std::endl;
 
-				if (msgStack.empty())
+				if (msgQueue.empty())
 				{
 					GenericMesh msg;
 
@@ -131,14 +131,14 @@ void Server::handleRequest()
 				// get our current data
 				// pack a message up
 				msgpack::sbuffer sbuf;
-				msgpack::pack(sbuf, msgStack.back());
+				msgpack::pack(sbuf, msgQueue.front());
 
 				// send reply
 				zmq::message_t reply(sbuf.size());
 				std::memcpy(reply.data(), sbuf.data(), sbuf.size());
 				socket.send(reply);
 
-				msgStack.pop_back();
+				msgQueue.pop();
 				break;
 			}
 		};
