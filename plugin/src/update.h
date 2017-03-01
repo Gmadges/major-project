@@ -24,6 +24,7 @@ private:
 	MStatus setNodeValues(GenericNode & data);
 	bool doesItExist(MString& name);
 	MStatus createMesh(GenericMesh& _mesh);
+	void renameNodes(MFnDependencyNode & node, GenericMesh& mesh);
 	MStatus createNode(GenericNode& _node);
 	MStatus setConnections(GenericMesh& _mesh, GenericNode& _node);
 

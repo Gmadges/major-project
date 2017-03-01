@@ -8,6 +8,7 @@
 #include "maya/MDagPath.h"
 #include "maya/MFnDependencyNode.h"
 #include "maya/MPlug.h"
+#include "maya/MPlugArray.h"
 
 Update::Update()
 	:
@@ -99,9 +100,6 @@ MStatus Update::setNodeValues(GenericNode & data)
 
 	for ( auto atr : dataAttribs )
 	{
-		//if (atr.first.compare("out") == 0 || atr.first.compare("ip") == 0) continue;
-		//if (atr.first.compare("axx") != 0 ) continue;
-
 		MPlug plug = depNode.findPlug(atr.first.c_str(), status);
 
 		if (status == MStatus::kSuccess)
@@ -164,20 +162,66 @@ MStatus Update::createMesh(GenericMesh& _mesh)
 		case MeshType::CUBE:
 		{
 			MString cmd;
-			cmd += "polyCube ";
-
-			// mesh name
-			cmd += " -n \"";
-			cmd += _mesh.getMeshName().c_str();
-			cmd += "\"";
+			cmd += "polyCube";
 
 			HackPrint::print(cmd);
-			status = MGlobal::executeCommand(cmd);
+			MStringArray result;
+			status = MGlobal::executeCommand(cmd, result);
+
+			if (status != MStatus::kSuccess) return status;
+
+			// rename the nodes
+			MSelectionList sList;
+			sList.add(result[0]);
+			MObject node;
+			if (sList.getDependNode(0, node) != MStatus::kSuccess) return MStatus::kFailure;
+
+			// rename and set correct details
+			MFnDependencyNode depNode(node);
+
+			renameNodes(depNode, _mesh);
+			
 			return status;
 		}
 	}
 
 	return MStatus::kFailure;
+}
+
+void Update::renameNodes(MFnDependencyNode & node, GenericMesh& mesh)
+{
+	// rename
+	// This wont work for multiple 
+	for (auto it : mesh.getNodes())
+	{
+		MString type(it.getNodeType().c_str());
+		if (node.typeName() == type)
+		{
+			node.setName(MString(it.getNodeName().c_str()));
+		}
+	}	
+
+	// If the inputPolymesh is connected, we have history
+	MStatus status;
+	MPlug inMeshPlug;
+	inMeshPlug = node.findPlug("inputPolymesh", &status);
+
+	// if it doesnt have that plug try this one
+	if (status != MStatus::kSuccess)
+	{
+		inMeshPlug = node.findPlug("inMesh");
+	}
+
+	if (inMeshPlug.isConnected())
+	{
+		MPlugArray tempPlugArray;
+		inMeshPlug.connectedTo(tempPlugArray, true, false);
+		// Only one connection should exist on meshNodeShape.inMesh!
+		MPlug upstreamNodeSrcPlug = tempPlugArray[0];
+		MFnDependencyNode upstreamNode(upstreamNodeSrcPlug.node());
+
+		renameNodes(upstreamNode, mesh);
+	}
 }
 
 MStatus Update::createNode(GenericNode& _node)
