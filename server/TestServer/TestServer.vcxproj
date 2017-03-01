@@ -134,7 +134,8 @@
     <ClCompile Include="server.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\common\genericMessage.h" />
+    <ClInclude Include="..\..\common\genericMeshMessage.h" />
+    <ClInclude Include="..\..\common\genericNodeMessage.h" />
     <ClInclude Include="..\..\common\testTypes.hpp" />
     <ClInclude Include="server.h" />
   </ItemGroup>

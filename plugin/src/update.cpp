@@ -2,13 +2,14 @@
 #include "hackPrint.h"
 #include "messaging.h"
 
-#include "genericMessage.h"
+#include "genericMeshMessage.h"
 
 #include "maya/MSelectionList.h"
 #include "maya/MDagPath.h"
 #include "maya/MFnDependencyNode.h"
 #include "maya/MPlug.h"
 #include "maya/MArgDatabase.h"
+#include "maya/MPlugArray.h"
 
 Update::Update()
 	:
@@ -52,100 +53,124 @@ MStatus	Update::doIt(const MArgList& args)
 	pMessenger->resetSocket(std::string(addr.asChar()), port);
 
 	// ask the server for any update
-	GenericMessage data;
+	GenericMesh data;
 	
 	// if false then we couldnt connect to server
 	if (!pMessenger->requestData(data)) return MStatus::kFailure;
 	
 	// is there actually anything?
-	if (data.getNodeType().empty())
+	if (data.getNodes().empty())
 	{
 		HackPrint::print("Nothing to update");
 		return status;
 	}
 
-	// check if node exists
-	MString objExistsCmd;
-	objExistsCmd += "objExists \"";
-	objExistsCmd += data.getNodeName().c_str();
-	objExistsCmd += "\"";
+	// check if mesh exists
+	bool meshexists = doesItExist(MString(data.getMeshName().c_str()));
 
-	HackPrint::print(objExistsCmd);
-
-	int exists = 0;
-	status = MGlobal::executeCommand(objExistsCmd, exists);
-	if (status != MStatus::kSuccess) return status;
-
-	if (!exists)
+	if (!meshexists)
 	{
-		HackPrint::print("Node doesnt exist");
+		HackPrint::print("Mesh doesnt exist");
 
-		// create a node of same type?
-		MString cmd;
-		cmd += "createNode \"";
-		cmd += data.getNodeType().c_str();
-		cmd += "\"";
-
-		// node name
-		cmd += " -n \"";
-		cmd += data.getNodeName().c_str();
-		cmd +=	"\"";
-
-		status = MGlobal::executeCommand(cmd);
-		if (status != MStatus::kSuccess) return status;
-
-		MSelectionList sList;
-		sList.add(data.getNodeName().c_str());
-
-		MObject newNode;
-		status = sList.getDependNode(0, newNode);
-		HackPrint::print(newNode.apiTypeStr());
-		if (!status) return status;
-
-		setNodeValues(newNode, data);
-
-		// if its not a mesh we'll have to wire it in
-		if (data.getNodeType().compare("polyCube") != 0)
-		{
-			MSelectionList selList;
-			selList.add(MString(data.getMeshName().c_str()));
-			MDagPath dagpath;
-			selList.getDagPath(0, dagpath);
-			dagpath.extendToShape();
-			setMeshNode(dagpath);
-
-			//// and add it to the DAG
-			doModifyPoly(newNode);
-
-			// this check for now
-			if (data.getNodeType().compare("polySplitRing") == 0)
-			{
-				MString connectCmd;
-				connectCmd += "connectAttr ";
-				connectCmd += data.getMeshName().c_str();
-				connectCmd += ".worldMatrix[0] ";
-				connectCmd += data.getNodeName().c_str();
-				connectCmd += ".manipMatrix;";
-				MGlobal::executeCommand(connectCmd);
-			}
-		}
-
-		return status;
+		// create mesh
+		// does nothing atm
+		createMesh(data);
 	}
 
-	HackPrint::print("node exists");
+	// get nodes
+	auto nodeList = data.getNodes();
 
-	// no need to worry about re-wireing anything
-	// just change the values
+	for (GenericNode itr : nodeList)
+	{
+		// check if node exists
+		MString nodeName = itr.getNodeName().c_str();
+		bool nodeExists = doesItExist(nodeName);
+
+		if (!nodeExists)
+		{
+			HackPrint::print("Creating Node: " + nodeName);
+			// create set and wire
+			createNode(itr);
+			setNodeValues(itr);
+			setConnections(data, itr);
+			continue;
+		}
+		HackPrint::print("No need to create " + nodeName);
+		// set values
+		// no need to worry about re-wireing anything
+		// just change the values
+		setNodeValues(itr);
+	}
+	return status;
+}
+
+MStatus Update::setNodeValues(GenericNode & data)
+{
 	MSelectionList sList;
 	sList.add(data.getNodeName().c_str());
 	MObject node;
-	status = sList.getDependNode(0, node);
-	if (status != MStatus::kSuccess) return status;
-	
-	setNodeValues(node, data);
+	if (sList.getDependNode(0, node) != MStatus::kSuccess) return MStatus::kFailure;
+	// rename and set correct details
+	MFnDependencyNode depNode(node);
 
-	return status;
+	depNode.setName(MString(data.getNodeName().c_str()));
+
+	// this shows us all attributes.
+	// there are other ways of individually finding them using plugs
+	auto dataAttribs = data.getAttribs();
+	MStatus status;
+
+	for (auto atr : dataAttribs)
+	{
+		MPlug plug = depNode.findPlug(atr.first.c_str(), status);
+
+		if (status == MStatus::kSuccess)
+		{
+			//HackPrint::print(plug.name());
+
+			switch (atr.second.type)
+			{
+			case msgpack::type::BOOLEAN:
+			{
+				//HackPrint::print("bool");
+				plug.setBool(atr.second.via.boolean);
+				break;
+			}
+			case msgpack::type::FLOAT:
+			{
+				//HackPrint::print("float");
+				//HackPrint::print(std::to_string(atr.second.via.f64));
+				plug.setFloat(atr.second.via.f64);
+				break;
+			}
+			case msgpack::type::STR:
+			{
+				std::string val;
+				atr.second.convert(val);
+				//HackPrint::print(val);
+				plug.setString(MString(val.c_str()));
+				break;
+			}
+			case msgpack::type::NEGATIVE_INTEGER:
+			{
+				//HackPrint::print("Neg Int");
+				int val;
+				atr.second.convert(val);
+				//HackPrint::print(std::to_string(val));
+				plug.setInt(val);
+				break;
+			}
+			case msgpack::type::POSITIVE_INTEGER:
+			{
+				//HackPrint::print("Pos int");
+				//HackPrint::print(std::to_string(atr.second.via.i64));
+				plug.setInt64(atr.second.via.i64);
+				break;
+			}
+			}
+		}
+	}
+	return MStatus::kSuccess;
 }
 
 MStatus Update::getArgs(const MArgList& args, MString& address, int& port)
@@ -177,69 +202,145 @@ MStatus Update::getArgs(const MArgList& args, MString& address, int& port)
 	return status;
 }
 
-void Update::setNodeValues(MObject & node, GenericMessage & data)
+MStatus Update::createMesh(GenericMesh& _mesh)
 {
-	// rename and set correct details
-	MFnDependencyNode depNode(node);
-
-	depNode.setName(MString(data.getNodeName().c_str()));
-
-	// this shows us all attributes.
-	// there are other ways of individually finding them using plugs
-	auto dataAttribs = data.getAttribs();
 	MStatus status;
 
-	for ( auto atr : dataAttribs )
+	// create a mesh
+	switch (_mesh.getMeshType())
 	{
-		//if (atr.first.compare("out") == 0 || atr.first.compare("ip") == 0) continue;
-		//if (atr.first.compare("axx") != 0 ) continue;
-
-		MPlug plug = depNode.findPlug(atr.first.c_str(), status);
-
-		if (status == MStatus::kSuccess)
+		case MeshType::CUBE:
 		{
-			//HackPrint::print(plug.name());
+			MString cmd;
+			cmd += "polyCube";
 
-			switch (atr.second.type)
-			{
-				case msgpack::type::BOOLEAN:
-				{
-					//HackPrint::print("bool");
-					plug.setBool(atr.second.via.boolean);
-					break;
-				}
-				case msgpack::type::FLOAT:
-				{
-					//HackPrint::print("float");
-					//HackPrint::print(std::to_string(atr.second.via.f64));
-					plug.setFloat(atr.second.via.f64);
-					break;
-				}
-				case msgpack::type::STR :
-				{
-					std::string val;
-					atr.second.convert(val);
-					//HackPrint::print(val);
-					plug.setString(MString(val.c_str()));
-					break;
-				}
-				case msgpack::type::NEGATIVE_INTEGER:
-				{
-					//HackPrint::print("Neg Int");
-					int val;
-					atr.second.convert(val);
-					//HackPrint::print(std::to_string(val));
-					plug.setInt(val);
-					break;
-				}
-				case msgpack::type::POSITIVE_INTEGER:
-				{
-					//HackPrint::print("Pos int");
-					//HackPrint::print(std::to_string(atr.second.via.i64));
-					plug.setInt64(atr.second.via.i64);
-					break;
-				}
-			}
+			HackPrint::print(cmd);
+			MStringArray result;
+			status = MGlobal::executeCommand(cmd, result);
+
+			if (status != MStatus::kSuccess) return status;
+
+			// rename the nodes
+			MSelectionList sList;
+			sList.add(result[0]);
+			MObject node;
+			if (sList.getDependNode(0, node) != MStatus::kSuccess) return MStatus::kFailure;
+
+			// rename and set correct details
+			MFnDependencyNode depNode(node);
+
+			renameNodes(depNode, _mesh);
+			
+			return status;
 		}
 	}
+
+	return MStatus::kFailure;
+}
+
+void Update::renameNodes(MFnDependencyNode & node, GenericMesh& mesh)
+{
+	// rename
+	// This wont work for multiple 
+	for (auto it : mesh.getNodes())
+	{
+		MString type(it.getNodeType().c_str());
+		if (node.typeName() == type)
+		{
+			node.setName(MString(it.getNodeName().c_str()));
+		}
+	}	
+
+	// If the inputPolymesh is connected, we have history
+	MStatus status;
+	MPlug inMeshPlug;
+	inMeshPlug = node.findPlug("inputPolymesh", &status);
+
+	// if it doesnt have that plug try this one
+	if (status != MStatus::kSuccess)
+	{
+		inMeshPlug = node.findPlug("inMesh");
+	}
+
+	if (inMeshPlug.isConnected())
+	{
+		MPlugArray tempPlugArray;
+		inMeshPlug.connectedTo(tempPlugArray, true, false);
+		// Only one connection should exist on meshNodeShape.inMesh!
+		MPlug upstreamNodeSrcPlug = tempPlugArray[0];
+		MFnDependencyNode upstreamNode(upstreamNodeSrcPlug.node());
+
+		renameNodes(upstreamNode, mesh);
+	}
+}
+
+MStatus Update::createNode(GenericNode& _node)
+{
+	MStatus status;
+
+	// create a node of same type?
+	MString cmd;
+	cmd += "createNode \"";
+	cmd += _node.getNodeType().c_str();
+	cmd += "\"";
+
+	// node name
+	cmd += " -n \"";
+	cmd += _node.getNodeName().c_str();
+	cmd += "\"";
+
+	status = MGlobal::executeCommand(cmd);
+	return status;
+}
+
+MStatus Update::setConnections(GenericMesh& _mesh, GenericNode& _node)
+{
+	// if its not a mesh we'll have to wire it in
+	if (_node.getNodeType().compare("polySplitRing") == 0)
+	{
+		// get mesh and set it to be the one we're effecting
+		MSelectionList selList;
+		selList.add(MString(_mesh.getMeshName().c_str()));
+		MDagPath dagpath;
+		selList.getDagPath(0, dagpath);
+		dagpath.extendToShape();
+		setMeshNode(dagpath);
+
+		// get node and do the connections
+		MSelectionList sList;
+		sList.add(_node.getNodeName().c_str());
+		MObject node;
+		if (sList.getDependNode(0, node) != MStatus::kSuccess) return MStatus::kFailure;
+
+		//// and add it to the DAG
+		doModifyPoly(node);
+
+		// this is if we require extra connections
+		if (_node.getNodeType().compare("polySplitRing") == 0)
+		{
+			MString connectCmd;
+			connectCmd += "connectAttr ";
+			connectCmd += _mesh.getMeshName().c_str();
+			connectCmd += ".worldMatrix[0] ";
+			connectCmd += _node.getNodeName().c_str();
+			connectCmd += ".manipMatrix;";
+			MGlobal::executeCommand(connectCmd);
+		}
+	}
+
+	return MStatus::kSuccess;
+}
+
+bool Update::doesItExist(MString& name)
+{
+	MString objExistsCmd;
+	objExistsCmd += "objExists \"";
+	objExistsCmd += name;
+	objExistsCmd += "\"";
+
+	int exists = 0;
+	if (MGlobal::executeCommand(objExistsCmd, exists) != MStatus::kSuccess) return false;
+
+	// annoying warning if just casting
+	return (exists != 0);
 }

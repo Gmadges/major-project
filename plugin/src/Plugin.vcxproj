@@ -144,6 +144,7 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\common\genericMeshMessage.h" />
     <ClCompile Include="messaging.cpp" />
     <ClCompile Include="plugin.cpp" />
     <ClCompile Include="polyModifierCmd.cpp" />
@@ -152,7 +153,7 @@
     <ClCompile Include="update.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\common\genericMessage.h" />
+    <ClInclude Include="..\..\common\genericNodeMessage.h" />
     <ClInclude Include="..\..\common\testTypes.hpp" />
     <ClInclude Include="hackPrint.h" />
     <ClInclude Include="messaging.h" />

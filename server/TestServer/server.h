@@ -2,11 +2,10 @@
 #define SERVER_H
 
 #include <zmq.hpp>
-#include <vector>
+#include <queue>
 #include <thread>
 
-//test
-#include "genericMessage.h"
+#include "genericMeshMessage.h"
 
 class Server
 {
@@ -28,7 +27,7 @@ private:
 	std::vector<std::thread> workers;
 
 	//testing
-	std::vector<GenericMessage> msgStack;
+	std::queue<GenericMesh> msgQueue;
 };
 
 #endif
