@@ -12,13 +12,15 @@
 #include <maya/MPlug.h>
 #include <maya/MPlugArray.h>
 #include <maya/MFnAttribute.h>
+#include <maya/MSyntax.h>
+#include <maya/MArgDatabase.h>
 
 #include "messaging.h"
 #include "hackPrint.h"
 
 Scan::Scan()
 	:
-	pMessaging(new Messaging("8080"))
+	pMessaging(new Messaging("localhost", 8080))
 {
 }
 
@@ -31,14 +33,35 @@ void* Scan::creator()
 	return new Scan;
 }
 
+MSyntax Scan::newSyntax() 
+{
+
+	MSyntax syn;
+
+	syn.addFlag("-a", "-address", MSyntax::kString);
+	syn.addFlag("-p", "-port", MSyntax::kUnsigned);
+
+	return syn;
+}
+
 MStatus	Scan::doIt(const MArgList& args)
 {
-	MItDag::TraversalType	traversalType = MItDag::kDepthFirst;
-
 	MStatus status;
 
+	// reset socket
+	MString addr;
+	int port;
+	status = getArgs(args, addr, port);
+	if (status != MStatus::kSuccess)
+	{
+		HackPrint::print("no input values specified");
+		return status;
+	}
+
+	pMessaging->resetSocket(std::string(addr.asChar()), port);
+
 	// filter to only meshes
-	MItDag dagIterator(traversalType, MFn::kMesh, &status);
+	MItDag dagIterator(MItDag::kDepthFirst, MFn::kMesh, &status);
 
 	if (!status) {
 		status.perror("MItDag constructor");
@@ -61,55 +84,116 @@ MStatus	Scan::doIt(const MArgList& args)
 		}
 		bool fHasTweaks = false;
 
-		MFnDependencyNode transformNode(dagPath.transform());
+		//// Tweaks exist only if the multi "pnts" attribute contains
+		//// plugs that contain non-zero tweak values. Use false,
+		//// until proven true search pattern.
+		//MPlug tweakPlug = depNodeFn.findPlug("pnts");
+		//if (!tweakPlug.isNull())
+		//{
+		//	// ASSERT : tweakPlug should be an array plug 
+		//	//MAssert(tweakPlug.isArray(), "tweakPlug.isArray()");
+		//	MPlug tweak;
+		//	MFloatVector tweakData;
+		//	int i;
+		//	int numElements = tweakPlug.numElements();
+		//	for (i = 0; i < numElements; i++)
+		//	{
+		//		tweak = tweakPlug.elementByPhysicalIndex(i, &status);
+		//		if (status == MS::kSuccess && !tweak.isNull())
+		//		{
+		//			fHasTweaks = true;
+		//			break;
+		//		}
+		//	}
+		//}
 
-		dagPath.extendToShape();
-		MObject meshNodeShape = dagPath.node();
-		MFnDependencyNode depNodeFn(meshNodeShape);
-
-		// Tweaks exist only if the multi "pnts" attribute contains
-		// plugs that contain non-zero tweak values. Use false,
-		// until proven true search pattern.
-		MPlug tweakPlug = depNodeFn.findPlug("pnts");
-		if (!tweakPlug.isNull())
-		{
-			// ASSERT : tweakPlug should be an array plug 
-			//MAssert(tweakPlug.isArray(), "tweakPlug.isArray()");
-			MPlug tweak;
-			MFloatVector tweakData;
-			int i;
-			int numElements = tweakPlug.numElements();
-			for (i = 0; i < numElements; i++)
-			{
-				tweak = tweakPlug.elementByPhysicalIndex(i, &status);
-				if (status == MS::kSuccess && !tweak.isNull())
-				{
-					fHasTweaks = true;
-					break;
-				}
-			}
-		}
-
-		MFnMesh mesh(meshNodeShape, &status);
-
-		if (!status) {
-			status.perror("MFnMesh:constructor");
-			continue;
-		}
-
-		// send transform first
-		sendNode(transformNode, mesh);
-
-		traverseHistory(depNodeFn, mesh);
+		if (sendMesh(dagPath) != MStatus::kSuccess) return MStatus::kFailure;
 
 		if (fHasTweaks) HackPrint::print("tweaks: true");
 		else HackPrint::print("tweaks: false");
-
 	}
 	return MS::kSuccess;
 }
 
-void Scan::traverseHistory(MFnDependencyNode & node, MFnMesh & mesh)
+MStatus Scan::sendMesh(MDagPath & meshDAGPath)
+{
+	MStatus status;
+	GenericMesh meshMessage;
+	std::vector<GenericNode> nodeList;
+
+	meshDAGPath.extendToShape();
+	MObject meshNodeShape = meshDAGPath.node();
+	MFnDependencyNode depNodeFn(meshNodeShape);
+
+	MFnMesh mesh(meshNodeShape, &status);
+
+	if (!status) 
+	{
+		status.perror("MFnMesh:constructor");
+		return status;
+	}
+
+	MFnDependencyNode transformNode(meshDAGPath.transform());
+	GenericNode transNode;
+	status = getGenericNode(transformNode, transNode);
+	if (status != MStatus::kSuccess) return status;
+	nodeList.push_back(transNode);
+
+	traverseHistory(depNodeFn, nodeList);
+
+	// should have atleast 3 nodes for a mesh
+	// transform, shape and mesh
+	if (nodeList.size() < 3) return MStatus::kFailure;
+
+	meshMessage.setMeshName(std::string(transformNode.name().asChar()));
+	meshMessage.setRequestType(SCENE_UPDATE);
+
+	// hardcode for now
+	meshMessage.setMeshType(CUBE);
+
+	meshMessage.setNodes(nodeList);
+
+	HackPrint::print("sending " + meshMessage.getMeshName());
+	if (pMessaging->sendUpdate(meshMessage))
+	{
+		HackPrint::print("mesh sent succesfully");
+		return MStatus::kSuccess;
+	}
+
+	HackPrint::print("unable to send");
+	return MStatus::kFailure;
+}
+
+MStatus Scan::getArgs(const MArgList& args, MString& address, int& port)
+{
+	MStatus status = MStatus::kSuccess;
+	MArgDatabase parser(syntax(), args, &status);
+
+	if (status != MS::kSuccess) return status;
+
+	// get the command line arguments that were specified
+	if (parser.isFlagSet("-p"))
+	{
+		parser.getFlagArgument("-p", 0, port);
+	}
+	else
+	{
+		status = MStatus::kFailure;
+	}
+
+	if (parser.isFlagSet("-a"))
+	{
+		parser.getFlagArgument("-a", 0, address);
+	}
+	else
+	{
+		status = MStatus::kFailure;
+	}
+
+	return status;
+}
+
+void Scan::traverseHistory(MFnDependencyNode & node, std::vector<GenericNode>& nodeList)
 {
 	HackPrint::print(node.name());
 	HackPrint::print(node.typeName());
@@ -119,7 +203,11 @@ void Scan::traverseHistory(MFnDependencyNode & node, MFnMesh & mesh)
 		//node.typeName() == MString("polySplitRing") ||
 		node.typeName() == MString("polyCube"))
 	{
-		sendNode(node, mesh);
+		GenericNode genNode;
+		if (getGenericNode(node, genNode) == MStatus::kSuccess)
+		{
+			nodeList.push_back(genNode);
+		}
 	}
 
 	// now lets see if it has a parent
@@ -143,24 +231,24 @@ void Scan::traverseHistory(MFnDependencyNode & node, MFnMesh & mesh)
 		MPlug upstreamNodeSrcPlug = tempPlugArray[0];
 		MFnDependencyNode upstreamNode(upstreamNodeSrcPlug.node());
 
-		traverseHistory(upstreamNode, mesh);
+		traverseHistory(upstreamNode, nodeList);
 	}
 }
 
-void Scan::sendNode(MFnDependencyNode & node, MFnMesh & mesh)
+MStatus Scan::getGenericNode(MFnDependencyNode & _inNode, GenericNode& _outNode)
 {
 	// this shows us all attributes.
 	// there are other ways of individually finding them using plugs
-	unsigned int numAttrib = node.attributeCount();
+	unsigned int numAttrib = _inNode.attributeCount();
 	MStatus status;
 
 	attribMap nodeAttribs;
 
 	for (unsigned int i = 0; i < numAttrib; i++)
 	{
-		MFnAttribute attrib(node.attribute(i));
+		MFnAttribute attrib(_inNode.attribute(i));
 
-		MPlug plug = node.findPlug(attrib.shortName().asChar(), &status);
+		MPlug plug = _inNode.findPlug(attrib.shortName().asChar(), &status);
 		
 		if (status != MStatus::kSuccess) continue;
 
@@ -171,23 +259,13 @@ void Scan::sendNode(MFnDependencyNode & node, MFnMesh & mesh)
 		}
 	}
 
-	if (nodeAttribs.empty()) return;
+	if (nodeAttribs.empty()) return MStatus::kFailure;
 
-	GenericMessage msg;
-	msg.setMeshName(std::string(mesh.name().asChar()));
-	msg.setNodeName(std::string(node.name().asChar()));
-	msg.setNodeType(node.typeName().asChar());
-	msg.setRequestType(SCENE_UPDATE);
+	_outNode.setNodeName(std::string(_inNode.name().asChar()));
+	_outNode.setNodeType(_inNode.typeName().asChar());
+	_outNode.setAttribs(nodeAttribs);
 
-	msg.setAttribs(nodeAttribs);
-	
-	if (pMessaging->sendUpdate(msg))
-	{
-		HackPrint::print("Update sent Succesfully");
-		return;
-	}
-
-	HackPrint::print("Cannot send to Server!");
+	return MStatus::kSuccess;
 }
 
 MStatus Scan::getAttribFromPlug(MPlug& _plug, attribMap& _attribs)

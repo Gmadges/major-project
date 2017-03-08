@@ -4,16 +4,16 @@
 #include <iostream>
 #include <msgpack.hpp>
 
-#include "genericMessage.h"
+#include "genericMeshMessage.h"
 
-Server::Server()
+Server::Server(int _port)
 	:
 	context(1),
 	recieveSocket(context, ZMQ_ROUTER),
-	workersSocket(context, ZMQ_DEALER)
+	workersSocket(context, ZMQ_DEALER),
+	port(_port)
 {
 }
-
 
 Server::~Server()
 {
@@ -22,7 +22,7 @@ Server::~Server()
 int Server::run()
 {
 	// client socket that recieves changes
-	recieveSocket.bind("tcp://*:8080");
+	recieveSocket.bind("tcp://*:"+std::to_string(port));
 	workersSocket.bind("inproc://workers");
 
 	unsigned int maxThreads = std::thread::hardware_concurrency();
@@ -69,22 +69,28 @@ void Server::handleRequest()
 
 		// testing msgpack recieve
 
-		GenericMessage data;
+		GenericMesh data;
 		msgpack::object_handle oh = msgpack::unpack(static_cast<char *>(request.data()), request.size());
 		oh.get().convert(data);
 
 		// printing boi
 		std::cout << "THREAD: " << std::this_thread::get_id() << std::endl;
 		std::cout << "MESH NAME: " << data.getMeshName() << std::endl;
-		std::cout << "NODE NAME: " << data.getNodeName() << std::endl;
-		std::cout << "NODE TYPE: " << data.getNodeType() << std::endl;
 
-		auto attribs = data.getAttribs();
+		auto nodes = data.getNodes();
 
-		std::cout << "ATTRIBS:" << std::endl;
-		for (auto it : attribs)
+		std::cout << "Nodes:" << std::endl;
+		for (auto it : nodes)
 		{
-			std::cout << it.first << " : " << it.second << std::endl;
+			std::cout << "Node name: "<< it.getNodeName() << std::endl;
+
+			auto attribs = it.getAttribs();
+
+			std::cout << "ATTRIBS:" << std::endl;
+			for (auto it : attribs)
+			{
+				std::cout << it.first << " : " << it.second << std::endl;
+			}
 		}
 
 		// Type
@@ -96,7 +102,7 @@ void Server::handleRequest()
 				std::cout << "add to stack!" << std::endl;
 
 				// add to stack
-				msgStack.push_back(data);
+				msgQueue.push(data);
 
 				//  Send reply back to client
 				zmq::message_t reply(7);
@@ -108,9 +114,9 @@ void Server::handleRequest()
 			{
 				std::cout << "ugh someone wants our data!" << std::endl;
 
-				if (msgStack.empty())
+				if (msgQueue.empty())
 				{
-					GenericMessage msg;
+					GenericMesh msg;
 
 					msgpack::sbuffer sbuf;
 					msgpack::pack(sbuf, msg);
@@ -125,14 +131,14 @@ void Server::handleRequest()
 				// get our current data
 				// pack a message up
 				msgpack::sbuffer sbuf;
-				msgpack::pack(sbuf, msgStack.back());
+				msgpack::pack(sbuf, msgQueue.front());
 
 				// send reply
 				zmq::message_t reply(sbuf.size());
 				std::memcpy(reply.data(), sbuf.data(), sbuf.size());
 				socket.send(reply);
 
-				msgStack.pop_back();
+				msgQueue.pop();
 				break;
 			}
 		};

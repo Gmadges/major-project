@@ -2,25 +2,27 @@
 #define MESSAGING_H
 
 #include <zmq.hpp>
-#include "genericMessage.h"
+#include "genericMeshMessage.h"
 
 #include <functional>
 
 class Messaging
 {
 public:
-	Messaging(std::string _port);
+	Messaging(std::string _address, int _port);
 	~Messaging();
 	
-	bool sendUpdate(const GenericMessage& data);
-	bool requestData(GenericMessage& data);
+	void resetSocket(std::string _address, int _port);
+	bool sendUpdate(const GenericMesh& data);
+	bool requestData(GenericMesh& data);
 
 private:
 	bool send(zmq::message_t& msg, zmq::message_t& reply);
 	void resetSocket();
 
 private:
-	std::string port;
+	std::string ipAddress;
+	int port;
 
 	zmq::context_t context;
 	zmq::socket_t socket;

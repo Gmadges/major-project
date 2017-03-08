@@ -17,6 +17,9 @@
     <ClCompile Include="polyModifierNode.cpp">
       <Filter>update</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\common\genericMeshMessage.h">
+      <Filter>common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hackPrint.h" />
@@ -24,9 +27,6 @@
       <Filter>scan</Filter>
     </ClInclude>
     <ClInclude Include="..\..\common\testTypes.hpp">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\common\genericMessage.h">
       <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="update.h">
@@ -40,6 +40,9 @@
     </ClInclude>
     <ClInclude Include="polyModifierNode.h">
       <Filter>update</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\genericNodeMessage.h">
+      <Filter>common</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -2,16 +2,15 @@
 #define SERVER_H
 
 #include <zmq.hpp>
-#include <vector>
+#include <queue>
 #include <thread>
 
-//test
-#include "genericMessage.h"
+#include "genericMeshMessage.h"
 
 class Server
 {
 public:
-	Server();
+	Server(int _port);
 	~Server();
 
 	int run();
@@ -23,11 +22,12 @@ private:
 	zmq::context_t context;
 	zmq::socket_t recieveSocket;
 	zmq::socket_t workersSocket;
+	int port;
 
 	std::vector<std::thread> workers;
 
 	//testing
-	std::vector<GenericMessage> msgStack;
+	std::queue<GenericMesh> msgQueue;
 };
 
 #endif

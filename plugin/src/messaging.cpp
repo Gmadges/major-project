@@ -1,25 +1,33 @@
 #include "messaging.h"
 #include <msgpack.hpp>
 
-Messaging::Messaging(std::string _port)
+Messaging::Messaging(std::string _address, int _port)
 	:
+	ipAddress(_address),
 	port(_port),
 	context(1),
 	socket(context, ZMQ_REQ)
 {
-	socket.connect("tcp://localhost:" + port);
-	int linger = 0;
-	socket.setsockopt(ZMQ_LINGER, &linger, sizeof(linger));
+	//socket.connect("tcp://" + ipAddress + ":" + std::to_string(port));
+	//int linger = 0;
+	//socket.setsockopt(ZMQ_LINGER, &linger, sizeof(linger));
 }
 
 Messaging::~Messaging()
 {
 }
 
+void Messaging::resetSocket(std::string _address, int _port)
+{
+	ipAddress = _address;
+	port = _port;
+	resetSocket();
+}
+
 void Messaging::resetSocket()
 {
 	socket = zmq::socket_t(context, ZMQ_REQ);
-	socket.connect("tcp://localhost:" + port);
+	socket.connect("tcp://" + ipAddress + ":" + std::to_string(port));
 
 	int linger = 0;
 	socket.setsockopt(ZMQ_LINGER, &linger, sizeof(linger));
@@ -67,7 +75,7 @@ bool Messaging::send(zmq::message_t& msg, zmq::message_t& reply)
 	return false;
 }
 
-bool Messaging::sendUpdate(const GenericMessage& data)
+bool Messaging::sendUpdate(const GenericMesh& data)
 {
 	// pack a message up
 	msgpack::sbuffer sbuf;
@@ -82,9 +90,9 @@ bool Messaging::sendUpdate(const GenericMessage& data)
 	return send(request, reply);
 }
 
-bool Messaging::requestData(GenericMessage& data)
+bool Messaging::requestData(GenericMesh& data)
 {
-	GenericMessage msg;
+	GenericMesh msg;
 	msg.setRequestType(SCENE_REQUEST);
 
 	// pack a message up
