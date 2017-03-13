@@ -16,11 +16,13 @@
 #include <maya/MArgDatabase.h>
 
 #include "messaging.h"
+#include "tweakHandler.h"
 #include "hackPrint.h"
 
 Scan::Scan()
 	:
-	pMessaging(new Messaging("localhost", 8080))
+	pMessaging(new Messaging("localhost", 8080)),
+	pTweaksHandler(new TweakHandler())
 {
 }
 
@@ -82,35 +84,16 @@ MStatus	Scan::doIt(const MArgList& args)
 			status.perror("MFnDagNode constructor");
 			continue;
 		}
-		bool fHasTweaks = false;
 
-		//// Tweaks exist only if the multi "pnts" attribute contains
-		//// plugs that contain non-zero tweak values. Use false,
-		//// until proven true search pattern.
-		//MPlug tweakPlug = depNodeFn.findPlug("pnts");
-		//if (!tweakPlug.isNull())
-		//{
-		//	// ASSERT : tweakPlug should be an array plug 
-		//	//MAssert(tweakPlug.isArray(), "tweakPlug.isArray()");
-		//	MPlug tweak;
-		//	MFloatVector tweakData;
-		//	int i;
-		//	int numElements = tweakPlug.numElements();
-		//	for (i = 0; i < numElements; i++)
-		//	{
-		//		tweak = tweakPlug.elementByPhysicalIndex(i, &status);
-		//		if (status == MS::kSuccess && !tweak.isNull())
-		//		{
-		//			fHasTweaks = true;
-		//			break;
-		//		}
-		//	}
-		//}
+		// check for tweaks
+		if (pTweaksHandler->hasTweaks(dagPath))
+		{
+			HackPrint::print("we got tweaks");
+		}
 
-		if (sendMesh(dagPath) != MStatus::kSuccess) return MStatus::kFailure;
+		// turn tweaks into a node before sending
 
-		if (fHasTweaks) HackPrint::print("tweaks: true");
-		else HackPrint::print("tweaks: false");
+		//if (sendMesh(dagPath) != MStatus::kSuccess) return MStatus::kFailure;
 	}
 	return MS::kSuccess;
 }

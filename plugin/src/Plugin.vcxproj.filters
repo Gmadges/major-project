@@ -20,6 +20,9 @@
     <ClCompile Include="..\..\common\genericMeshMessage.h">
       <Filter>common</Filter>
     </ClCompile>
+    <ClCompile Include="tweakHandler.cpp">
+      <Filter>scan</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hackPrint.h" />
@@ -43,6 +46,9 @@
     </ClInclude>
     <ClInclude Include="..\..\common\genericNodeMessage.h">
       <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="tweakHandler.h">
+      <Filter>scan</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
