@@ -296,7 +296,8 @@ MStatus Update::createNode(GenericNode& _node)
 MStatus Update::setConnections(GenericMesh& _mesh, GenericNode& _node)
 {
 	// if its not a mesh we'll have to wire it in
-	if (_node.getNodeType().compare("polySplitRing") == 0)
+	if (_node.getNodeType().compare("polySplitRing") == 0 ||
+		_node.getNodeType().compare("polyTweak") == 0 )
 	{
 		// get mesh and set it to be the one we're effecting
 		MSelectionList selList;

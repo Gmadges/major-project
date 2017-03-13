@@ -103,7 +103,7 @@ MStatus	Scan::doIt(const MArgList& args)
 
 		// turn tweaks into a node before sending
 
-		//if (sendMesh(dagPath) != MStatus::kSuccess) return MStatus::kFailure;
+		if (sendMesh(dagPath) != MStatus::kSuccess) return MStatus::kFailure;
 	}
 	return MS::kSuccess;
 }
@@ -193,6 +193,7 @@ void Scan::traverseHistory(MFnDependencyNode & node, std::vector<GenericNode>& n
 	
 	if (node.typeName() == MString("transform") ||
 		node.typeName() == MString("mesh") ||
+		node.typeName() == MString("polyTweak") ||
 		//node.typeName() == MString("polySplitRing") ||
 		node.typeName() == MString("polyCube"))
 	{
