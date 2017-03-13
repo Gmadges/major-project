@@ -88,7 +88,17 @@ MStatus	Scan::doIt(const MArgList& args)
 		// check for tweaks
 		if (pTweaksHandler->hasTweaks(dagPath))
 		{
+			MObject tweakNode;
 			HackPrint::print("we got tweaks");
+			if (pTweaksHandler->createPolyTweakNode(dagPath, tweakNode) == MStatus::kSuccess)
+			{
+				HackPrint::print("created a node ting");
+				dagPath.extendToShape();
+				if (pTweaksHandler->connectTweakNodes(tweakNode, dagPath.node()) == MStatus::kSuccess)
+				{
+					HackPrint::print("connected");
+				}
+			}
 		}
 
 		// turn tweaks into a node before sending
