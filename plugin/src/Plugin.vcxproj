@@ -39,13 +39,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Projects\major-project.git\plugin\src\Debug\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Debug\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Plugin.dir\Debug\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PluginDebug</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.mll</TargetExt>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateManifest>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Projects\major-project.git\plugin\src\Release\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Release\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Plugin.dir\Release\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Plugin</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.mll</TargetExt>
@@ -87,8 +87,8 @@
       <AdditionalLibraryDirectories>C:\libs\libzmq\bin\x64\Debug\v140\dynamic;C:/Program Files/Autodesk/Maya2017/lib;C:/Program Files/Autodesk/Maya2017/lib/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>C:/Projects/major-project.git/plugin/src/Debug/Plugin.lib</ImportLibrary>
-      <ProgramDataBaseFile>C:\Projects\major-project.git\plugin\src\Debug\PluginDebug.pdb</ProgramDataBaseFile>
+      <ImportLibrary>src/Debug/Plugin.lib</ImportLibrary>
+      <ProgramDataBaseFile>src\Debug\PluginDebug.pdb</ProgramDataBaseFile>
       <SubSystem>Console</SubSystem>
       <Version>
       </Version>
@@ -133,8 +133,8 @@
       <AdditionalLibraryDirectories>C:\libs\libzmq\bin\x64\Release\v140\dynamic;C:/Program Files/Autodesk/Maya2017/lib;C:/Program Files/Autodesk/Maya2017/lib/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>C:/Projects/major-project.git/plugin/src/Release/Plugin.lib</ImportLibrary>
-      <ProgramDataBaseFile>C:/Projects/major-project.git/plugin/src/Release/Plugin.pdb</ProgramDataBaseFile>
+      <ImportLibrary>src/Release/Plugin.lib</ImportLibrary>
+      <ProgramDataBaseFile>src/Release/Plugin.pdb</ProgramDataBaseFile>
       <SubSystem>Console</SubSystem>
       <Version>
       </Version>
