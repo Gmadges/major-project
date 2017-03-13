@@ -106,9 +106,11 @@ MStatus TweakHandler::createPolyTweakNode(MDagPath& meshDAGPath, MObject& tweakN
 	MPlugArray			tempPlugArray;
 
 	// Create the tweak node and get its attributes
-	tweakNode = fDGModifier.createNode("polyTweak");
+	tweakNode = fDGModifier.createNode("polyTweak", &status);
 	depNodeFn.setObject(tweakNode);
 	tweakNodeTweakAttr = depNodeFn.attribute("tweak");
+
+	if (status != MStatus::kSuccess) return status;
 
 	meshDAGPath.extendToShape();
 	depNodeFn.setObject(meshDAGPath.node());
@@ -255,7 +257,6 @@ MStatus TweakHandler::createPolyTweakNode(MDagPath& meshDAGPath, MObject& tweakN
 	// CLEAR TWEAKS ON THE MESH
 
 	// Create a NULL vector (0,0,0) using MFnNumericData to pass into the plug
-	//
 	numDataFn.create(MFnNumericData::k3Float);
 	numDataFn.setData(0, 0, 0);
 	nullVector = numDataFn.object();
@@ -271,8 +272,6 @@ MStatus TweakHandler::createPolyTweakNode(MDagPath& meshDAGPath, MObject& tweakN
 
 	// Only have to clear the tweaks off the duplicate mesh if we do not have history
 	// and we want history.
-	//
-
 	depNodeFn.setObject(meshDAGPath.node());
 	upstreamTweakPlug = depNodeFn.findPlug("pnts");
 
@@ -285,6 +284,8 @@ MStatus TweakHandler::createPolyTweakNode(MDagPath& meshDAGPath, MObject& tweakN
 		}
 	}
 
+	// now do everything we said
+	status = fDGModifier.doIt();
 	return status;
 }
 
@@ -311,16 +312,25 @@ MStatus TweakHandler::connectTweakNodes(MObject& tweakNode, MObject& meshNode)
 		MPlugArray tempPlugArray;
 		inMeshPlug.connectedTo(tempPlugArray, true, false);
 		MPlug upstreamNodeSrcPlug = tempPlugArray[0];
-	
 		MPlug tweakDestPlug(tweakNode, tweakDepNode.attribute("inputPolymesh"));
-		MStatus status = fDGModifier.connect(tempPlugArray[0], tweakDestPlug);
-
-		if (status != MStatus::kSuccess) return MStatus::kFailure;
-
 		MPlug tweakSrcPlug(tweakNode, tweakDepNode.attribute("output"));
 		MPlug modifierDestPlug(meshNode, meshDepNode.attribute("inMesh", &status));
-		status = fDGModifier.connect(tweakSrcPlug, modifierDestPlug);
+		
+		// got all our plugs, lets connect things
+		// dicsonnect
+		MStatus status = fDGModifier.disconnect(tempPlugArray[0], modifierDestPlug);
+		if (status != MStatus::kSuccess) return status;
 
+		// connect ot parent
+		status = fDGModifier.connect(tempPlugArray[0], tweakDestPlug);
+		if (status != MStatus::kSuccess) return status;
+
+		// connect to child
+		status = fDGModifier.connect(tweakSrcPlug, modifierDestPlug);
+		if (status != MStatus::kSuccess) return status;
+
+		// do the connecting
+		status = fDGModifier.doIt();
 		return status;
 	}
 
