@@ -54,7 +54,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\libs\msgpack\include;..\..\common;C:\mayaDevKit2017\include;C:\libs\libzmq\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\libs\json;..\..\common;C:\mayaDevKit2017\include;C:\libs\libzmq\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Debug/</AssemblerListingLocation>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <CompileAs>CompileAsCpp</CompileAs>
@@ -100,7 +100,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\libs\msgpack\include;..\..\common;C:\mayaDevKit2017\include;C:\libs\libzmq\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\libs\json;..\..\common;C:\mayaDevKit2017\include;C:\libs\libzmq\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Release/</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -144,7 +144,6 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\common\genericMeshMessage.h" />
     <ClCompile Include="messaging.cpp" />
     <ClCompile Include="plugin.cpp" />
     <ClCompile Include="polyModifierCmd.cpp" />
@@ -153,9 +152,9 @@
     <ClCompile Include="update.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\common\genericNodeMessage.h" />
-    <ClInclude Include="..\..\common\testTypes.hpp" />
+    <ClInclude Include="..\..\common\testTypes.h" />
     <ClInclude Include="hackPrint.h" />
+    <ClInclude Include="json.h" />
     <ClInclude Include="messaging.h" />
     <ClInclude Include="polyModifierCmd.h" />
     <ClInclude Include="polyModifierNode.h" />

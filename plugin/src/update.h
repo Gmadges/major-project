@@ -8,8 +8,6 @@
 #include <maya/MSyntax.h>
 #include <memory>
 
-#include "genericMeshMessage.h"
-
 class Messaging;
 
 class Update : public polyModifierCmd
