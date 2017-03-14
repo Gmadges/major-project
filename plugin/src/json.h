@@ -1,5 +1,5 @@
-#ifndef JSON_H
-#define JSON_H
+#ifndef JSONINCLUDE_H
+#define JSONINCLUDE_H
 
 #include "json.hpp"
 

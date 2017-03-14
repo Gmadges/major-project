@@ -35,10 +35,10 @@
     <ClInclude Include="polyModifierNode.h">
       <Filter>update</Filter>
     </ClInclude>
-    <ClInclude Include="json.h">
+    <ClInclude Include="..\..\common\testTypes.h">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\common\testTypes.h">
+    <ClInclude Include="json.h">
       <Filter>common</Filter>
     </ClInclude>
   </ItemGroup>

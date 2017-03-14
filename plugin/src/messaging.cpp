@@ -94,7 +94,7 @@ bool Messaging::requestData(json& data)
 {
 	// pack a message up
 	json sendJSON;
-	sendJSON["requestType"] = TestType::SCENE_REQUEST;
+	sendJSON["requestType"] = ReqType::SCENE_REQUEST;
 
 	auto sendBuff = json::to_msgpack(sendJSON);
 
