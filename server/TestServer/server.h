@@ -5,7 +5,7 @@
 #include <queue>
 #include <thread>
 
-#include "genericMeshMessage.h"
+#include "json.h"
 
 class Server
 {
@@ -26,8 +26,8 @@ private:
 
 	std::vector<std::thread> workers;
 
-	//testing
-	std::queue<GenericMesh> msgQueue;
+	//meshes
+	std::queue<json> msgQueue;
 };
 
 #endif

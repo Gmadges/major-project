@@ -59,7 +59,7 @@ MStatus	Update::doIt(const MArgList& args)
 	if (!pMessenger->requestData(data)) return MStatus::kFailure;
 	
 	// is there actually anything?
-	if (data["nodes"].empty())
+	if (data.empty())
 	{
 		HackPrint::print("Nothing to update");
 		return status;
