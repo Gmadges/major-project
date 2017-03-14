@@ -77,17 +77,25 @@ bool Messaging::send(zmq::message_t& msg, zmq::message_t& reply)
 
 bool Messaging::sendUpdate(const GenericMesh& data)
 {
-	// pack a message up
-	msgpack::sbuffer sbuf;
-	msgpack::pack(sbuf, data);
+	try
+	{
+		// pack a message up
+		msgpack::sbuffer sbuf;
+		msgpack::pack(sbuf, data);
 
-	zmq::message_t request(sbuf.size());
-	std::memcpy(request.data(), sbuf.data(), sbuf.size());
+		zmq::message_t request(sbuf.size());
+		std::memcpy(request.data(), sbuf.data(), sbuf.size());
 
-	zmq::message_t reply;
+		zmq::message_t reply;
 
-	// return this value because i dont do anything with the reply yet.
-	return send(request, reply);
+		// return this value because i dont do anything with the reply yet.
+		return send(request, reply);
+	}
+	catch (std::exception& e)
+	{
+		e.what();
+		return false;
+	}
 }
 
 bool Messaging::requestData(GenericMesh& data)
