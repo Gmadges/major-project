@@ -266,12 +266,33 @@ MStatus Scan::getAttribFromPlug(MPlug& _plug, attribMap& _attribs)
 {
 	std::string attribName = _plug.partialName().asChar();
 
+	if (_plug.isNull())
+	{
+		_attribs.insert(attribType(attribName, msgpack::object()));
+		return MStatus::kSuccess;
+	}
+
+	//hack stops crashing on plugs which have an index of -1
+	if (attribName.find("-1") != std::string::npos)
+	{
+		return MStatus::kFailure;
+	}
+
+	// check for tweak plug, thats special
+	if (attribName.compare("tk") == 0)
+	{
+		std::vector<double> tweaks;
+		pTweaksHandler->getTweaksArrayfromPlug(_plug, tweaks);
+		_attribs.insert(attribType(attribName, msgpack::object(tweaks)));
+		return MStatus::kSuccess;
+	}
+
 	if (_plug.isArray())
 	{
-		for (unsigned int i = 0; i < _plug.numConnectedElements(); i++)
+		for (unsigned int i = 0; i < _plug.numElements(); i++)
 		{
 			// get the MPlug for the i'th array element
-			MPlug elemPlug = _plug.connectionByPhysicalIndex(i);
+			MPlug elemPlug = _plug.elementByPhysicalIndex(i);
 
 			attribMap values;
 			if (getAttribFromPlug(elemPlug, values) == MStatus::kSuccess)

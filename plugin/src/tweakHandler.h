@@ -7,6 +7,8 @@
 #include "maya/MPlug.h"
 #include "maya/MFloatVector.h"
 
+#include <vector>
+
 class TweakHandler
 {
 public:
@@ -17,6 +19,10 @@ public:
 	// create a tweak node and removed tweaks from mesh
 	MStatus createPolyTweakNode(MDagPath & meshDAGPath, MObject& tweakNode);
 	MStatus connectTweakNodes(MObject& tweakNode, MObject& meshNode);
+
+	// this method returns the tweak values in and array that we send
+	MStatus getTweaksArrayfromPlug(MPlug& _plug, std::vector<double>& vals);
+	MStatus setTweakPlugFromArray(MPlug& _plug, std::vector<double>& vals);
 
 private:
 	MFloatVector getFloat3FromPlug(MPlug& plug);

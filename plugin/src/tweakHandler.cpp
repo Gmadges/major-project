@@ -225,7 +225,6 @@ MStatus TweakHandler::createPolyTweakNode(MDagPath& meshDAGPath, MObject& tweakN
 			tweakChild = tweak.child(j);
 
 			// Apply tweak source connection data
-			//
 			if (0 < tweakSrcConnectionCountArray[i*numChildren + j])
 			{
 				for (unsigned int k = 0;
@@ -335,5 +334,25 @@ MStatus TweakHandler::connectTweakNodes(MObject& tweakNode, MObject& meshNode)
 	}
 
 	return MStatus::kFailure;
+}
+
+MStatus TweakHandler::getTweaksArrayfromPlug(MPlug& _plug, std::vector<double>& vals)
+{
+	MStatus status = MStatus::kFailure;
+
+	// todo
+
+
+	return status;
+}
+
+MStatus TweakHandler::setTweakPlugFromArray(MPlug& _plug, std::vector<double>& vals)
+{
+	MStatus status = MStatus::kFailure;
+
+	// todo
+
+
+	return status;
 }
 

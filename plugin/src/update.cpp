@@ -122,52 +122,54 @@ MStatus Update::setNodeValues(GenericNode & data)
 
 	for (auto atr : dataAttribs)
 	{
-		MPlug plug = depNode.findPlug(atr.first.c_str(), status);
+		MPlug plug = depNode.findPlug(atr.first.c_str(), &status);
 
 		if (status == MStatus::kSuccess)
 		{
-			//HackPrint::print(plug.name());
-
 			switch (atr.second.type)
 			{
-			case msgpack::type::BOOLEAN:
-			{
-				//HackPrint::print("bool");
-				plug.setBool(atr.second.via.boolean);
-				break;
-			}
-			case msgpack::type::FLOAT:
-			{
-				//HackPrint::print("float");
-				//HackPrint::print(std::to_string(atr.second.via.f64));
-				plug.setFloat(atr.second.via.f64);
-				break;
-			}
-			case msgpack::type::STR:
-			{
-				std::string val;
-				atr.second.convert(val);
-				//HackPrint::print(val);
-				plug.setString(MString(val.c_str()));
-				break;
-			}
-			case msgpack::type::NEGATIVE_INTEGER:
-			{
-				//HackPrint::print("Neg Int");
-				int val;
-				atr.second.convert(val);
-				//HackPrint::print(std::to_string(val));
-				plug.setInt(val);
-				break;
-			}
-			case msgpack::type::POSITIVE_INTEGER:
-			{
-				//HackPrint::print("Pos int");
-				//HackPrint::print(std::to_string(atr.second.via.i64));
-				plug.setInt64(atr.second.via.i64);
-				break;
-			}
-			}
+				case msgpack::type::BOOLEAN:
+				{
+					plug.setBool(atr.second.via.boolean);
+					break;
+				}
+				case msgpack::type::FLOAT:
+				{
+					plug.setFloat(atr.second.via.f64);
+					break;
+				}
+				case msgpack::type::STR:
+				{
+					std::string val;
+					atr.second.convert(val);
+					plug.setString(MString(val.c_str()));
+					break;
+				}
+				case msgpack::type::NEGATIVE_INTEGER:
+				{
+					int val;
+					atr.second.convert(val);
+					plug.setInt(val);
+					break;
+				}
+				case msgpack::type::POSITIVE_INTEGER:
+				{
+					plug.setInt64(atr.second.via.i64); 
+					break;
+				}
+				case msgpack::type::ARRAY:
+				{
+					// at the moment the only thing that will use this will be tweaks
+					
+					// if plug == tweak
+
+					// then look at the array and apply
+
+					// need to store or indice and x/y/z and val
+
+					break;
+				}
+			}			
 		}
 	}
 	return MStatus::kSuccess;

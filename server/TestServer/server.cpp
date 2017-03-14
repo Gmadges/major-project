@@ -89,6 +89,17 @@ void Server::handleRequest()
 			std::cout << "ATTRIBS:" << std::endl;
 			for (auto it : attribs)
 			{
+				if (it.second.type == msgpack::type::ARRAY)
+				{
+					std::cout << it.first << " : ";
+					for (auto ting : it.second.via.array)
+					{
+						std::cout << it.second << ",";
+					}
+					std::cout << "\n";
+					continue;
+				}
+
 				std::cout << it.first << " : " << it.second << std::endl;
 			}
 		}
