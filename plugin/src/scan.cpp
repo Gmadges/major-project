@@ -286,6 +286,7 @@ MStatus Scan::getAttribFromPlug(MPlug& _plug, json& _attribs)
 
 	if (_plug.isArray())
 	{
+		std::vector<json> plugArray;
 		for (unsigned int i = 0; i < _plug.numElements(); i++)
 		{
 			// get the MPlug for the i'th array element
@@ -294,9 +295,10 @@ MStatus Scan::getAttribFromPlug(MPlug& _plug, json& _attribs)
 			json vals;
 			if (getAttribFromPlug(elemPlug, vals) == MStatus::kSuccess)
 			{
-				_attribs[attribName] = vals;
+				plugArray.push_back(vals);
 			}
 		}
+		_attribs[attribName] = plugArray;
 		return MStatus::kSuccess;
 	}
 
@@ -304,7 +306,7 @@ MStatus Scan::getAttribFromPlug(MPlug& _plug, json& _attribs)
 	{
 		// if the plug is a compound then it has a number of children plugs we need to grab
 		unsigned int numChild = _plug.numChildren();
-
+		std::vector<json> childrenPlugs(numChild);
 		for(unsigned int i = 0; i < numChild; ++i)
 		{
 			MPlug childPlug = _plug.child(i);
@@ -314,9 +316,10 @@ MStatus Scan::getAttribFromPlug(MPlug& _plug, json& _attribs)
 			json vals;
 			if (getAttribFromPlug(childPlug, vals) == MStatus::kSuccess)
 			{
-				_attribs[attribName] = vals;
+				childrenPlugs.push_back(vals);
 			}
 		}
+		_attribs[attribName] = childrenPlugs;
 		return MStatus::kSuccess;
 	}
 
