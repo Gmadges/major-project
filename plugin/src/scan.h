@@ -10,9 +10,8 @@
 #include <maya/MPlug.h>
 #include <maya/MSyntax.h>
 
-#include "genericMeshMessage.h"
-
 #include <memory>
+#include "json.h"
 
 class Messaging;
 class TweakHandler;
@@ -30,9 +29,9 @@ public:
 private:
 
 	MStatus getArgs(const MArgList& args, MString& address, int& port);
-	void traverseHistory(MFnDependencyNode & node, std::vector<GenericNode>& nodeList);
-	MStatus getGenericNode(MFnDependencyNode & _inNode, GenericNode & _outNode);
-	MStatus getAttribFromPlug(MPlug& _plug, attribMap& _attribs);
+	void traverseHistory(MFnDependencyNode & node,std::vector<json>& nodeList);
+	MStatus getGenericNode(MFnDependencyNode & _inNode, json& _outNode);
+	MStatus getAttribFromPlug(MPlug& _plug, json& _attribs);
 	MStatus sendMesh(MDagPath & meshNode);
 
 	std::unique_ptr<Messaging> pMessaging;

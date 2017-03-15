@@ -2,9 +2,9 @@
 #define MESSAGING_H
 
 #include <zmq.hpp>
-#include "genericMeshMessage.h"
-
 #include <functional>
+
+#include "json.h"
 
 class Messaging
 {
@@ -13,8 +13,8 @@ public:
 	~Messaging();
 	
 	void resetSocket(std::string _address, int _port);
-	bool sendUpdate(const GenericMesh& data);
-	bool requestData(GenericMesh& data);
+	bool sendUpdate(const json& data);
+	bool requestData(json& data);
 
 private:
 	bool send(zmq::message_t& msg, zmq::message_t& reply);

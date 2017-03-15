@@ -8,7 +8,7 @@
 #include <maya/MSyntax.h>
 #include <memory>
 
-#include "genericMeshMessage.h"
+#include "json.h"
 
 class Messaging;
 
@@ -24,12 +24,12 @@ public:
 
 private:
 	MStatus getArgs(const MArgList& args, MString& address, int& port);
-	MStatus setNodeValues(GenericNode & data);
+	MStatus setNodeValues(json & data);
 	bool doesItExist(MString& name);
-	MStatus createMesh(GenericMesh& _mesh);
-	void renameNodes(MFnDependencyNode & node, GenericMesh& mesh);
-	MStatus createNode(GenericNode& _node);
-	MStatus setConnections(GenericMesh& _mesh, GenericNode& _node);
+	MStatus createMesh(json& _mesh);
+	void renameNodes(MFnDependencyNode & node, json& mesh);
+	MStatus createNode(json& _node);
+	MStatus setConnections(json& _mesh, json& _node);
 
 private:
 	std::unique_ptr<Messaging> pMessenger;

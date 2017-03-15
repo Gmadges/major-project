@@ -18,6 +18,7 @@
 #include "messaging.h"
 #include "tweakHandler.h"
 #include "hackPrint.h"
+#include "testTypes.h"
 
 Scan::Scan()
 	:
@@ -102,7 +103,6 @@ MStatus	Scan::doIt(const MArgList& args)
 		}
 
 		// turn tweaks into a node before sending
-
 		if (sendMesh(dagPath) != MStatus::kSuccess) return MStatus::kFailure;
 	}
 	return MS::kSuccess;
@@ -111,8 +111,9 @@ MStatus	Scan::doIt(const MArgList& args)
 MStatus Scan::sendMesh(MDagPath & meshDAGPath)
 {
 	MStatus status;
-	GenericMesh meshMessage;
-	std::vector<GenericNode> nodeList;
+
+	json meshMessage;
+	std::vector<json> nodeList;
 
 	meshDAGPath.extendToShape();
 	MObject meshNodeShape = meshDAGPath.node();
@@ -127,7 +128,7 @@ MStatus Scan::sendMesh(MDagPath & meshDAGPath)
 	}
 
 	MFnDependencyNode transformNode(meshDAGPath.transform());
-	GenericNode transNode;
+	json transNode;
 	status = getGenericNode(transformNode, transNode);
 	if (status != MStatus::kSuccess) return status;
 	nodeList.push_back(transNode);
@@ -138,15 +139,14 @@ MStatus Scan::sendMesh(MDagPath & meshDAGPath)
 	// transform, shape and mesh
 	if (nodeList.size() < 3) return MStatus::kFailure;
 
-	meshMessage.setMeshName(std::string(transformNode.name().asChar()));
-	meshMessage.setRequestType(SCENE_UPDATE);
+	meshMessage["meshName"] = std::string(transformNode.name().asChar());
+	meshMessage["requestType"] = ReqType::SCENE_UPDATE;
 
 	// hardcode for now
-	meshMessage.setMeshType(CUBE);
+	meshMessage["meshType"] = PolyType::CUBE;
+	meshMessage["nodes"] = nodeList;
 
-	meshMessage.setNodes(nodeList);
-
-	HackPrint::print("sending " + meshMessage.getMeshName());
+	HackPrint::print("sending " + transformNode.name());
 	if (pMessaging->sendUpdate(meshMessage))
 	{
 		HackPrint::print("mesh sent succesfully");
@@ -186,7 +186,7 @@ MStatus Scan::getArgs(const MArgList& args, MString& address, int& port)
 	return status;
 }
 
-void Scan::traverseHistory(MFnDependencyNode & node, std::vector<GenericNode>& nodeList)
+void Scan::traverseHistory(MFnDependencyNode & node, std::vector<json>& nodeList)
 {
 	HackPrint::print(node.name());
 	HackPrint::print(node.typeName());
@@ -197,7 +197,7 @@ void Scan::traverseHistory(MFnDependencyNode & node, std::vector<GenericNode>& n
 		//node.typeName() == MString("polySplitRing") ||
 		node.typeName() == MString("polyCube"))
 	{
-		GenericNode genNode;
+		json genNode;
 		if (getGenericNode(node, genNode) == MStatus::kSuccess)
 		{
 			nodeList.push_back(genNode);
@@ -229,14 +229,14 @@ void Scan::traverseHistory(MFnDependencyNode & node, std::vector<GenericNode>& n
 	}
 }
 
-MStatus Scan::getGenericNode(MFnDependencyNode & _inNode, GenericNode& _outNode)
+MStatus Scan::getGenericNode(MFnDependencyNode & _inNode, json& _outNode)
 {
 	// this shows us all attributes.
 	// there are other ways of individually finding them using plugs
 	unsigned int numAttrib = _inNode.attributeCount();
 	MStatus status;
 
-	attribMap nodeAttribs;
+	json nodeAttribs;
 
 	for (unsigned int i = 0; i < numAttrib; i++)
 	{
@@ -246,29 +246,26 @@ MStatus Scan::getGenericNode(MFnDependencyNode & _inNode, GenericNode& _outNode)
 		
 		if (status != MStatus::kSuccess) continue;
 
-		attribMap values;
-		if (getAttribFromPlug(plug, values) == MStatus::kSuccess)
-		{
-			nodeAttribs.insert(values.begin(), values.end());
-		}
+
+		getAttribFromPlug(plug, nodeAttribs);
 	}
 
 	if (nodeAttribs.empty()) return MStatus::kFailure;
 
-	_outNode.setNodeName(std::string(_inNode.name().asChar()));
-	_outNode.setNodeType(_inNode.typeName().asChar());
-	_outNode.setAttribs(nodeAttribs);
+	_outNode["nodeName"] = std::string(_inNode.name().asChar());
+	_outNode["nodeType"] = std::string(_inNode.typeName().asChar());
+	_outNode["nodeAttribs"] = nodeAttribs;
 
 	return MStatus::kSuccess;
 }
 
-MStatus Scan::getAttribFromPlug(MPlug& _plug, attribMap& _attribs)
+MStatus Scan::getAttribFromPlug(MPlug& _plug, json& _attribs)
 {
 	std::string attribName = _plug.partialName().asChar();
 
 	if (_plug.isNull())
 	{
-		_attribs.insert(attribType(attribName, msgpack::object()));
+		_attribs[attribName] = nullptr;
 		return MStatus::kSuccess;
 	}
 
@@ -279,13 +276,13 @@ MStatus Scan::getAttribFromPlug(MPlug& _plug, attribMap& _attribs)
 	}
 
 	// check for tweak plug, thats special
-	if (attribName.compare("tk") == 0)
-	{
-		std::vector<double> tweaks;
-		pTweaksHandler->getTweaksArrayfromPlug(_plug, tweaks);
-		_attribs.insert(attribType(attribName, msgpack::object(tweaks)));
-		return MStatus::kSuccess;
-	}
+	//if (attribName.compare("tk") == 0)
+	//{
+	//	std::vector<double> tweaks;
+	//	pTweaksHandler->getTweaksArrayfromPlug(_plug, tweaks);
+	//	_attribs.insert(attribType(attribName, msgpack::object(tweaks)));
+	//	return MStatus::kSuccess;
+	//}
 
 	if (_plug.isArray())
 	{
@@ -294,15 +291,12 @@ MStatus Scan::getAttribFromPlug(MPlug& _plug, attribMap& _attribs)
 			// get the MPlug for the i'th array element
 			MPlug elemPlug = _plug.elementByPhysicalIndex(i);
 
-			attribMap values;
-			if (getAttribFromPlug(elemPlug, values) == MStatus::kSuccess)
+			json vals;
+			if (getAttribFromPlug(elemPlug, vals) == MStatus::kSuccess)
 			{
-				_attribs.insert(values.begin(), values.end());
+				_attribs[attribName] = vals;
 			}
 		}
-
-		// need to ad somethinf with a bit more info
-		_attribs.insert(attribType(attribName, msgpack::object()));
 		return MStatus::kSuccess;
 	}
 
@@ -317,15 +311,12 @@ MStatus Scan::getAttribFromPlug(MPlug& _plug, attribMap& _attribs)
 
 			// get values
 			// and store too
-			attribMap values;
-			if (getAttribFromPlug(childPlug, values) == MStatus::kSuccess)
+			json vals;
+			if (getAttribFromPlug(childPlug, vals) == MStatus::kSuccess)
 			{
-				_attribs.insert(values.begin(), values.end());
+				_attribs[attribName] = vals;
 			}
 		}
-
-		// should put something about this
-		_attribs.insert(attribType(attribName, msgpack::object()));
 		return MStatus::kSuccess;
 	}
 
@@ -333,35 +324,35 @@ MStatus Scan::getAttribFromPlug(MPlug& _plug, attribMap& _attribs)
     float fValue;
     if (_plug.getValue(fValue) == MStatus::kSuccess)
     {
-		_attribs.insert(attribType(attribName, msgpack::object(fValue)));
+		_attribs[attribName] = fValue;
 		return MStatus::kSuccess;
     }
 
     double dValue;
     if (_plug.getValue(dValue) == MStatus::kSuccess)
     {
-		_attribs.insert(attribType(attribName, msgpack::object(dValue)));
+		_attribs[attribName] =  dValue;
 		return MStatus::kSuccess;
     }
 
     MString sValue;
     if (_plug.getValue(sValue) == MStatus::kSuccess)
     {
-		_attribs.insert(attribType(attribName, msgpack::object(sValue.asChar())));
+		_attribs[attribName] = std::string(sValue.asChar());
 		return MStatus::kSuccess;
     }
 
     int iValue;
     if (_plug.getValue(iValue) == MStatus::kSuccess)
     {
-		_attribs.insert(attribType(attribName, msgpack::object(iValue)));
+		_attribs[attribName] = iValue;
 		return MStatus::kSuccess;
     }
 
     bool bValue;
     if (_plug.getValue(bValue) == MStatus::kSuccess)
     {
-		_attribs.insert(attribType(attribName, msgpack::object(bValue)));
+		_attribs[attribName] = bValue;
 		return MStatus::kSuccess;
     }
 
@@ -379,7 +370,6 @@ MStatus Scan::getAttribFromPlug(MPlug& _plug, attribMap& _attribs)
 	//	_attribs.insert(attribType(attribName, msgpack::object(bValue)));
 	//	return MStatus::kSuccess;
 	//}
-
 
 	//MTime TimeValue();
 	//if (_plug.getValue(bValue) == MStatus::kSuccess)

@@ -17,9 +17,6 @@
     <ClCompile Include="polyModifierNode.cpp">
       <Filter>update</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\common\genericMeshMessage.h">
-      <Filter>common</Filter>
-    </ClCompile>
     <ClCompile Include="tweakHandler.cpp">
       <Filter>shared</Filter>
     </ClCompile>
@@ -28,9 +25,6 @@
     <ClInclude Include="hackPrint.h" />
     <ClInclude Include="scan.h">
       <Filter>scan</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\common\testTypes.hpp">
-      <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="update.h">
       <Filter>update</Filter>
@@ -44,7 +38,10 @@
     <ClInclude Include="polyModifierNode.h">
       <Filter>update</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\common\genericNodeMessage.h">
+    <ClInclude Include="..\..\common\testTypes.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="json.h">
       <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="tweakHandler.h">
