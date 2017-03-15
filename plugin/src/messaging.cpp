@@ -1,5 +1,6 @@
 #include "messaging.h"
-#include <msgpack.hpp>
+
+#include "testTypes.h"
 
 Messaging::Messaging(std::string _address, int _port)
 	:
@@ -75,14 +76,13 @@ bool Messaging::send(zmq::message_t& msg, zmq::message_t& reply)
 	return false;
 }
 
-bool Messaging::sendUpdate(const GenericMesh& data)
+bool Messaging::sendUpdate(const json& data)
 {
-	// pack a message up
-	msgpack::sbuffer sbuf;
-	msgpack::pack(sbuf, data);
+	// pack a message 
+	auto buff = json::to_msgpack(data);
 
-	zmq::message_t request(sbuf.size());
-	std::memcpy(request.data(), sbuf.data(), sbuf.size());
+	zmq::message_t request(buff.size());
+	std::memcpy(request.data(), buff.data(), buff.size());
 
 	zmq::message_t reply;
 
@@ -90,24 +90,25 @@ bool Messaging::sendUpdate(const GenericMesh& data)
 	return send(request, reply);
 }
 
-bool Messaging::requestData(GenericMesh& data)
+bool Messaging::requestData(json& data)
 {
-	GenericMesh msg;
-	msg.setRequestType(SCENE_REQUEST);
-
 	// pack a message up
-	msgpack::sbuffer sbuf;
-	msgpack::pack(sbuf, msg);
+	json sendJSON;
+	sendJSON["requestType"] = ReqType::SCENE_REQUEST;
 
-	zmq::message_t request(sbuf.size());
-	std::memcpy(request.data(), sbuf.data(), sbuf.size());
+	auto sendBuff = json::to_msgpack(sendJSON);
+
+	zmq::message_t request(sendBuff.size());
+	std::memcpy(request.data(), sendBuff.data(), sendBuff.size());
 	
 	zmq::message_t reply;
 	if (send(request, reply))
 	{
 		// unpack the data and return it
-		msgpack::object_handle oh = msgpack::unpack(static_cast<char *>(reply.data()), reply.size());
-		oh.get().convert(data);
+		uint8_t *uintBuf = (uint8_t*)reply.data();
+		std::vector<uint8_t> recBuffer(uintBuf, uintBuf + reply.size());
+
+		data = json::from_msgpack(recBuffer);
 		return true;
 	}
 

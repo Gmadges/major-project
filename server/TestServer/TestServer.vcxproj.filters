@@ -29,13 +29,10 @@
     <ClInclude Include="server.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\common\testTypes.hpp">
+    <ClInclude Include="..\..\common\json.h">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\common\genericMeshMessage.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\common\genericNodeMessage.h">
+    <ClInclude Include="..\..\common\testTypes.h">
       <Filter>common</Filter>
     </ClInclude>
   </ItemGroup>

@@ -2,9 +2,8 @@
 
 #include <thread>
 #include <iostream>
-#include <msgpack.hpp>
-
-#include "genericMeshMessage.h"
+#include "testTypes.h"
+#include "json.h"
 
 Server::Server(int _port)
 	:
@@ -55,46 +54,18 @@ void Server::handleRequest()
 		//  Wait for next request from client
 		socket.recv(&request);
 
-		// lets find out what this message is about
-
-		// TODO
-
-		// 3 basic requests we can expect
-
-		// new scene data to store
-
-		// request the current version of the scene
-
-		// get available scenes to work with
-
-		// testing msgpack recieve
-
-		GenericMesh data;
-		msgpack::object_handle oh = msgpack::unpack(static_cast<char *>(request.data()), request.size());
-		oh.get().convert(data);
+		uint8_t *uintBuf = (uint8_t*)request.data();
+		std::vector<uint8_t> reqBuffer(uintBuf, uintBuf + request.size());
+		json data = json::from_msgpack(reqBuffer);
 
 		// printing boi
 		std::cout << "THREAD: " << std::this_thread::get_id() << std::endl;
-		std::cout << "MESH NAME: " << data.getMeshName() << std::endl;
-
-		auto nodes = data.getNodes();
-
-		std::cout << "Nodes:" << std::endl;
-		for (auto it : nodes)
-		{
-			std::cout << "Node name: "<< it.getNodeName() << std::endl;
-
-			auto attribs = it.getAttribs();
-
-			std::cout << "ATTRIBS:" << std::endl;
-			for (auto it : attribs)
-			{
-				std::cout << it.first << " : " << it.second << std::endl;
-			}
-		}
+		
+		std::cout << data.dump(4) << std::endl;
 
 		// Type
-		switch (data.getRequestType())
+		ReqType reqType = data["requestType"];
+		switch (reqType)
 		{
 			case SCENE_UPDATE: 
 			{
@@ -116,26 +87,17 @@ void Server::handleRequest()
 
 				if (msgQueue.empty())
 				{
-					GenericMesh msg;
-
-					msgpack::sbuffer sbuf;
-					msgpack::pack(sbuf, msg);
-
-					// send reply
-					zmq::message_t reply(sbuf.size());
-					std::memcpy(reply.data(), sbuf.data(), sbuf.size());
+					json empty;
+					auto sendBuff = json::to_msgpack(empty);
+					zmq::message_t reply(sendBuff.size());
+					std::memcpy(reply.data(), sendBuff.data(), sendBuff.size());
 					socket.send(reply);
 					break;
 				}
 
-				// get our current data
-				// pack a message up
-				msgpack::sbuffer sbuf;
-				msgpack::pack(sbuf, msgQueue.front());
-
-				// send reply
-				zmq::message_t reply(sbuf.size());
-				std::memcpy(reply.data(), sbuf.data(), sbuf.size());
+				auto sendBuff = json::to_msgpack(msgQueue.front());
+				zmq::message_t reply(sendBuff.size());
+				std::memcpy(reply.data(), sendBuff.data(), sendBuff.size());
 				socket.send(reply);
 
 				msgQueue.pop();
