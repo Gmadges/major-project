@@ -393,7 +393,7 @@ MStatus TweakHandler::setTweakPlugFromArray(MPlug& _plug, std::vector<json>& twe
 			// apply
 			MPlug tweakPlug = _plug.elementByLogicalIndex(indice, &status);
 			
-			if (status != MStatus::kFailure)
+			if (status != MStatus::kSuccess)
 			{
 				continue;
 			}
