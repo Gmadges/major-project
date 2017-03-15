@@ -7,6 +7,7 @@
 #include "maya/MFloatVectorArray.h"
 
 #include "hackPrint.h"
+#include <exception>
 
 TweakHandler::TweakHandler()
 {
@@ -336,22 +337,73 @@ MStatus TweakHandler::connectTweakNodes(MObject& tweakNode, MObject& meshNode)
 	return MStatus::kFailure;
 }
 
-MStatus TweakHandler::getTweaksArrayfromPlug(MPlug& _plug, std::vector<double>& vals)
+MStatus TweakHandler::setTweakPlugFromArray(MPlug& _plug, std::vector<json>& tweaks)
 {
 	MStatus status = MStatus::kFailure;
 
-	// todo
+	// gonna do some hacky string manip to find out data from plug names
+	// in the future something better should be done. on the sending end i should
+	// also store indices in the message
 
+	for (auto& tweak : tweaks)
+	{
+		for (auto& val : json::iterator_wrapper(tweak))
+		{
+			unsigned int indice;
+			double x, y, z;
 
-	return status;
-}
+			// find tweak indici
+			try
+			{
+				unsigned int pos = val.key().find("[") + 1;
+				std::string indString = val.key().substr(pos, 1);
+				indice = std::stoi(indString);
+			}
+			catch (std::exception& e)
+			{
+				continue;
+			}
 
-MStatus TweakHandler::setTweakPlugFromArray(MPlug& _plug, std::vector<double>& vals)
-{
-	MStatus status = MStatus::kFailure;
+			for (auto& it : val.value())
+			{
+				if (it.is_null()) continue;
 
-	// todo
+				for (auto& tmp : json::iterator_wrapper(it))
+				{
+					// finx x y z
+					std::string name(tmp.key().substr(tmp.key().size() - 1, 1));
 
+					if (name.compare("x") == 0)
+					{
+						x = tmp.value();
+					}
+
+					if (name.compare("y") == 0)
+					{
+						y = tmp.value();
+					}
+
+					if (name.compare("z") == 0)
+					{
+						z = tmp.value();
+					}
+				}
+			}
+
+			// apply
+			MPlug tweakPlug = _plug.elementByLogicalIndex(indice, &status);
+			
+			if (status != MStatus::kFailure)
+			{
+				continue;
+			}
+
+			MFnNumericData numDataFn;
+			numDataFn.create(MFnNumericData::k3Float);
+			numDataFn.setData(x, y, z);
+			tweakPlug.setValue(numDataFn.object());
+		}
+	}
 
 	return status;
 }

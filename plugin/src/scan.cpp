@@ -275,15 +275,6 @@ MStatus Scan::getAttribFromPlug(MPlug& _plug, json& _attribs)
 		return MStatus::kFailure;
 	}
 
-	// check for tweak plug, thats special
-	//if (attribName.compare("tk") == 0)
-	//{
-	//	std::vector<double> tweaks;
-	//	pTweaksHandler->getTweaksArrayfromPlug(_plug, tweaks);
-	//	_attribs.insert(attribType(attribName, msgpack::object(tweaks)));
-	//	return MStatus::kSuccess;
-	//}
-
 	if (_plug.isArray())
 	{
 		std::vector<json> plugArray;

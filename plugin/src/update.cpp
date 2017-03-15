@@ -10,10 +10,12 @@
 #include "maya/MPlugArray.h"
 
 #include "testTypes.h"
+#include "tweakHandler.h"
 
 Update::Update()
 	:
-	pMessenger(new Messaging("localhost",8080))
+	pMessenger(new Messaging("localhost",8080)),
+	pTweakHandler(new TweakHandler())
 {
 }
 
@@ -64,6 +66,9 @@ MStatus	Update::doIt(const MArgList& args)
 		HackPrint::print("Nothing to update");
 		return status;
 	}
+
+	//test
+	HackPrint::print(data.dump(4));
 
 	// check if mesh exists
 	std::string meshName = data["meshName"];
@@ -116,20 +121,23 @@ MStatus Update::setNodeValues(json & data)
 	// rename and set correct details
 	MFnDependencyNode depNode(node);
 
-	depNode.setName(MString(nodeName.c_str()));
-
 	// this shows us all attributes.
 	// there are other ways of individually finding them using plugs
 	auto dataAttribs = data["nodeAttribs"];
+	
+	return setAttribs(depNode, dataAttribs);
+}
+
+MStatus Update::setAttribs(MFnDependencyNode& node, json& attribs)
+{
 	MStatus status;
 
-	for (json::iterator it = dataAttribs.begin(); it != dataAttribs.end(); ++it)
+	for (json::iterator it = attribs.begin(); it != attribs.end(); ++it)
 	{
-		MPlug plug = depNode.findPlug(MString(it.key().c_str()), status);
+		MPlug plug = node.findPlug(MString(it.key().c_str()), status);
 
 		if (status == MStatus::kSuccess)
 		{
-			//TODO array
 			//TODO object
 			//TODO null
 
@@ -138,7 +146,7 @@ MStatus Update::setNodeValues(json & data)
 				plug.setBool(it.value());
 				continue;
 			}
-			
+
 			if (it.value().is_number_float())
 			{
 				plug.setFloat(it.value());
@@ -151,7 +159,7 @@ MStatus Update::setNodeValues(json & data)
 				plug.setString(MString(val.c_str()));
 				continue;
 			}
-			
+
 			if (it.value().is_number_integer())
 			{
 				plug.setInt(it.value());
@@ -161,6 +169,31 @@ MStatus Update::setNodeValues(json & data)
 			if (it.value().is_number_unsigned())
 			{
 				plug.setInt64(it.value());
+				continue;
+			}
+
+			if (it.value().is_array())
+			{
+				if (it.key().compare("tk") == 0)
+				{
+					HackPrint::print("got ourselves a tweak");
+					std::vector<json> tweakVals = it.value();
+					pTweakHandler->setTweakPlugFromArray(plug, tweakVals);
+				}
+
+				//TODO all other cases
+				continue;
+			}
+
+			if (it.value().is_object())
+			{
+				// TODO
+				continue;
+			}
+
+			if (it.value().is_null())
+			{
+				// TODO
 				continue;
 			}
 		}
