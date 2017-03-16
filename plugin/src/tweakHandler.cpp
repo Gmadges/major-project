@@ -398,10 +398,22 @@ MStatus TweakHandler::setTweakPlugFromArray(MPlug& _plug, std::vector<json>& twe
 				continue;
 			}
 
-			MFnNumericData numDataFn;
-			numDataFn.create(MFnNumericData::k3Float);
-			numDataFn.setData(x, y, z);
-			tweakPlug.setValue(numDataFn.object());
+			//MFnNumericData numDataFn;
+			//numDataFn.create(MFnNumericData::k3Float);
+			//numDataFn.setData(x, y, z);
+			//tweakPlug.setValue(numDataFn.object());
+
+			// mel hack
+			MString cmd = "setAttr \"polyTweak1.tk[";
+			cmd += indice;
+			cmd+= "] \" - type \"double3\" ";
+			cmd += x;
+			cmd += " ";
+			cmd += y;
+			cmd += " ";
+			cmd += z;
+			HackPrint::print(cmd);
+			MGlobal::executeCommand(cmd);
 		}
 	}
 
