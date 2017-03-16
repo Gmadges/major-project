@@ -1,11 +1,20 @@
 #include "updateHandler.h"
 
 
-UpdateHandler::UpdateHandler()
+#include "database.h"
+
+UpdateHandler::UpdateHandler(std::shared_ptr<Database> _db)
+	:
+	pDB(_db)
 {
 }
 
 
 UpdateHandler::~UpdateHandler()
 {
+}
+
+bool UpdateHandler::processRequest(json& _request)
+{
+	return false;
 }

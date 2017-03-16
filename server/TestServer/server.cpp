@@ -5,6 +5,12 @@
 #include "testTypes.h"
 #include "json.h"
 
+#include "requestHandler.h"
+#include "updateHandler.h"
+
+// this is only for our fake one right now
+#include "database.h"
+
 Server::Server(int _port)
 	:
 	context(1),
@@ -12,6 +18,9 @@ Server::Server(int _port)
 	workersSocket(context, ZMQ_DEALER),
 	port(_port)
 {
+	std::shared_ptr<Database> pDB(new Database());
+	pUpdateHandler.reset(new UpdateHandler(pDB));
+	pRequestHandler.reset(new RequestHandler(pDB));
 }
 
 Server::~Server()
@@ -64,38 +73,23 @@ void Server::handleMessage()
 		{
 			case SCENE_UPDATE: 
 			{
-				std::cout << "we got an update!" << std::endl;
-				std::cout << "add to stack!" << std::endl;
+				bool result = pUpdateHandler->processRequest(data);
 
-				// add to stack
-				msgQueue.push(data);
-
-				//  Send reply back to client
-				zmq::message_t reply(7);
-				memcpy(reply.data(), "SUCCESS", 7);
+				json replyData;
+				replyData["result"] = result;
+				auto sendBuff = json::to_msgpack(replyData);
+				zmq::message_t reply(sendBuff.size());
+				std::memcpy(reply.data(), sendBuff.data(), sendBuff.size());
 				socket.send(reply);
 				break;
 			}
 			case SCENE_REQUEST:
 			{
-				std::cout << "ugh someone wants our data!" << std::endl;
-
-				if (msgQueue.empty())
-				{
-					json empty;
-					auto sendBuff = json::to_msgpack(empty);
-					zmq::message_t reply(sendBuff.size());
-					std::memcpy(reply.data(), sendBuff.data(), sendBuff.size());
-					socket.send(reply);
-					break;
-				}
-
-				auto sendBuff = json::to_msgpack(msgQueue.front());
+				json replyData = pRequestHandler->processRequest(data);
+				auto sendBuff = json::to_msgpack(replyData);
 				zmq::message_t reply(sendBuff.size());
 				std::memcpy(reply.data(), sendBuff.data(), sendBuff.size());
 				socket.send(reply);
-
-				msgQueue.pop();
 				break;
 			}
 		};
