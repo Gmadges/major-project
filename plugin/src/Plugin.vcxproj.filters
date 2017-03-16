@@ -17,6 +17,9 @@
     <ClCompile Include="polyModifierNode.cpp">
       <Filter>update</Filter>
     </ClCompile>
+    <ClCompile Include="tweakHandler.cpp">
+      <Filter>shared</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hackPrint.h" />
@@ -41,6 +44,9 @@
     <ClInclude Include="json.h">
       <Filter>common</Filter>
     </ClInclude>
+    <ClInclude Include="tweakHandler.h">
+      <Filter>shared</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="scan">
@@ -54,6 +60,9 @@
     </Filter>
     <Filter Include="message">
       <UniqueIdentifier>{0b43f097-faa6-4a22-bd7c-ad8c94c201a2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shared">
+      <UniqueIdentifier>{c85e83c3-a466-4886-956c-a49243856d0a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

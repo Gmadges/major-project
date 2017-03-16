@@ -16,12 +16,14 @@
 #include <maya/MArgDatabase.h>
 
 #include "messaging.h"
+#include "tweakHandler.h"
 #include "hackPrint.h"
 #include "testTypes.h"
 
 Scan::Scan()
 	:
-	pMessaging(new Messaging("localhost", 8080))
+	pMessaging(new Messaging("localhost", 8080)),
+	pTweaksHandler(new TweakHandler())
 {
 }
 
@@ -84,6 +86,23 @@ MStatus	Scan::doIt(const MArgList& args)
 			continue;
 		}
 
+		// check for tweaks
+		if (pTweaksHandler->hasTweaks(dagPath))
+		{
+			MObject tweakNode;
+			HackPrint::print("we got tweaks");
+			if (pTweaksHandler->createPolyTweakNode(dagPath, tweakNode) == MStatus::kSuccess)
+			{
+				HackPrint::print("created a node ting");
+				dagPath.extendToShape();
+				if (pTweaksHandler->connectTweakNodes(tweakNode, dagPath.node()) == MStatus::kSuccess)
+				{
+					HackPrint::print("connected");
+				}
+			}
+		}
+
+		// turn tweaks into a node before sending
 		if (sendMesh(dagPath) != MStatus::kSuccess) return MStatus::kFailure;
 	}
 	return MS::kSuccess;
@@ -174,6 +193,7 @@ void Scan::traverseHistory(MFnDependencyNode & node, std::vector<json>& nodeList
 	
 	if (node.typeName() == MString("transform") ||
 		node.typeName() == MString("mesh") ||
+		node.typeName() == MString("polyTweak") ||
 		//node.typeName() == MString("polySplitRing") ||
 		node.typeName() == MString("polyCube"))
 	{
@@ -243,19 +263,33 @@ MStatus Scan::getAttribFromPlug(MPlug& _plug, json& _attribs)
 {
 	std::string attribName = _plug.partialName().asChar();
 
+	if (_plug.isNull())
+	{
+		_attribs[attribName] = nullptr;
+		return MStatus::kSuccess;
+	}
+
+	//hack stops crashing on plugs which have an index of -1
+	if (attribName.find("-1") != std::string::npos)
+	{
+		return MStatus::kFailure;
+	}
+
 	if (_plug.isArray())
 	{
-		for (unsigned int i = 0; i < _plug.numConnectedElements(); i++)
+		std::vector<json> plugArray;
+		for (unsigned int i = 0; i < _plug.numElements(); i++)
 		{
 			// get the MPlug for the i'th array element
-			MPlug elemPlug = _plug.connectionByPhysicalIndex(i);
+			MPlug elemPlug = _plug.elementByPhysicalIndex(i);
 
 			json vals;
 			if (getAttribFromPlug(elemPlug, vals) == MStatus::kSuccess)
 			{
-				_attribs[attribName] = vals;
+				plugArray.push_back(vals);
 			}
 		}
+		_attribs[attribName] = plugArray;
 		return MStatus::kSuccess;
 	}
 
@@ -263,7 +297,7 @@ MStatus Scan::getAttribFromPlug(MPlug& _plug, json& _attribs)
 	{
 		// if the plug is a compound then it has a number of children plugs we need to grab
 		unsigned int numChild = _plug.numChildren();
-
+		std::vector<json> childrenPlugs(numChild);
 		for(unsigned int i = 0; i < numChild; ++i)
 		{
 			MPlug childPlug = _plug.child(i);
@@ -273,9 +307,10 @@ MStatus Scan::getAttribFromPlug(MPlug& _plug, json& _attribs)
 			json vals;
 			if (getAttribFromPlug(childPlug, vals) == MStatus::kSuccess)
 			{
-				_attribs[attribName] = vals;
+				childrenPlugs.push_back(vals);
 			}
 		}
+		_attribs[attribName] = childrenPlugs;
 		return MStatus::kSuccess;
 	}
 

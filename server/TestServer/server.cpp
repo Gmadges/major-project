@@ -61,7 +61,7 @@ void Server::handleRequest()
 		// printing boi
 		std::cout << "THREAD: " << std::this_thread::get_id() << std::endl;
 		
-		std::cout << data.dump(4) << std::endl;
+		//std::cout << data.dump(4) << std::endl;
 
 		// Type
 		ReqType reqType = data["requestType"];

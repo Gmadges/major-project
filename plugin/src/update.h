@@ -11,6 +11,7 @@
 #include "json.h"
 
 class Messaging;
+class TweakHandler;
 
 class Update : public polyModifierCmd
 {
@@ -30,10 +31,11 @@ private:
 	void renameNodes(MFnDependencyNode & node, json& mesh);
 	MStatus createNode(json& _node);
 	MStatus setConnections(json& _mesh, json& _node);
+	MStatus setAttribs(MFnDependencyNode& node, json& attribs);
 
 private:
 	std::unique_ptr<Messaging> pMessenger;
-
+	std::unique_ptr<TweakHandler> pTweakHandler;
 };
 
 #endif

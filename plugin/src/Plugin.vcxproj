@@ -149,6 +149,7 @@
     <ClCompile Include="polyModifierCmd.cpp" />
     <ClCompile Include="polyModifierNode.cpp" />
     <ClCompile Include="scan.cpp" />
+    <ClCompile Include="tweakHandler.cpp" />
     <ClCompile Include="update.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -159,6 +160,7 @@
     <ClInclude Include="polyModifierCmd.h" />
     <ClInclude Include="polyModifierNode.h" />
     <ClInclude Include="scan.h" />
+    <ClInclude Include="tweakHandler.h" />
     <ClInclude Include="update.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
