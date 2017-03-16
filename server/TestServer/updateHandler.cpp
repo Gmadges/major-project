@@ -16,5 +16,10 @@ UpdateHandler::~UpdateHandler()
 
 bool UpdateHandler::processRequest(json& _request)
 {
+	if (_request.count("mesh") > 0)
+	{
+		return pDB->putMesh(_request["mesh"]);
+	}
+
 	return false;
 }
