@@ -16,7 +16,7 @@ public:
 	int run();
 
 private:
-	void handleRequest();
+	void handleMessage();
 
 private:
 	zmq::context_t context;

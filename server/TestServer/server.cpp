@@ -29,7 +29,7 @@ int Server::run()
 	//  Launch pool of worker threads
 	for (unsigned int i = 0; i < maxThreads; i++)
 	{
-		workers.push_back(std::thread(&Server::handleRequest, this));
+		workers.push_back(std::thread(&Server::handleMessage, this));
 	}
 
 	//  Connect work threads to client threads via a queue
@@ -43,7 +43,7 @@ int Server::run()
 	return 1;
 }
 
-void Server::handleRequest() 
+void Server::handleMessage() 
 {
 	zmq::socket_t socket(context, ZMQ_REP);
 	socket.connect("inproc://workers");
@@ -57,11 +57,6 @@ void Server::handleRequest()
 		uint8_t *uintBuf = (uint8_t*)request.data();
 		std::vector<uint8_t> reqBuffer(uintBuf, uintBuf + request.size());
 		json data = json::from_msgpack(reqBuffer);
-
-		// printing boi
-		std::cout << "THREAD: " << std::this_thread::get_id() << std::endl;
-		
-		//std::cout << data.dump(4) << std::endl;
 
 		// Type
 		ReqType reqType = data["requestType"];
