@@ -33,3 +33,8 @@ json Database::getMesh(std::string& _id)
 
 	return json();
 }
+
+json Database::getAllMeshes()
+{
+	return db;
+}

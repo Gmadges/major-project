@@ -7,6 +7,7 @@
 
 #include "requestHandler.h"
 #include "updateHandler.h"
+#include "infoHandler.h"
 
 // this is only for our fake one right now
 #include "database.h"
@@ -19,8 +20,10 @@ Server::Server(int _port)
 	port(_port)
 {
 	std::shared_ptr<Database> pDB(new Database());
+
 	pUpdateHandler.reset(new UpdateHandler(pDB));
 	pRequestHandler.reset(new RequestHandler(pDB));
+	pInfoHandler.reset(new InfoHandler(pDB));
 }
 
 Server::~Server()
@@ -86,6 +89,15 @@ void Server::handleMessage()
 			case SCENE_REQUEST:
 			{
 				json replyData = pRequestHandler->processRequest(data);
+				auto sendBuff = json::to_msgpack(replyData);
+				zmq::message_t reply(sendBuff.size());
+				std::memcpy(reply.data(), sendBuff.data(), sendBuff.size());
+				socket.send(reply);
+				break;
+			}
+			case INFO_REQUEST:
+			{
+				json replyData = pInfoHandler->processRequest();
 				auto sendBuff = json::to_msgpack(replyData);
 				zmq::message_t reply(sendBuff.size());
 				std::memcpy(reply.data(), sendBuff.data(), sendBuff.size());

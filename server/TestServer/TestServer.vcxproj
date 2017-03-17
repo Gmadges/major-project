@@ -133,6 +133,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="database.cpp" />
+    <ClCompile Include="infoHandler.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="requestHandler.cpp" />
     <ClCompile Include="server.cpp" />
@@ -142,6 +143,7 @@
     <ClInclude Include="..\..\common\json.h" />
     <ClInclude Include="..\..\common\testTypes.h" />
     <ClInclude Include="database.h" />
+    <ClInclude Include="infoHandler.h" />
     <ClInclude Include="requestHandler.h" />
     <ClInclude Include="server.h" />
     <ClInclude Include="updateHandler.h" />

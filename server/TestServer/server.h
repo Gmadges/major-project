@@ -9,6 +9,7 @@
 
 class RequestHandler;
 class UpdateHandler;
+class InfoHandler;
 
 class Server
 {
@@ -31,6 +32,7 @@ private:
 
 	std::unique_ptr<UpdateHandler> pUpdateHandler;
 	std::unique_ptr<RequestHandler> pRequestHandler;
+	std::unique_ptr<InfoHandler> pInfoHandler;
 };
 
 #endif
