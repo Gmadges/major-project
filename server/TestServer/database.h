@@ -10,7 +10,7 @@ public:
 	~Database();
 
 	bool putMesh(json& _mesh);
-	json getMesh(std::string& _name);
+	json getMesh(std::string& _id);
 
 private:
 	json db;

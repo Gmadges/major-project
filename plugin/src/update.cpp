@@ -71,7 +71,7 @@ MStatus	Update::doIt(const MArgList& args)
 	HackPrint::print(data.dump(4));
 
 	// check if mesh exists
-	std::string meshName = data["meshName"];
+	std::string meshName = data["name"];
 	bool meshexists = doesItExist(MString(meshName.c_str()));
 
 	if (!meshexists)
@@ -89,7 +89,7 @@ MStatus	Update::doIt(const MArgList& args)
 	for (auto itr : nodeList)
 	{
 		// check if node exists
-		std::string stringName = itr["nodeName"];
+		std::string stringName = itr["name"];
 		MString nodeName = stringName.c_str();
 		bool nodeExists = doesItExist(nodeName);
 
@@ -114,7 +114,7 @@ MStatus	Update::doIt(const MArgList& args)
 MStatus Update::setNodeValues(json & data)
 {
 	MSelectionList sList;
-	std::string nodeName = data["nodeName"];
+	std::string nodeName = data["name"];
 	sList.add(MString(nodeName.c_str()));
 	MObject node;
 	if (sList.getDependNode(0, node) != MStatus::kSuccess) return MStatus::kFailure;
@@ -123,7 +123,7 @@ MStatus Update::setNodeValues(json & data)
 
 	// this shows us all attributes.
 	// there are other ways of individually finding them using plugs
-	auto dataAttribs = data["nodeAttribs"];
+	auto dataAttribs = data["attribs"];
 	
 	return setAttribs(depNode, dataAttribs);
 }
@@ -235,7 +235,7 @@ MStatus Update::createMesh(json& _mesh)
 	MStatus status;
 
 	// create a mesh
-	PolyType type = _mesh["meshType"];
+	PolyType type = _mesh["type"];
 
 	switch (type)
 	{
@@ -274,11 +274,11 @@ void Update::renameNodes(MFnDependencyNode & node, json& mesh)
 	// This wont work for multiple 
 	for (auto it : mesh["nodes"])
 	{
-		std::string nodeType = it["nodeType"];
+		std::string nodeType = it["type"];
 		MString type(nodeType.c_str());
 		if (node.typeName() == type)
 		{
-			std::string nodeName = it["nodeName"];
+			std::string nodeName = it["name"];
 			node.setName(MString(nodeName.c_str()));
 		}
 	}	
@@ -313,13 +313,13 @@ MStatus Update::createNode(json& _node)
 	// create a node of same type?
 	MString cmd;
 	cmd += "createNode \"";
-	std::string nodetype = _node["nodeType"];
+	std::string nodetype = _node["type"];
 	cmd += nodetype.c_str();
 	cmd += "\"";
 
 	// node name
 	cmd += " -n \"";
-	std::string nodeName = _node["nodeName"];
+	std::string nodeName = _node["name"];
 	cmd += nodeName.c_str();
 	cmd += "\"";
 
@@ -330,14 +330,14 @@ MStatus Update::createNode(json& _node)
 MStatus Update::setConnections(json& _mesh, json& _node)
 {
 	// if its not a mesh we'll have to wire it in
-	std::string type = _node["nodeType"];
+	std::string type = _node["type"];
 	
 	if (type.compare("polySplitRing") == 0 ||
 		type.compare("polyTweak") == 0 )
 	{
 		// get mesh and set it to be the one we're effecting
 		MSelectionList selList;
-		std::string meshName = _mesh["meshName"];
+		std::string meshName = _mesh["name"];
 		selList.add(MString(meshName.c_str()));
 		MDagPath dagpath;
 		selList.getDagPath(0, dagpath);
@@ -346,7 +346,7 @@ MStatus Update::setConnections(json& _mesh, json& _node)
 
 		// get node and do the connections
 		MSelectionList sList;
-		std::string nodeName = _node["nodeName"];
+		std::string nodeName = _node["name"];
 		sList.add(MString(nodeName.c_str()));
 		MObject node;
 		if (sList.getDependNode(0, node) != MStatus::kSuccess) return MStatus::kFailure;
@@ -359,10 +359,10 @@ MStatus Update::setConnections(json& _mesh, json& _node)
 		{
 			MString connectCmd;
 			connectCmd += "connectAttr ";
-			std::string meshName = _mesh["meshName"];
+			std::string meshName = _mesh["name"];
 			connectCmd += meshName.c_str();
 			connectCmd += ".worldMatrix[0] ";
-			std::string nodeName = _node["nodeName"];
+			std::string nodeName = _node["name"];
 			connectCmd += nodeName.c_str();
 			connectCmd += ".manipMatrix;";
 			MGlobal::executeCommand(connectCmd);
@@ -374,6 +374,8 @@ MStatus Update::setConnections(json& _mesh, json& _node)
 
 bool Update::doesItExist(MString& name)
 {
+	// TODO needs rewrite to work with UUIDS
+
 	MString objExistsCmd;
 	objExistsCmd += "objExists \"";
 	objExistsCmd += name;
