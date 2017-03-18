@@ -14,9 +14,6 @@
     <ClCompile Include="messaging.cpp">
       <Filter>message</Filter>
     </ClCompile>
-    <ClCompile Include="polyModifierNode.cpp">
-      <Filter>update</Filter>
-    </ClCompile>
     <ClCompile Include="tweakHandler.cpp">
       <Filter>shared</Filter>
     </ClCompile>
@@ -37,9 +34,6 @@
     </ClInclude>
     <ClInclude Include="messaging.h">
       <Filter>message</Filter>
-    </ClInclude>
-    <ClInclude Include="polyModifierNode.h">
-      <Filter>update</Filter>
     </ClInclude>
     <ClInclude Include="..\..\common\testTypes.h">
       <Filter>common</Filter>
