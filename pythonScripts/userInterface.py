@@ -98,9 +98,8 @@ class CreateUI(QWidget):
         mel.eval(sendCmd)
         
     def update(self):
-        updateCmd = 'ReceiveUpdate -a ' + self.address + ' -p ' + str(self.port) + ' -id ' + self.meshList[self.currentMeshIndex][1]
-        print updateCmd
-        #mel.eval(updateCmd)
+        updateCmd = 'ReceiveUpdate -a "' + self.address + '" -p ' + str(self.port) + ' -id "' + self.meshList[self.currentMeshIndex][1] + '"'
+        mel.eval(updateCmd)
             
 def main():
     ui = CreateUI()

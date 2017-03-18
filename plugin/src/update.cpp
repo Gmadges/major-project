@@ -34,6 +34,7 @@ MSyntax Update::newSyntax()
 
 	syn.addFlag("-a", "-address", MSyntax::kString);
 	syn.addFlag("-p", "-port", MSyntax::kUnsigned);
+	syn.addFlag("-id", "-uuid", MSyntax::kString);
 
 	return syn;
 }
@@ -45,7 +46,8 @@ MStatus	Update::doIt(const MArgList& args)
 	// reset socket
 	MString addr;
 	int port;
-	status = getArgs(args, addr, port);
+	MString id;
+	status = getArgs(args, addr, port, id);
 	if (status != MStatus::kSuccess)
 	{
 		HackPrint::print("no input values specified");
@@ -58,7 +60,7 @@ MStatus	Update::doIt(const MArgList& args)
 	json data;
 	
 	// if false then we couldnt connect to server
-	if (!pMessenger->requestData(data, ReqType::MESH_REQUEST)) return MStatus::kFailure;
+	if (!pMessenger->requestMesh(data, ReqType::MESH_REQUEST, std::string(id.asChar()))) return MStatus::kFailure;
 	
 	// is there actually anything?
 	if (data.empty())
@@ -66,9 +68,6 @@ MStatus	Update::doIt(const MArgList& args)
 		HackPrint::print("Nothing to update");
 		return status;
 	}
-
-	//test
-	HackPrint::print(data.dump(4));
 
 	// check if mesh exists
 	std::string meshName = data["name"];
@@ -201,7 +200,7 @@ MStatus Update::setAttribs(MFnDependencyNode& node, json& attribs)
 	return MStatus::kSuccess;
 }
 
-MStatus Update::getArgs(const MArgList& args, MString& address, int& port)
+MStatus Update::getArgs(const MArgList& args, MString& address, int& port, MString& id)
 {
 	MStatus status = MStatus::kSuccess;
 	MArgDatabase parser(syntax(), args, &status);
@@ -221,6 +220,15 @@ MStatus Update::getArgs(const MArgList& args, MString& address, int& port)
 	if (parser.isFlagSet("-a"))
 	{
 		parser.getFlagArgument("-a", 0, address);
+	}
+	else
+	{
+		status = MStatus::kFailure;
+	}
+
+	if (parser.isFlagSet("-id"))
+	{
+		parser.getFlagArgument("-id", 0, id);
 	}
 	else
 	{
