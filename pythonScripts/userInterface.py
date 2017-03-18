@@ -85,16 +85,17 @@ class CreateUI(QWidget):
         self.meshChanged(0)
 
     def requestInfo(self):
-        sendCmd = 'getInfo -a ' + self.address + ' -p ' + str(self.port)
+        sendCmd = 'getInfo -a "' + self.address + '" -p ' + str(self.port)
         meshResult = mel.eval(sendCmd)
         self.meshList = []
-        for i in range(0, len(meshResult), 2):
-            meshVal = [meshResult[i], meshResult[i+1]]
-            self.meshList.append(meshVal)
+        if meshResult is not None :  
+            for i in range(0, len(meshResult), 2):
+                meshVal = [meshResult[i], meshResult[i+1]]
+                self.meshList.append(meshVal)
 
         
     def send(self):
-        sendCmd = 'ScanSend -a ' + self.address + ' -p ' + str(self.port)
+        sendCmd = 'ScanSend -a "' + self.address + '" -p ' + str(self.port)
         mel.eval(sendCmd)
         
     def update(self):
