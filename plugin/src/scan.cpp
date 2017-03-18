@@ -154,6 +154,9 @@ MStatus Scan::sendMesh(MDagPath & meshDAGPath)
 	meshData["type"] = PolyType::CUBE;
 
 	// add all its nodes
+	// minor hack
+	// the order of the nodes is going thw wrong way from most recent to older
+	std::reverse(nodeList.begin(), nodeList.end());
 	meshData["nodes"] = nodeList;
 
 	// attach the mesh to the message
