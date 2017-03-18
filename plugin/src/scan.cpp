@@ -114,7 +114,7 @@ MStatus Scan::sendMesh(MDagPath & meshDAGPath)
 	MStatus status;
 
 	json message;
-	message["requestType"] = ReqType::SCENE_UPDATE;
+	message["requestType"] = ReqType::MESH_UPDATE;
 	
 	std::vector<json> nodeList;
 

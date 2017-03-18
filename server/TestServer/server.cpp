@@ -74,7 +74,7 @@ void Server::handleMessage()
 		ReqType reqType = data["requestType"];
 		switch (reqType)
 		{
-			case SCENE_UPDATE: 
+			case MESH_UPDATE: 
 			{
 				bool result = pUpdateHandler->processRequest(data);
 
@@ -86,7 +86,7 @@ void Server::handleMessage()
 				socket.send(reply);
 				break;
 			}
-			case SCENE_REQUEST:
+			case MESH_REQUEST:
 			{
 				json replyData = pRequestHandler->processRequest(data);
 				auto sendBuff = json::to_msgpack(replyData);

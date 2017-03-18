@@ -1,7 +1,5 @@
 #include "messaging.h"
 
-#include "testTypes.h"
-
 Messaging::Messaging(std::string _address, int _port)
 	:
 	ipAddress(_address),
@@ -90,11 +88,11 @@ bool Messaging::sendUpdate(const json& data)
 	return send(request, reply);
 }
 
-bool Messaging::requestData(json& data)
+bool Messaging::requestData(json& data, ReqType _type)
 {
 	// pack a message up
 	json sendJSON;
-	sendJSON["requestType"] = ReqType::SCENE_REQUEST;
+	sendJSON["requestType"] = _type;
 
 	auto sendBuff = json::to_msgpack(sendJSON);
 

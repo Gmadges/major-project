@@ -144,6 +144,7 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="info.cpp" />
     <ClCompile Include="messaging.cpp" />
     <ClCompile Include="plugin.cpp" />
     <ClCompile Include="polyModifierCmd.cpp" />
@@ -155,6 +156,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\common\testTypes.h" />
     <ClInclude Include="hackPrint.h" />
+    <ClInclude Include="info.h" />
     <ClInclude Include="json.h" />
     <ClInclude Include="messaging.h" />
     <ClInclude Include="polyModifierCmd.h" />

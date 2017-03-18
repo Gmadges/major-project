@@ -20,6 +20,9 @@
     <ClCompile Include="tweakHandler.cpp">
       <Filter>shared</Filter>
     </ClCompile>
+    <ClCompile Include="info.cpp">
+      <Filter>info</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hackPrint.h" />
@@ -47,6 +50,9 @@
     <ClInclude Include="tweakHandler.h">
       <Filter>shared</Filter>
     </ClInclude>
+    <ClInclude Include="info.h">
+      <Filter>info</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="scan">
@@ -63,6 +69,9 @@
     </Filter>
     <Filter Include="shared">
       <UniqueIdentifier>{c85e83c3-a466-4886-956c-a49243856d0a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="info">
+      <UniqueIdentifier>{f48acf7c-7a3f-4fd9-966f-23061c28eca1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

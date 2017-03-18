@@ -58,7 +58,7 @@ MStatus	Update::doIt(const MArgList& args)
 	json data;
 	
 	// if false then we couldnt connect to server
-	if (!pMessenger->requestData(data)) return MStatus::kFailure;
+	if (!pMessenger->requestData(data, ReqType::MESH_REQUEST)) return MStatus::kFailure;
 	
 	// is there actually anything?
 	if (data.empty())

@@ -5,6 +5,7 @@
 #include <functional>
 
 #include "json.h"
+#include "testTypes.h"
 
 class Messaging
 {
@@ -14,7 +15,7 @@ public:
 	
 	void resetSocket(std::string _address, int _port);
 	bool sendUpdate(const json& data);
-	bool requestData(json& data);
+	bool requestData(json& data, ReqType _type);
 
 private:
 	bool send(zmq::message_t& msg, zmq::message_t& reply);
