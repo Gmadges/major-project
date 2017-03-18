@@ -359,12 +359,15 @@ MStatus Update::setConnections(json& _mesh, json& _node)
 		MUuid meshID(_mesh["id"].get<std::string>().c_str());
 		
 		status = selList.add(meshID);
-		if (status != MStatus::kSuccess) return status;
+		MObject meshNode;
+		status = selList.getDependNode(0, meshNode);
+		if(status != MStatus::kSuccess) return status;
 
-		MDagPath dagpath;
-		selList.getDagPath(0, dagpath);
-		dagpath.extendToShape();
-		setMeshNode(dagpath);
+		// rename and set correct details
+		MDagPathArray dagArray;
+		MDagPath::getAllPathsTo(meshNode, dagArray);
+		dagArray[0].extendToShape();
+		setMeshNode(dagArray[0]);
 
 		// get node and do the connections
 		MSelectionList sList;
