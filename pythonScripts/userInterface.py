@@ -24,6 +24,8 @@ class CreateUI(QWidget):
         self.setWindowFlags(Qt.Window)
         self.address = 'localhost'
         self.port = 8080
+        self.meshList = []
+        self.currentMeshIndex = 0
         self.initUI()
         
     def initUI(self):
@@ -42,11 +44,17 @@ class CreateUI(QWidget):
         self.port_spin.setValue(self.port)
         self.port_spin.valueChanged[int].connect(self.portChanged)
 
+        self.mesh_combo = QComboBox();
+        self.mesh_combo.currentIndexChanged[int].connect(self.meshChanged)
+        # test
+        self.updateMeshList()
+
         # layout code
         settings_layout = QFormLayout()
         settings_layout.setContentsMargins(2, 2, 2, 2)
         settings_layout.addRow(QLabel('Network address'), self.address_line)
         settings_layout.addRow(QLabel('Port number'), self.port_spin)
+        settings_layout.addRow(QLabel('Mesh select'), self.mesh_combo)
 
         button_layout = QHBoxLayout()
         button_layout.setContentsMargins(2, 2, 2, 2)
@@ -66,12 +74,32 @@ class CreateUI(QWidget):
     def portChanged(self, port):
         self.port = port
 
+    def meshChanged(self, index):
+        self.currentMeshIndex = index
+
+    def updateMeshList(self):
+        self.requestInfo()
+        self.mesh_combo.clear()
+        for i in self.meshList : 
+            self.mesh_combo.addItem(i[0])
+        self.meshChanged(0)
+
+    def requestInfo(self):
+        sendCmd = 'getInfo -a "' + self.address + '" -p ' + str(self.port)
+        meshResult = mel.eval(sendCmd)
+        self.meshList = []
+        if meshResult is not None :  
+            for i in range(0, len(meshResult), 2):
+                meshVal = [meshResult[i], meshResult[i+1]]
+                self.meshList.append(meshVal)
+
+        
     def send(self):
-        sendCmd = 'ScanSend -a ' + self.address + ' -p ' + str(self.port)
+        sendCmd = 'ScanSend -a "' + self.address + '" -p ' + str(self.port)
         mel.eval(sendCmd)
         
     def update(self):
-        updateCmd = 'ReceiveUpdate -a ' + self.address + ' -p ' + str(self.port)
+        updateCmd = 'ReceiveUpdate -a "' + self.address + '" -p ' + str(self.port) + ' -id "' + self.meshList[self.currentMeshIndex][1] + '"'
         mel.eval(updateCmd)
             
 def main():

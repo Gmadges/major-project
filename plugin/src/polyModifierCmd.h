@@ -52,6 +52,9 @@ protected:
 
 	MStatus							doModifyPoly(MObject& node);
 
+	MDGModifier			fDGModifier;
+	MDagModifier		fDagModifier;
+
 private:
 
 	//////////////////////////////////////////////
@@ -159,36 +162,6 @@ private:
 	// Cached Mesh Data (for undo in the 'No History'/'History turned off' case)
 	//
 	MObject				fMeshData;
-
-	// DG and DAG Modifier
-	//
-	//	  - We need both DAG and DG modifiers since the MDagModifier::createNode()
-	//		method is overridden and specific to DAG nodes. So to keep
-	//		the operations consistent we will only use the fDagModifier
-	//		when dealing with the DAG.
-	//
-	//	  - There is a limitation between the reparentNode() and deleteNode()
-	//		methods on the MDagModifier. The deleteNode() method does some
-	//		preparation work before it enqueues itself in the MDagModifier list
-	//		of operations, namely, it looks at it's parents and children and
-	//		deletes them as well if they are the only parent/child of the node
-	//		scheduled to be deleted.
-	//
-	//		This conflicts with our call to MDagModifier::reparentNode(),
-	//		since we want to reparent the shape of a duplicated node under
-	//		another node and then delete the transform of that node. Now you 
-	//		can see that since the reparentNode() doesn't execute until after
-	//		the MDagModifier::doIt() call, the scheduled deleteNode() call
-	//		still sees the child and marks it for delete. The subsequent
-	//		doIt() call reparents the shape and then deletes both it and the
-	//		transform.
-	//
-	//		To avoid this conflict, we separate the calls individually and
-	//		perform the reparenting (by calling a doIt()) before the deleteNode()
-	//		method is enqueued on the modifier.
-	//
-	MDGModifier			fDGModifier;
-	MDagModifier		fDagModifier;
 };
 
 //

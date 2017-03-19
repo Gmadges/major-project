@@ -144,10 +144,10 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="info.cpp" />
     <ClCompile Include="messaging.cpp" />
     <ClCompile Include="plugin.cpp" />
     <ClCompile Include="polyModifierCmd.cpp" />
-    <ClCompile Include="polyModifierNode.cpp" />
     <ClCompile Include="scan.cpp" />
     <ClCompile Include="tweakHandler.cpp" />
     <ClCompile Include="update.cpp" />
@@ -155,10 +155,10 @@
   <ItemGroup>
     <ClInclude Include="..\..\common\testTypes.h" />
     <ClInclude Include="hackPrint.h" />
+    <ClInclude Include="info.h" />
     <ClInclude Include="json.h" />
     <ClInclude Include="messaging.h" />
     <ClInclude Include="polyModifierCmd.h" />
-    <ClInclude Include="polyModifierNode.h" />
     <ClInclude Include="scan.h" />
     <ClInclude Include="tweakHandler.h" />
     <ClInclude Include="update.h" />

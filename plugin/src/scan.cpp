@@ -14,6 +14,7 @@
 #include <maya/MFnAttribute.h>
 #include <maya/MSyntax.h>
 #include <maya/MArgDatabase.h>
+#include <maya/MUuid.h>
 
 #include "messaging.h"
 #include "tweakHandler.h"
@@ -112,7 +113,9 @@ MStatus Scan::sendMesh(MDagPath & meshDAGPath)
 {
 	MStatus status;
 
-	json meshMessage;
+	json message;
+	message["requestType"] = ReqType::MESH_UPDATE;
+	
 	std::vector<json> nodeList;
 
 	meshDAGPath.extendToShape();
@@ -139,15 +142,28 @@ MStatus Scan::sendMesh(MDagPath & meshDAGPath)
 	// transform, shape and mesh
 	if (nodeList.size() < 3) return MStatus::kFailure;
 
-	meshMessage["meshName"] = std::string(transformNode.name().asChar());
-	meshMessage["requestType"] = ReqType::SCENE_UPDATE;
+	json meshData;
+	
+	// use shape nodes id.
+	meshData["id"] = std::string(depNodeFn.uuid().asString().asChar());
 
-	// hardcode for now
-	meshMessage["meshType"] = PolyType::CUBE;
-	meshMessage["nodes"] = nodeList;
+	// transforms name, because i dunno
+	meshData["name"] = std::string(transformNode.name().asChar());
+
+	// hardcode cube for now
+	meshData["type"] = PolyType::CUBE;
+
+	// add all its nodes
+	// minor hack
+	// the order of the nodes is going thw wrong way from most recent to older
+	std::reverse(nodeList.begin(), nodeList.end());
+	meshData["nodes"] = nodeList;
+
+	// attach the mesh to the message
+	message["mesh"] = meshData;
 
 	HackPrint::print("sending " + transformNode.name());
-	if (pMessaging->sendUpdate(meshMessage))
+	if (pMessaging->sendUpdate(message))
 	{
 		HackPrint::print("mesh sent succesfully");
 		return MStatus::kSuccess;
@@ -252,9 +268,14 @@ MStatus Scan::getGenericNode(MFnDependencyNode & _inNode, json& _outNode)
 
 	if (nodeAttribs.empty()) return MStatus::kFailure;
 
-	_outNode["nodeName"] = std::string(_inNode.name().asChar());
-	_outNode["nodeType"] = std::string(_inNode.typeName().asChar());
-	_outNode["nodeAttribs"] = nodeAttribs;
+	// uuid
+	// get the uuid of the node for sending broseph
+	MUuid idObj = _inNode.uuid();
+
+	_outNode["id"] = std::string(idObj.asString().asChar());
+	_outNode["name"] = std::string(_inNode.name().asChar());
+	_outNode["type"] = std::string(_inNode.typeName().asChar());
+	_outNode["attribs"] = nodeAttribs;
 
 	return MStatus::kSuccess;
 }

@@ -2,10 +2,14 @@
 #define SERVER_H
 
 #include <zmq.hpp>
-#include <queue>
 #include <thread>
+#include <memory>
 
 #include "json.h"
+
+class RequestHandler;
+class UpdateHandler;
+class InfoHandler;
 
 class Server
 {
@@ -16,7 +20,7 @@ public:
 	int run();
 
 private:
-	void handleRequest();
+	void handleMessage();
 
 private:
 	zmq::context_t context;
@@ -26,8 +30,9 @@ private:
 
 	std::vector<std::thread> workers;
 
-	//meshes
-	std::queue<json> msgQueue;
+	std::unique_ptr<UpdateHandler> pUpdateHandler;
+	std::unique_ptr<RequestHandler> pRequestHandler;
+	std::unique_ptr<InfoHandler> pInfoHandler;
 };
 
 #endif

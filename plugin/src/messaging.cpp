@@ -1,7 +1,5 @@
 #include "messaging.h"
 
-#include "testTypes.h"
-
 Messaging::Messaging(std::string _address, int _port)
 	:
 	ipAddress(_address),
@@ -90,17 +88,43 @@ bool Messaging::sendUpdate(const json& data)
 	return send(request, reply);
 }
 
-bool Messaging::requestData(json& data)
+bool Messaging::requestData(json& data, ReqType _type)
 {
 	// pack a message up
 	json sendJSON;
-	sendJSON["requestType"] = ReqType::SCENE_REQUEST;
+	sendJSON["requestType"] = _type;
 
 	auto sendBuff = json::to_msgpack(sendJSON);
 
 	zmq::message_t request(sendBuff.size());
 	std::memcpy(request.data(), sendBuff.data(), sendBuff.size());
 	
+	zmq::message_t reply;
+	if (send(request, reply))
+	{
+		// unpack the data and return it
+		uint8_t *uintBuf = (uint8_t*)reply.data();
+		std::vector<uint8_t> recBuffer(uintBuf, uintBuf + reply.size());
+
+		data = json::from_msgpack(recBuffer);
+		return true;
+	}
+
+	return false;
+}
+
+bool Messaging::requestMesh(json& data, ReqType _type, std::string& _id)
+{
+	// pack a message up
+	json sendJSON;
+	sendJSON["requestType"] = _type;
+	sendJSON["id"] = _id;
+
+	auto sendBuff = json::to_msgpack(sendJSON);
+
+	zmq::message_t request(sendBuff.size());
+	std::memcpy(request.data(), sendBuff.data(), sendBuff.size());
+
 	zmq::message_t reply;
 	if (send(request, reply))
 	{

@@ -24,11 +24,11 @@ public:
 	MStatus	doIt(const MArgList&);
 
 private:
-	MStatus getArgs(const MArgList& args, MString& address, int& port);
-	MStatus setNodeValues(json & data);
-	bool doesItExist(MString& name);
+	MStatus getArgs(const MArgList& args, MString& address, int& port, MString& id);
+	MStatus setNodeValues(json & _node);
+	bool doesItExist(std::string& id);
 	MStatus createMesh(json& _mesh);
-	void renameNodes(MFnDependencyNode & node, json& mesh);
+	void matchIDs(MFnDependencyNode & node, json& mesh);
 	MStatus createNode(json& _node);
 	MStatus setConnections(json& _mesh, json& _node);
 	MStatus setAttribs(MFnDependencyNode& node, json& attribs);

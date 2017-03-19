@@ -4,10 +4,12 @@
 
 #include "maya/MSelectionList.h"
 #include "maya/MDagPath.h"
+#include "maya/MDagPathArray.h"
 #include "maya/MFnDependencyNode.h"
 #include "maya/MPlug.h"
 #include "maya/MArgDatabase.h"
 #include "maya/MPlugArray.h"
+#include "maya/MUuid.h"
 
 #include "testTypes.h"
 #include "tweakHandler.h"
@@ -34,6 +36,7 @@ MSyntax Update::newSyntax()
 
 	syn.addFlag("-a", "-address", MSyntax::kString);
 	syn.addFlag("-p", "-port", MSyntax::kUnsigned);
+	syn.addFlag("-id", "-uuid", MSyntax::kString);
 
 	return syn;
 }
@@ -45,7 +48,8 @@ MStatus	Update::doIt(const MArgList& args)
 	// reset socket
 	MString addr;
 	int port;
-	status = getArgs(args, addr, port);
+	MString id;
+	status = getArgs(args, addr, port, id);
 	if (status != MStatus::kSuccess)
 	{
 		HackPrint::print("no input values specified");
@@ -58,7 +62,7 @@ MStatus	Update::doIt(const MArgList& args)
 	json data;
 	
 	// if false then we couldnt connect to server
-	if (!pMessenger->requestData(data)) return MStatus::kFailure;
+	if (!pMessenger->requestMesh(data, ReqType::MESH_REQUEST, std::string(id.asChar()))) return MStatus::kFailure;
 	
 	// is there actually anything?
 	if (data.empty())
@@ -67,17 +71,13 @@ MStatus	Update::doIt(const MArgList& args)
 		return status;
 	}
 
-	//test
-	HackPrint::print(data.dump(4));
-
 	// check if mesh exists
-	std::string meshName = data["meshName"];
-	bool meshexists = doesItExist(MString(meshName.c_str()));
+	std::string meshID = data["id"];
+	bool meshexists = doesItExist(meshID);
 
 	if (!meshexists)
 	{
-		HackPrint::print("Mesh doesnt exist");
-
+		HackPrint::print("creating mesh");
 		// create mesh
 		// does nothing atm
 		createMesh(data);
@@ -89,20 +89,18 @@ MStatus	Update::doIt(const MArgList& args)
 	for (auto itr : nodeList)
 	{
 		// check if node exists
-		std::string stringName = itr["nodeName"];
-		MString nodeName = stringName.c_str();
-		bool nodeExists = doesItExist(nodeName);
+		std::string stringID = itr["id"];
+		bool nodeExists = doesItExist(stringID);
 
 		if (!nodeExists)
 		{
-			HackPrint::print("Creating Node: " + nodeName);
+			HackPrint::print("Creating Node: " + itr["name"].get<std::string>());
 			// create set and wire
-			createNode(itr);
-			setNodeValues(itr);
-			setConnections(data, itr);
+			status = createNode(itr);
+			status = setNodeValues(itr);
+			status = setConnections(data, itr);
 			continue;
 		}
-		HackPrint::print("No need to create " + nodeName);
 		// set values
 		// no need to worry about re-wireing anything
 		// just change the values
@@ -111,19 +109,21 @@ MStatus	Update::doIt(const MArgList& args)
 	return status;
 }
 
-MStatus Update::setNodeValues(json & data)
+MStatus Update::setNodeValues(json & _node)
 {
 	MSelectionList sList;
-	std::string nodeName = data["nodeName"];
-	sList.add(MString(nodeName.c_str()));
+	MUuid ID(_node["id"].get<std::string>().c_str());
+	sList.add(ID);
 	MObject node;
 	if (sList.getDependNode(0, node) != MStatus::kSuccess) return MStatus::kFailure;
 	// rename and set correct details
 	MFnDependencyNode depNode(node);
 
+	depNode.setName(_node["name"].get<std::string>().c_str());
+
 	// this shows us all attributes.
 	// there are other ways of individually finding them using plugs
-	auto dataAttribs = data["nodeAttribs"];
+	auto dataAttribs = _node["attribs"];
 	
 	return setAttribs(depNode, dataAttribs);
 }
@@ -176,7 +176,6 @@ MStatus Update::setAttribs(MFnDependencyNode& node, json& attribs)
 			{
 				if (it.key().compare("tk") == 0)
 				{
-					HackPrint::print("got ourselves a tweak");
 					std::vector<json> tweakVals = it.value();
 					pTweakHandler->setTweakPlugFromArray(plug, tweakVals);
 				}
@@ -201,7 +200,7 @@ MStatus Update::setAttribs(MFnDependencyNode& node, json& attribs)
 	return MStatus::kSuccess;
 }
 
-MStatus Update::getArgs(const MArgList& args, MString& address, int& port)
+MStatus Update::getArgs(const MArgList& args, MString& address, int& port, MString& id)
 {
 	MStatus status = MStatus::kSuccess;
 	MArgDatabase parser(syntax(), args, &status);
@@ -227,6 +226,15 @@ MStatus Update::getArgs(const MArgList& args, MString& address, int& port)
 		status = MStatus::kFailure;
 	}
 
+	if (parser.isFlagSet("-id"))
+	{
+		parser.getFlagArgument("-id", 0, id);
+	}
+	else
+	{
+		status = MStatus::kFailure;
+	}
+
 	return status;
 }
 
@@ -235,7 +243,7 @@ MStatus Update::createMesh(json& _mesh)
 	MStatus status;
 
 	// create a mesh
-	PolyType type = _mesh["meshType"];
+	PolyType type = _mesh["type"];
 
 	switch (type)
 	{
@@ -257,9 +265,16 @@ MStatus Update::createMesh(json& _mesh)
 			if (sList.getDependNode(0, node) != MStatus::kSuccess) return MStatus::kFailure;
 
 			// rename and set correct details
-			MFnDependencyNode depNode(node);
+			MDagPathArray dagArray;
+			MDagPath::getAllPathsTo(node, dagArray);
+			dagArray[0].extendToShape();
 
-			renameNodes(depNode, _mesh);
+			MFnDependencyNode shapeNode(dagArray[0].node());
+			matchIDs(shapeNode, _mesh);
+
+			//transform node
+			MFnDependencyNode tranformNode(node);
+			matchIDs(tranformNode, _mesh);
 			
 			return status;
 		}
@@ -268,17 +283,22 @@ MStatus Update::createMesh(json& _mesh)
 	return MStatus::kFailure;
 }
 
-void Update::renameNodes(MFnDependencyNode & node, json& mesh)
+void Update::matchIDs(MFnDependencyNode & node, json& mesh)
 {
-	// rename
-	// This wont work for multiple 
+	// we should really only have 3 nodes because we just made a fresh one
+	// so we're only reset the ID's for the shape, transform and polymesh
 	for (auto it : mesh["nodes"])
 	{
-		std::string nodeType = it["nodeType"];
+		std::string nodeType = it["type"];
 		MString type(nodeType.c_str());
+		MString tmp = node.typeName();
+
 		if (node.typeName() == type)
 		{
-			std::string nodeName = it["nodeName"];
+			MUuid tmpID(it["id"].get<std::string>().c_str());	
+			node.setUuid(tmpID);
+
+			std::string nodeName = it["name"];
 			node.setName(MString(nodeName.c_str()));
 		}
 	}	
@@ -302,7 +322,7 @@ void Update::renameNodes(MFnDependencyNode & node, json& mesh)
 		MPlug upstreamNodeSrcPlug = tempPlugArray[0];
 		MFnDependencyNode upstreamNode(upstreamNodeSrcPlug.node());
 
-		renameNodes(upstreamNode, mesh);
+		matchIDs(upstreamNode, mesh);
 	}
 }
 
@@ -310,59 +330,69 @@ MStatus Update::createNode(json& _node)
 {
 	MStatus status;
 
-	// create a node of same type?
-	MString cmd;
-	cmd += "createNode \"";
-	std::string nodetype = _node["nodeType"];
-	cmd += nodetype.c_str();
-	cmd += "\"";
+	std::string nodetype = _node["type"];
+	MObject obj = fDGModifier.createNode(MString(nodetype.c_str()), &status);
 
-	// node name
-	cmd += " -n \"";
-	std::string nodeName = _node["nodeName"];
-	cmd += nodeName.c_str();
-	cmd += "\"";
+	if (status != MStatus::kSuccess) return status;
 
-	status = MGlobal::executeCommand(cmd);
-	return status;
+	MFnDependencyNode node;
+	node.setObject(obj);
+	node.setName(_node["name"].get<std::string>().c_str());
+	MUuid id(_node["id"].get<std::string>().c_str());
+	node.setUuid(id);
+
+	return fDGModifier.doIt();
 }
 
 MStatus Update::setConnections(json& _mesh, json& _node)
 {
 	// if its not a mesh we'll have to wire it in
-	std::string type = _node["nodeType"];
+	std::string type = _node["type"];
+
+	MStatus status;
 	
 	if (type.compare("polySplitRing") == 0 ||
 		type.compare("polyTweak") == 0 )
 	{
 		// get mesh and set it to be the one we're effecting
 		MSelectionList selList;
-		std::string meshName = _mesh["meshName"];
-		selList.add(MString(meshName.c_str()));
-		MDagPath dagpath;
-		selList.getDagPath(0, dagpath);
-		dagpath.extendToShape();
-		setMeshNode(dagpath);
+		MUuid meshID(_mesh["id"].get<std::string>().c_str());
+		
+		status = selList.add(meshID);
+		MObject meshNode;
+		status = selList.getDependNode(0, meshNode);
+		if(status != MStatus::kSuccess) return status;
+
+		// rename and set correct details
+		MDagPathArray dagArray;
+		MDagPath::getAllPathsTo(meshNode, dagArray);
+		dagArray[0].extendToShape();
+		setMeshNode(dagArray[0]);
 
 		// get node and do the connections
 		MSelectionList sList;
-		std::string nodeName = _node["nodeName"];
-		sList.add(MString(nodeName.c_str()));
+		MUuid nodeID(_node["id"].get<std::string>().c_str());
+
+		status = sList.add(nodeID);
+		if (status != MStatus::kSuccess) return status;
+		
 		MObject node;
-		if (sList.getDependNode(0, node) != MStatus::kSuccess) return MStatus::kFailure;
+		status = sList.getDependNode(0, node);
+		if (status != MStatus::kSuccess) return status;
 
 		//// and add it to the DAG
-		doModifyPoly(node);
+		status = doModifyPoly(node);
+		if (status != MStatus::kSuccess) return status;
 
 		// this is if we require extra connections
 		if (type.compare("polySplitRing") == 0)
 		{
 			MString connectCmd;
 			connectCmd += "connectAttr ";
-			std::string meshName = _mesh["meshName"];
+			std::string meshName = _mesh["name"];
 			connectCmd += meshName.c_str();
 			connectCmd += ".worldMatrix[0] ";
-			std::string nodeName = _node["nodeName"];
+			std::string nodeName = _node["name"];
 			connectCmd += nodeName.c_str();
 			connectCmd += ".manipMatrix;";
 			MGlobal::executeCommand(connectCmd);
@@ -372,16 +402,12 @@ MStatus Update::setConnections(json& _mesh, json& _node)
 	return MStatus::kSuccess;
 }
 
-bool Update::doesItExist(MString& name)
+bool Update::doesItExist(std::string& _id)
 {
-	MString objExistsCmd;
-	objExistsCmd += "objExists \"";
-	objExistsCmd += name;
-	objExistsCmd += "\"";
+	MStatus status;
+	MSelectionList selList;
+	MUuid id(_id.c_str());
+	status = selList.add(id);
 
-	int exists = 0;
-	if (MGlobal::executeCommand(objExistsCmd, exists) != MStatus::kSuccess) return false;
-
-	// annoying warning if just casting
-	return (exists != 0);
+	return (status == MStatus::kSuccess);
 }

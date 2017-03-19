@@ -418,7 +418,7 @@ MStatus TweakHandler::setTweakPlugFromArray(MPlug& _plug, std::vector<json>& twe
 			cmd += " ";
 			cmd += z;
 			//HackPrint::print(cmd);
-			MGlobal::executeCommand(cmd);
+			status = MGlobal::executeCommand(cmd);
 		}
 	}
 

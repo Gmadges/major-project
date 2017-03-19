@@ -5,6 +5,13 @@
 #include "testTypes.h"
 #include "json.h"
 
+#include "requestHandler.h"
+#include "updateHandler.h"
+#include "infoHandler.h"
+
+// this is only for our fake one right now
+#include "database.h"
+
 Server::Server(int _port)
 	:
 	context(1),
@@ -12,6 +19,11 @@ Server::Server(int _port)
 	workersSocket(context, ZMQ_DEALER),
 	port(_port)
 {
+	std::shared_ptr<Database> pDB(new Database());
+
+	pUpdateHandler.reset(new UpdateHandler(pDB));
+	pRequestHandler.reset(new RequestHandler(pDB));
+	pInfoHandler.reset(new InfoHandler(pDB));
 }
 
 Server::~Server()
@@ -29,7 +41,7 @@ int Server::run()
 	//  Launch pool of worker threads
 	for (unsigned int i = 0; i < maxThreads; i++)
 	{
-		workers.push_back(std::thread(&Server::handleRequest, this));
+		workers.push_back(std::thread(&Server::handleMessage, this));
 	}
 
 	//  Connect work threads to client threads via a queue
@@ -43,7 +55,7 @@ int Server::run()
 	return 1;
 }
 
-void Server::handleRequest() 
+void Server::handleMessage() 
 {
 	zmq::socket_t socket(context, ZMQ_REP);
 	socket.connect("inproc://workers");
@@ -58,49 +70,38 @@ void Server::handleRequest()
 		std::vector<uint8_t> reqBuffer(uintBuf, uintBuf + request.size());
 		json data = json::from_msgpack(reqBuffer);
 
-		// printing boi
-		std::cout << "THREAD: " << std::this_thread::get_id() << std::endl;
-		
-		//std::cout << data.dump(4) << std::endl;
-
 		// Type
 		ReqType reqType = data["requestType"];
 		switch (reqType)
 		{
-			case SCENE_UPDATE: 
+			case MESH_UPDATE: 
 			{
-				std::cout << "we got an update!" << std::endl;
-				std::cout << "add to stack!" << std::endl;
+				bool result = pUpdateHandler->processRequest(data);
 
-				// add to stack
-				msgQueue.push(data);
-
-				//  Send reply back to client
-				zmq::message_t reply(7);
-				memcpy(reply.data(), "SUCCESS", 7);
-				socket.send(reply);
-				break;
-			}
-			case SCENE_REQUEST:
-			{
-				std::cout << "ugh someone wants our data!" << std::endl;
-
-				if (msgQueue.empty())
-				{
-					json empty;
-					auto sendBuff = json::to_msgpack(empty);
-					zmq::message_t reply(sendBuff.size());
-					std::memcpy(reply.data(), sendBuff.data(), sendBuff.size());
-					socket.send(reply);
-					break;
-				}
-
-				auto sendBuff = json::to_msgpack(msgQueue.front());
+				json replyData;
+				replyData["result"] = result;
+				auto sendBuff = json::to_msgpack(replyData);
 				zmq::message_t reply(sendBuff.size());
 				std::memcpy(reply.data(), sendBuff.data(), sendBuff.size());
 				socket.send(reply);
-
-				msgQueue.pop();
+				break;
+			}
+			case MESH_REQUEST:
+			{
+				json replyData = pRequestHandler->processRequest(data);
+				auto sendBuff = json::to_msgpack(replyData);
+				zmq::message_t reply(sendBuff.size());
+				std::memcpy(reply.data(), sendBuff.data(), sendBuff.size());
+				socket.send(reply);
+				break;
+			}
+			case INFO_REQUEST:
+			{
+				json replyData = pInfoHandler->processRequest();
+				auto sendBuff = json::to_msgpack(replyData);
+				zmq::message_t reply(sendBuff.size());
+				std::memcpy(reply.data(), sendBuff.data(), sendBuff.size());
+				socket.send(reply);
 				break;
 			}
 		};
