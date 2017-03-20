@@ -20,6 +20,9 @@
     <ClCompile Include="info.cpp">
       <Filter>info</Filter>
     </ClCompile>
+    <ClCompile Include="callbackCreator.cpp">
+      <Filter>callbacks</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hackPrint.h" />
@@ -47,6 +50,9 @@
     <ClInclude Include="info.h">
       <Filter>info</Filter>
     </ClInclude>
+    <ClInclude Include="callbackCreator.h">
+      <Filter>callbacks</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="scan">
@@ -66,6 +72,9 @@
     </Filter>
     <Filter Include="info">
       <UniqueIdentifier>{f48acf7c-7a3f-4fd9-966f-23061c28eca1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="callbacks">
+      <UniqueIdentifier>{93dc10f7-668e-4057-a906-7bdf6871d49a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

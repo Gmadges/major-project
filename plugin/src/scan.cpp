@@ -21,10 +21,13 @@
 #include "hackPrint.h"
 #include "testTypes.h"
 
+#include "callbackCreator.h"
+
 Scan::Scan()
 	:
 	pMessaging(new Messaging("localhost", 8080)),
-	pTweaksHandler(new TweakHandler())
+	pTweaksHandler(new TweakHandler()),
+	pCallbackCreator(new CallbackCreator())
 {
 }
 
@@ -136,6 +139,9 @@ MStatus Scan::sendMesh(MDagPath & meshDAGPath)
 	if (status != MStatus::kSuccess) return status;
 	nodeList.push_back(transNode);
 
+	//test
+	pCallbackCreator->registerCallbacksToNode(meshDAGPath.transform());
+
 	traverseHistory(depNodeFn, nodeList);
 
 	// should have atleast 3 nodes for a mesh
@@ -240,6 +246,9 @@ void Scan::traverseHistory(MFnDependencyNode & node, std::vector<json>& nodeList
 		// Only one connection should exist on meshNodeShape.inMesh!
 		MPlug upstreamNodeSrcPlug = tempPlugArray[0];
 		MFnDependencyNode upstreamNode(upstreamNodeSrcPlug.node());
+
+		//test
+		pCallbackCreator->registerCallbacksToNode(upstreamNodeSrcPlug.node());
 
 		traverseHistory(upstreamNode, nodeList);
 	}
