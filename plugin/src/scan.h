@@ -15,7 +15,6 @@
 
 class Messaging;
 class TweakHandler;
-class CallbackCreator;
 
 class Scan : public MPxCommand
 {
@@ -37,7 +36,6 @@ private:
 
 	std::unique_ptr<Messaging> pMessaging;
 	std::unique_ptr<TweakHandler> pTweaksHandler;
-	std::unique_ptr<CallbackCreator> pCallbackCreator;
 };
 
 #endif

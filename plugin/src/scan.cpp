@@ -26,8 +26,7 @@
 Scan::Scan()
 	:
 	pMessaging(new Messaging("localhost", 8080)),
-	pTweaksHandler(new TweakHandler()),
-	pCallbackCreator(new CallbackCreator())
+	pTweaksHandler(new TweakHandler())
 {
 }
 
@@ -140,7 +139,7 @@ MStatus Scan::sendMesh(MDagPath & meshDAGPath)
 	nodeList.push_back(transNode);
 
 	//test
-	pCallbackCreator->registerCallbacksToNode(meshDAGPath.transform());
+	CallbackCreator::getInstance().registerCallbacksToNode(meshDAGPath.transform());
 
 	traverseHistory(depNodeFn, nodeList);
 
@@ -248,7 +247,7 @@ void Scan::traverseHistory(MFnDependencyNode & node, std::vector<json>& nodeList
 		MFnDependencyNode upstreamNode(upstreamNodeSrcPlug.node());
 
 		//test
-		pCallbackCreator->registerCallbacksToNode(upstreamNodeSrcPlug.node());
+		CallbackCreator::getInstance().registerCallbacksToNode(upstreamNodeSrcPlug.node());
 
 		traverseHistory(upstreamNode, nodeList);
 	}
