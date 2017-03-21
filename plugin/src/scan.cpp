@@ -222,6 +222,8 @@ void Scan::traverseHistory(MFnDependencyNode & node, std::vector<json>& nodeList
 		if (getGenericNode(node, genNode) == MStatus::kSuccess)
 		{
 			nodeList.push_back(genNode);
+			//test
+			CallbackCreator::getInstance().registerCallbacksToNode(node.object());
 		}
 	}
 
@@ -245,9 +247,6 @@ void Scan::traverseHistory(MFnDependencyNode & node, std::vector<json>& nodeList
 		// Only one connection should exist on meshNodeShape.inMesh!
 		MPlug upstreamNodeSrcPlug = tempPlugArray[0];
 		MFnDependencyNode upstreamNode(upstreamNodeSrcPlug.node());
-
-		//test
-		CallbackCreator::getInstance().registerCallbacksToNode(upstreamNodeSrcPlug.node());
 
 		traverseHistory(upstreamNode, nodeList);
 	}
