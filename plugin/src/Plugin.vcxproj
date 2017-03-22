@@ -144,7 +144,7 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="callbackCreator.cpp" />
+    <ClCompile Include="callbackHandler.cpp" />
     <ClCompile Include="info.cpp" />
     <ClCompile Include="messaging.cpp" />
     <ClCompile Include="plugin.cpp" />
@@ -155,7 +155,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\common\testTypes.h" />
-    <ClInclude Include="callbackCreator.h" />
+    <ClInclude Include="callbackHandler.h" />
     <ClInclude Include="hackPrint.h" />
     <ClInclude Include="info.h" />
     <ClInclude Include="json.h" />

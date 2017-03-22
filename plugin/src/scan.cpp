@@ -21,7 +21,7 @@
 #include "hackPrint.h"
 #include "testTypes.h"
 
-#include "callbackCreator.h"
+#include "callbackHandler.h"
 
 Scan::Scan()
 	:
@@ -139,7 +139,7 @@ MStatus Scan::sendMesh(MDagPath & meshDAGPath)
 	nodeList.push_back(transNode);
 
 	//test
-	CallbackCreator::getInstance().registerCallbacksToNode(meshDAGPath.transform());
+	CallbackHandler::getInstance().registerCallbacksToNode(meshDAGPath.transform());
 
 	traverseHistory(depNodeFn, nodeList);
 
@@ -223,7 +223,7 @@ void Scan::traverseHistory(MFnDependencyNode & node, std::vector<json>& nodeList
 		{
 			nodeList.push_back(genNode);
 			//test
-			CallbackCreator::getInstance().registerCallbacksToNode(node.object());
+			CallbackHandler::getInstance().registerCallbacksToNode(node.object());
 		}
 	}
 

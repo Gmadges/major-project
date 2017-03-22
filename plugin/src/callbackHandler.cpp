@@ -1,7 +1,13 @@
-#include "callbackCreator.h"
+#include "callbackHandler.h"
 
 #include <maya/MMessage.h>
+#include <maya/MUuid.h>
+#include <maya/MFnDependencyNode.h>
+
 #include "hackprint.h"
+
+#include <ctime>
+#include <string>
 
 void nodeChangeCallback(MNodeMessage::AttributeMessage msg, MPlug & plug, MPlug & otherPlug, void*)
 {
@@ -14,33 +20,40 @@ void nodeChangeCallback(MNodeMessage::AttributeMessage msg, MPlug & plug, MPlug 
 	{
 		HackPrint::print("change");
 		HackPrint::print(plug.info());
-	}
-}
 
-void dirtyNodeCallback(MObject& node, MPlug & plug, void*)
-{
-	HackPrint::print("dirty");
-	HackPrint::print(plug.info());
+		MFnDependencyNode node(plug.node());
+		std::string uuid = node.uuid().asString().asChar();
+		CallbackHandler::getInstance().addNodeToSendList(uuid, std::time(nullptr));
+	}
 }
 
 void preRemoveCallback(MObject& node, void*)
 {
 	HackPrint::print("pre-remove");
 	HackPrint::print(node.apiTypeStr());
+	MFnDependencyNode depNode(node);
+	std::string uuid = depNode.uuid().asString().asChar();
+	CallbackHandler::getInstance().addNodeToSendList(uuid, std::time(nullptr));
 }
 
-void nodeRemovedCallback(void*)
+CallbackHandler::~CallbackHandler()
 {
-	HackPrint::print("node destroyed");
+	MMessage::removeCallbacks(callbackIds);
 }
 
-CallbackCreator::~CallbackCreator()
+MStatus CallbackHandler::registerCallbacksToNode(MObject& _node)
 {
-	removeCallbacks();
-}
+	//TESTING
+	for (auto& it : sendList)
+	{
+		std::string val;
+		val += it.first;
+		val += " : "; 
+		val += std::to_string(it.second);
+		HackPrint::print(val);
+	}
 
-MStatus CallbackCreator::registerCallbacksToNode(MObject& _node)
-{
+
 	MStatus status;
 
 	MCallbackId id = MNodeMessage::addAttributeChangedCallback(_node,
@@ -53,16 +66,6 @@ MStatus CallbackCreator::registerCallbacksToNode(MObject& _node)
 		callbackIds.append(id);
 	}
 
-	// add a node removal callback
-
-	id = MNodeMessage::addNodeDestroyedCallback(_node,
-												nodeRemovedCallback,
-												NULL,
-												&status);
-	if (status == MStatus::kSuccess)
-	{
-		callbackIds.append(id);
-	}
 
 	id = MNodeMessage::addNodePreRemovalCallback(_node,
 													preRemoveCallback,
@@ -74,27 +77,25 @@ MStatus CallbackCreator::registerCallbacksToNode(MObject& _node)
 		callbackIds.append(id);
 	}
 
-	id = MNodeMessage::addNodeDirtyPlugCallback(_node,
-												dirtyNodeCallback,
-												NULL,
-												&status);
-
-	if (status == MStatus::kSuccess)
-	{
-		callbackIds.append(id);
-	}
+	// TODO added stuff
 
 	return status;
 }
 
-MStatus CallbackCreator::registerCallbacksToDetectNewNodes()
+MStatus CallbackHandler::registerCallbacksToDetectNewNodes()
 {
 	return MStatus::kFailure;
 }
 
-void CallbackCreator::removeCallbacks()
+void CallbackHandler::resetSendList()
 {
-	MMessage::removeCallbacks(callbackIds);
+	sendList.clear();
 }
+
+void CallbackHandler::addNodeToSendList(std::string uuid, time_t time)
+{
+	sendList[uuid] = time;
+}
+
 
 

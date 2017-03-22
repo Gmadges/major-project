@@ -20,7 +20,7 @@
     <ClCompile Include="info.cpp">
       <Filter>info</Filter>
     </ClCompile>
-    <ClCompile Include="callbackCreator.cpp">
+    <ClCompile Include="callbackHandler.cpp">
       <Filter>callbacks</Filter>
     </ClCompile>
   </ItemGroup>
@@ -50,7 +50,7 @@
     <ClInclude Include="info.h">
       <Filter>info</Filter>
     </ClInclude>
-    <ClInclude Include="callbackCreator.h">
+    <ClInclude Include="callbackHandler.h">
       <Filter>callbacks</Filter>
     </ClInclude>
   </ItemGroup>
