@@ -112,6 +112,7 @@ MStatus SendAbstract::getGenericNode(MFnDependencyNode & _inNode, json& _outNode
 	_outNode["id"] = std::string(idObj.asString().asChar());
 	_outNode["name"] = std::string(_inNode.name().asChar());
 	_outNode["type"] = std::string(_inNode.typeName().asChar());
+	_outNode["time"] = std::time(nullptr);
 	_outNode["attribs"] = nodeAttribs;
 
 	return MStatus::kSuccess;

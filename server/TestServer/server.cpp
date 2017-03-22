@@ -104,6 +104,12 @@ void Server::handleMessage()
 				socket.send(reply);
 				break;
 			}
+			default : 
+			{
+				std::cout << "got a weird request!" << std::endl;
+				zmq::message_t reply;
+				socket.send(reply);
+			}
 		};
 	}
 }
