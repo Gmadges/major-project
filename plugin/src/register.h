@@ -1,5 +1,5 @@
-#ifndef SCAN_H
-#define SCAN_H
+#ifndef REGISTER_H
+#define REGISTER_H
 
 #include <maya/MPxCommand.h>
 #include <maya/MArgList.h>
@@ -16,11 +16,11 @@
 class Messaging;
 class TweakHandler;
 
-class Scan : public MPxCommand
+class Register : public MPxCommand
 {
 public:
-	Scan();
-	~Scan();
+	Register();
+	~Register();
 
 	static void* creator();
 	static MSyntax newSyntax();

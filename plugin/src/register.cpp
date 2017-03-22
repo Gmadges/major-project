@@ -1,4 +1,4 @@
-#include "scan.h"
+#include "register.h"
 
 #include <maya/MFnDagNode.h>
 #include <maya/MItDag.h>
@@ -23,23 +23,23 @@
 
 #include "callbackHandler.h"
 
-Scan::Scan()
+Register::Register()
 	:
 	pMessaging(new Messaging("localhost", 8080)),
 	pTweaksHandler(new TweakHandler())
 {
 }
 
-Scan::~Scan()
+Register::~Register()
 {
 }
 
-void* Scan::creator()
+void* Register::creator()
 {
-	return new Scan;
+	return new Register;
 }
 
-MSyntax Scan::newSyntax() 
+MSyntax Register::newSyntax()
 {
 
 	MSyntax syn;
@@ -50,7 +50,7 @@ MSyntax Scan::newSyntax()
 	return syn;
 }
 
-MStatus	Scan::doIt(const MArgList& args)
+MStatus	Register::doIt(const MArgList& args)
 {
 	MStatus status;
 
@@ -111,7 +111,7 @@ MStatus	Scan::doIt(const MArgList& args)
 	return MS::kSuccess;
 }
 
-MStatus Scan::sendMesh(MDagPath & meshDAGPath)
+MStatus Register::sendMesh(MDagPath & meshDAGPath)
 {
 	MStatus status;
 
@@ -178,7 +178,7 @@ MStatus Scan::sendMesh(MDagPath & meshDAGPath)
 	return MStatus::kFailure;
 }
 
-MStatus Scan::getArgs(const MArgList& args, MString& address, int& port)
+MStatus Register::getArgs(const MArgList& args, MString& address, int& port)
 {
 	MStatus status = MStatus::kSuccess;
 	MArgDatabase parser(syntax(), args, &status);
@@ -207,7 +207,7 @@ MStatus Scan::getArgs(const MArgList& args, MString& address, int& port)
 	return status;
 }
 
-void Scan::traverseHistory(MFnDependencyNode & node, std::vector<json>& nodeList)
+void Register::traverseHistory(MFnDependencyNode & node, std::vector<json>& nodeList)
 {
 	HackPrint::print(node.name());
 	HackPrint::print(node.typeName());
@@ -252,7 +252,7 @@ void Scan::traverseHistory(MFnDependencyNode & node, std::vector<json>& nodeList
 	}
 }
 
-MStatus Scan::getGenericNode(MFnDependencyNode & _inNode, json& _outNode)
+MStatus Register::getGenericNode(MFnDependencyNode & _inNode, json& _outNode)
 {
 	// this shows us all attributes.
 	// there are other ways of individually finding them using plugs
@@ -287,7 +287,7 @@ MStatus Scan::getGenericNode(MFnDependencyNode & _inNode, json& _outNode)
 	return MStatus::kSuccess;
 }
 
-MStatus Scan::getAttribFromPlug(MPlug& _plug, json& _attribs)
+MStatus Register::getAttribFromPlug(MPlug& _plug, json& _attribs)
 {
 	std::string attribName = _plug.partialName().asChar();
 

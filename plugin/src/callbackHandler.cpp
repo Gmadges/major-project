@@ -43,17 +43,6 @@ CallbackHandler::~CallbackHandler()
 
 MStatus CallbackHandler::registerCallbacksToNode(MObject& _node)
 {
-	//TESTING
-	for (auto& it : sendList)
-	{
-		std::string val;
-		val += it.first;
-		val += " : "; 
-		val += std::to_string(it.second);
-		HackPrint::print(val);
-	}
-
-
 	MStatus status;
 
 	MCallbackId id = MNodeMessage::addAttributeChangedCallback(_node,

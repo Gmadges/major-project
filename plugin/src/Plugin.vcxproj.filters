@@ -2,9 +2,6 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="plugin.cpp" />
-    <ClCompile Include="scan.cpp">
-      <Filter>scan</Filter>
-    </ClCompile>
     <ClCompile Include="polyModifierCmd.cpp">
       <Filter>update</Filter>
     </ClCompile>
@@ -23,12 +20,12 @@
     <ClCompile Include="callbackHandler.cpp">
       <Filter>callbacks</Filter>
     </ClCompile>
+    <ClCompile Include="register.cpp">
+      <Filter>register</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hackPrint.h" />
-    <ClInclude Include="scan.h">
-      <Filter>scan</Filter>
-    </ClInclude>
     <ClInclude Include="update.h">
       <Filter>update</Filter>
     </ClInclude>
@@ -53,11 +50,11 @@
     <ClInclude Include="callbackHandler.h">
       <Filter>callbacks</Filter>
     </ClInclude>
+    <ClInclude Include="register.h">
+      <Filter>register</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="scan">
-      <UniqueIdentifier>{156d3de9-f0f9-4682-96dd-be2679a97dd2}</UniqueIdentifier>
-    </Filter>
     <Filter Include="common">
       <UniqueIdentifier>{4259fb9a-4b9e-4a3c-8218-7fa06f2ce1d8}</UniqueIdentifier>
     </Filter>
@@ -75,6 +72,9 @@
     </Filter>
     <Filter Include="callbacks">
       <UniqueIdentifier>{93dc10f7-668e-4057-a906-7bdf6871d49a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="register">
+      <UniqueIdentifier>{156d3de9-f0f9-4682-96dd-be2679a97dd2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

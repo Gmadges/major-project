@@ -4,7 +4,7 @@
 #include <maya/MFnPlugin.h>
 
 #include <memory>
-#include "scan.h"
+#include "register.h"
 #include "update.h"
 #include "info.h"
 
@@ -16,11 +16,17 @@ MStatus initializePlugin(MObject obj)
 
 	MFnPlugin plugin(obj, PLUGIN_COMPANY, "5.0", "Any");
 
-	status = plugin.registerCommand("ScanSend", Scan::creator, Scan::newSyntax);
+	status = plugin.registerCommand("RegisterMesh", Register::creator, Register::newSyntax);
 	if (!status)
 	{
 		status.perror("registerCommand");
 	}
+
+	//status = plugin.registerCommand("sendMeshchanges", Scan::creator, Scan::newSyntax);
+	//if (!status)
+	//{
+	//	status.perror("registerCommand");
+	//}
 
 	status = plugin.registerCommand("ReceiveUpdate", Update::creator, Update::newSyntax);
 	if (!status)

@@ -149,7 +149,7 @@
     <ClCompile Include="messaging.cpp" />
     <ClCompile Include="plugin.cpp" />
     <ClCompile Include="polyModifierCmd.cpp" />
-    <ClCompile Include="scan.cpp" />
+    <ClCompile Include="register.cpp" />
     <ClCompile Include="tweakHandler.cpp" />
     <ClCompile Include="update.cpp" />
   </ItemGroup>
@@ -161,7 +161,7 @@
     <ClInclude Include="json.h" />
     <ClInclude Include="messaging.h" />
     <ClInclude Include="polyModifierCmd.h" />
-    <ClInclude Include="scan.h" />
+    <ClInclude Include="register.h" />
     <ClInclude Include="tweakHandler.h" />
     <ClInclude Include="update.h" />
   </ItemGroup>
