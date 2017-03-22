@@ -1,4 +1,4 @@
-#include "register.h"
+#include "sendAbstract.h"
 
 #include <maya/MFnDagNode.h>
 #include <maya/MItDag.h>
@@ -25,23 +25,19 @@
 
 #include "callbackHandler.h"
 
-Register::Register()
+SendAbstract::SendAbstract()
 	:
 	pMessaging(new Messaging("localhost", 8080)),
 	pTweaksHandler(new TweakHandler())
 {
 }
 
-Register::~Register()
+
+SendAbstract::~SendAbstract()
 {
 }
 
-void* Register::creator()
-{
-	return new Register;
-}
-
-MSyntax Register::newSyntax()
+MSyntax SendAbstract::newSyntax()
 {
 
 	MSyntax syn;
@@ -52,83 +48,13 @@ MSyntax Register::newSyntax()
 	return syn;
 }
 
-MStatus	Register::doIt(const MArgList& args)
-{
-	MStatus status;
-
-	// reset socket
-	MString addr;
-	int port;
-	status = getArgs(args, addr, port);
-	if (status != MStatus::kSuccess)
-	{
-		HackPrint::print("no input values specified");
-		return status;
-	}
-
-	pMessaging->resetSocket(std::string(addr.asChar()), port);
-
-	MSelectionList selList;
-	MGlobal::getActiveSelectionList(selList);
-	MItSelectionList selListIter(selList);
-	selListIter.setFilter(MFn::kMesh);
-
-	// check any meshes are actually selected
-	if (selListIter.isDone())
-	{
-		HackPrint::print("no mesh selected!");
-		return MStatus::kFailure;
-	}
-
-	for (; !selListIter.isDone(); selListIter.next())
-	{
-
-		MDagPath dagPath;
-
-		status = selListIter.getDagPath(dagPath);
-
-		if (!status) {
-			status.perror("MItDag::getPath");
-			continue;
-		}
-		MFnDagNode dagNode(dagPath, &status);
-		if (!status) {
-			status.perror("MFnDagNode constructor");
-			continue;
-		}
-
-		// check for tweaks
-		if (pTweaksHandler->hasTweaks(dagPath))
-		{
-			MObject tweakNode;
-			HackPrint::print("we got tweaks");
-			if (pTweaksHandler->createPolyTweakNode(dagPath, tweakNode) == MStatus::kSuccess)
-			{
-				HackPrint::print("created a node ting");
-				dagPath.extendToShape();
-				if (pTweaksHandler->connectTweakNodes(tweakNode, dagPath.node()) == MStatus::kSuccess)
-				{
-					HackPrint::print("connected");
-				}
-			}
-		}
-
-		// turn tweaks into a node before sending
-		if (sendMesh(dagPath) != MStatus::kSuccess) return MStatus::kFailure;
-
-		// only gonna handle mesh for now
-		break;
-	}
-	return MS::kSuccess;
-}
-
-MStatus Register::sendMesh(MDagPath & meshDAGPath)
+MStatus SendAbstract::sendMesh(MDagPath & meshDAGPath)
 {
 	MStatus status;
 
 	json message;
 	message["requestType"] = ReqType::MESH_UPDATE;
-	
+
 	std::vector<json> nodeList;
 
 	meshDAGPath.extendToShape();
@@ -137,7 +63,7 @@ MStatus Register::sendMesh(MDagPath & meshDAGPath)
 
 	MFnMesh mesh(meshNodeShape, &status);
 
-	if (!status) 
+	if (!status)
 	{
 		status.perror("MFnMesh:constructor");
 		return status;
@@ -159,7 +85,7 @@ MStatus Register::sendMesh(MDagPath & meshDAGPath)
 	if (nodeList.size() < 3) return MStatus::kFailure;
 
 	json meshData;
-	
+
 	// use shape nodes id.
 	meshData["id"] = std::string(depNodeFn.uuid().asString().asChar());
 
@@ -189,7 +115,7 @@ MStatus Register::sendMesh(MDagPath & meshDAGPath)
 	return MStatus::kFailure;
 }
 
-MStatus Register::getArgs(const MArgList& args, MString& address, int& port)
+MStatus SendAbstract::getArgs(const MArgList& args, MString& address, int& port)
 {
 	MStatus status = MStatus::kSuccess;
 	MArgDatabase parser(syntax(), args, &status);
@@ -218,11 +144,11 @@ MStatus Register::getArgs(const MArgList& args, MString& address, int& port)
 	return status;
 }
 
-void Register::traverseHistory(MFnDependencyNode & node, std::vector<json>& nodeList)
+void SendAbstract::traverseHistory(MFnDependencyNode & node, std::vector<json>& nodeList)
 {
 	HackPrint::print(node.name());
 	HackPrint::print(node.typeName());
-	
+
 	if (node.typeName() == MString("transform") ||
 		node.typeName() == MString("mesh") ||
 		node.typeName() == MString("polyTweak") ||
@@ -244,7 +170,7 @@ void Register::traverseHistory(MFnDependencyNode & node, std::vector<json>& node
 	MStatus status;
 	MPlug inMeshPlug;
 	inMeshPlug = node.findPlug("inputPolymesh", &status);
-	
+
 	// if it doesnt have that plug try this one
 	if (status != MStatus::kSuccess)
 	{
@@ -263,7 +189,7 @@ void Register::traverseHistory(MFnDependencyNode & node, std::vector<json>& node
 	}
 }
 
-MStatus Register::getGenericNode(MFnDependencyNode & _inNode, json& _outNode)
+MStatus SendAbstract::getGenericNode(MFnDependencyNode & _inNode, json& _outNode)
 {
 	// this shows us all attributes.
 	// there are other ways of individually finding them using plugs
@@ -277,7 +203,7 @@ MStatus Register::getGenericNode(MFnDependencyNode & _inNode, json& _outNode)
 		MFnAttribute attrib(_inNode.attribute(i));
 
 		MPlug plug = _inNode.findPlug(attrib.shortName().asChar(), &status);
-		
+
 		if (status != MStatus::kSuccess) continue;
 
 
@@ -298,7 +224,7 @@ MStatus Register::getGenericNode(MFnDependencyNode & _inNode, json& _outNode)
 	return MStatus::kSuccess;
 }
 
-MStatus Register::getAttribFromPlug(MPlug& _plug, json& _attribs)
+MStatus SendAbstract::getAttribFromPlug(MPlug& _plug, json& _attribs)
 {
 	std::string attribName = _plug.partialName().asChar();
 
@@ -337,7 +263,7 @@ MStatus Register::getAttribFromPlug(MPlug& _plug, json& _attribs)
 		// if the plug is a compound then it has a number of children plugs we need to grab
 		unsigned int numChild = _plug.numChildren();
 		std::vector<json> childrenPlugs(numChild);
-		for(unsigned int i = 0; i < numChild; ++i)
+		for (unsigned int i = 0; i < numChild; ++i)
 		{
 			MPlug childPlug = _plug.child(i);
 
@@ -353,41 +279,41 @@ MStatus Register::getAttribFromPlug(MPlug& _plug, json& _attribs)
 		return MStatus::kSuccess;
 	}
 
-    //MString value;
-    float fValue;
-    if (_plug.getValue(fValue) == MStatus::kSuccess)
-    {
+	//MString value;
+	float fValue;
+	if (_plug.getValue(fValue) == MStatus::kSuccess)
+	{
 		_attribs[attribName] = fValue;
 		return MStatus::kSuccess;
-    }
+	}
 
-    double dValue;
-    if (_plug.getValue(dValue) == MStatus::kSuccess)
-    {
-		_attribs[attribName] =  dValue;
+	double dValue;
+	if (_plug.getValue(dValue) == MStatus::kSuccess)
+	{
+		_attribs[attribName] = dValue;
 		return MStatus::kSuccess;
-    }
+	}
 
-    MString sValue;
-    if (_plug.getValue(sValue) == MStatus::kSuccess)
-    {
+	MString sValue;
+	if (_plug.getValue(sValue) == MStatus::kSuccess)
+	{
 		_attribs[attribName] = std::string(sValue.asChar());
 		return MStatus::kSuccess;
-    }
+	}
 
-    int iValue;
-    if (_plug.getValue(iValue) == MStatus::kSuccess)
-    {
+	int iValue;
+	if (_plug.getValue(iValue) == MStatus::kSuccess)
+	{
 		_attribs[attribName] = iValue;
 		return MStatus::kSuccess;
-    }
+	}
 
-    bool bValue;
-    if (_plug.getValue(bValue) == MStatus::kSuccess)
-    {
+	bool bValue;
+	if (_plug.getValue(bValue) == MStatus::kSuccess)
+	{
 		_attribs[attribName] = bValue;
 		return MStatus::kSuccess;
-    }
+	}
 
 	//// TODO more maya data types
 	//MAngle MAngleValue();

@@ -4,10 +4,10 @@
 #include <maya/MFnPlugin.h>
 
 #include <memory>
-#include "register.h"
+#include "sendRegister.h"
 #include "update.h"
 #include "info.h"
-#include "send.h"
+#include "sendUpdate.h"
 
 // initialise our plugin and commands
 
@@ -17,13 +17,13 @@ MStatus initializePlugin(MObject obj)
 
 	MFnPlugin plugin(obj, PLUGIN_COMPANY, "5.0", "Any");
 
-	status = plugin.registerCommand("RegisterMesh", Register::creator, Register::newSyntax);
+	status = plugin.registerCommand("RegisterMesh", SendRegister::creator, SendRegister::newSyntax);
 	if (!status)
 	{
 		status.perror("registerCommand");
 	}
 
-	status = plugin.registerCommand("sendUpdates", Send::creator, Send::newSyntax);
+	status = plugin.registerCommand("sendUpdates", SendUpdate::creator, SendUpdate::newSyntax);
 	if (!status)
 	{
 		status.perror("registerCommand");

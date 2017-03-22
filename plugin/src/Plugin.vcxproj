@@ -146,11 +146,12 @@
   <ItemGroup>
     <ClCompile Include="callbackHandler.cpp" />
     <ClCompile Include="info.cpp" />
+    <ClCompile Include="sendAbstract.cpp" />
     <ClCompile Include="messaging.cpp" />
     <ClCompile Include="plugin.cpp" />
     <ClCompile Include="polyModifierCmd.cpp" />
-    <ClCompile Include="register.cpp" />
-    <ClCompile Include="send.cpp" />
+    <ClCompile Include="sendRegister.cpp" />
+    <ClCompile Include="sendUpdate.cpp" />
     <ClCompile Include="tweakHandler.cpp" />
     <ClCompile Include="update.cpp" />
   </ItemGroup>
@@ -160,10 +161,11 @@
     <ClInclude Include="hackPrint.h" />
     <ClInclude Include="info.h" />
     <ClInclude Include="json.h" />
+    <ClInclude Include="sendAbstract.h" />
     <ClInclude Include="messaging.h" />
     <ClInclude Include="polyModifierCmd.h" />
-    <ClInclude Include="register.h" />
-    <ClInclude Include="send.h" />
+    <ClInclude Include="sendRegister.h" />
+    <ClInclude Include="sendUpdate.h" />
     <ClInclude Include="tweakHandler.h" />
     <ClInclude Include="update.h" />
   </ItemGroup>

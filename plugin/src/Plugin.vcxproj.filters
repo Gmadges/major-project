@@ -20,11 +20,14 @@
     <ClCompile Include="callbackHandler.cpp">
       <Filter>callbacks</Filter>
     </ClCompile>
-    <ClCompile Include="register.cpp">
-      <Filter>register</Filter>
-    </ClCompile>
-    <ClCompile Include="send.cpp">
+    <ClCompile Include="sendUpdate.cpp">
       <Filter>send</Filter>
+    </ClCompile>
+    <ClCompile Include="sendAbstract.cpp">
+      <Filter>shared</Filter>
+    </ClCompile>
+    <ClCompile Include="sendRegister.cpp">
+      <Filter>register</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -53,11 +56,14 @@
     <ClInclude Include="callbackHandler.h">
       <Filter>callbacks</Filter>
     </ClInclude>
-    <ClInclude Include="register.h">
-      <Filter>register</Filter>
-    </ClInclude>
-    <ClInclude Include="send.h">
+    <ClInclude Include="sendUpdate.h">
       <Filter>send</Filter>
+    </ClInclude>
+    <ClInclude Include="sendAbstract.h">
+      <Filter>shared</Filter>
+    </ClInclude>
+    <ClInclude Include="sendRegister.h">
+      <Filter>register</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
