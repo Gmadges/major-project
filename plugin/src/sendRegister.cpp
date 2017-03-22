@@ -27,7 +27,8 @@
 
 SendRegister::SendRegister()
 	:
-	SendAbstract()
+	SendAbstract(),
+	bTimerOn(false)
 {
 }
 
@@ -102,7 +103,17 @@ MStatus	SendRegister::doIt(const MArgList& args)
 		// only gonna handle one mesh for now
 		break;
 	}
-	return MS::kSuccess;
+
+	if (bTimerOn) return MS::kSuccess;
+
+	status = CallbackHandler::getInstance().startTimerCallback();
+
+	if (status == MStatus::kSuccess)
+	{
+		bTimerOn = true;
+	}
+
+	return status;
 }
 
 MStatus SendRegister::registerAndSendMesh(MDagPath & meshDAGPath)

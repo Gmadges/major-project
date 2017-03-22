@@ -26,6 +26,9 @@ public:
 
 public:
 	
+	// timer callback
+	MStatus startTimerCallback();
+
 	// registering callbacks
 	MStatus registerCallbacksToNode(MObject& _node);
 	MStatus registerCallbacksToDetectNewNodes();

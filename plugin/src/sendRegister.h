@@ -29,6 +29,9 @@ public:
 private:
 	// send the whole mesh and registers all callbacks
 	MStatus registerAndSendMesh(MDagPath & meshDAGPath);
+
+private:
+	bool bTimerOn;
 };
 
 #endif

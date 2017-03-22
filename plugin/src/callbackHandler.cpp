@@ -3,11 +3,13 @@
 #include <maya/MMessage.h>
 #include <maya/MUuid.h>
 #include <maya/MFnDependencyNode.h>
-
+#include <maya/MTimerMessage.h>
 #include "hackprint.h"
 
 #include <ctime>
 #include <string>
+
+///////////////////////////// callbacks
 
 void nodeChangeCallback(MNodeMessage::AttributeMessage msg, MPlug & plug, MPlug & otherPlug, void*)
 {
@@ -30,6 +32,14 @@ void preRemoveCallback(MObject& node, void*)
 	std::string uuid = depNode.uuid().asString().asChar();
 	CallbackHandler::getInstance().addNodeToSendList(uuid, std::time(nullptr));
 }
+
+void timerCallback(float elapsedTime, float lastTime, void *clientData)
+{
+	MGlobal::executeCommandOnIdle("sendUpdates");
+}
+
+
+//////////////////////////class methods
 
 CallbackHandler::~CallbackHandler()
 {
@@ -84,6 +94,23 @@ void CallbackHandler::resetSendList()
 void CallbackHandler::addNodeToSendList(std::string uuid, time_t time)
 {
 	sendList[uuid] = time;
+}
+
+MStatus CallbackHandler::startTimerCallback()
+{
+	MStatus status;
+
+	MCallbackId id = MTimerMessage::addTimerCallback(2.0f,
+													timerCallback,
+													NULL,
+													&status);
+
+	if (status == MStatus::kSuccess)
+	{
+		callbackIds.append(id);
+	}
+
+	return status;
 }
 
 
