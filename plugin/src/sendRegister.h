@@ -25,6 +25,10 @@ public:
 
 	static void* creator();
 	virtual MStatus	doIt(const MArgList&) override;
+
+private:
+	// send the whole mesh and registers all callbacks
+	MStatus registerAndSendMesh(MDagPath & meshDAGPath);
 };
 
 #endif

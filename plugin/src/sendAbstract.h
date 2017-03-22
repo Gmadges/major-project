@@ -10,6 +10,7 @@
 #include <maya/MSyntax.h>
 #include <maya/MDagPath.h>
 
+#include <algorithm>
 #include <memory>
 #include "json.h"
 
@@ -27,10 +28,17 @@ public:
 
 protected:
 	MStatus getArgs(const MArgList& args, MString& address, int& port);
-	void traverseHistory(MFnDependencyNode & node, std::vector<json>& nodeList);
+
+	// gets goes over all nodes for mesh and performs the specified func(including transform)
+	void traverseAllValidNodesForMesh(MDagPath & dagPath, std::function<void(MFnDependencyNode&)>& func);
+
+	// goes over all nodes starting from one passed to it
+	void traverseAllValidNodes(MFnDependencyNode & node, std::function<void(MFnDependencyNode&)>& func);
+
 	MStatus getGenericNode(MFnDependencyNode & _inNode, json& _outNode);
 	MStatus getAttribFromPlug(MPlug& _plug, json& _attribs);
 	MStatus sendMesh(MDagPath & meshNode);
+	bool isValidNodeType(MString& type);
 
 	std::unique_ptr<Messaging> pMessaging;
 	std::unique_ptr<TweakHandler> pTweaksHandler;

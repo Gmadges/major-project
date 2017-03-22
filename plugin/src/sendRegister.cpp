@@ -89,23 +89,85 @@ MStatus	SendRegister::doIt(const MArgList& args)
 		if (pTweaksHandler->hasTweaks(dagPath))
 		{
 			MObject tweakNode;
-			HackPrint::print("we got tweaks");
 			if (pTweaksHandler->createPolyTweakNode(dagPath, tweakNode) == MStatus::kSuccess)
 			{
-				HackPrint::print("created a node ting");
 				dagPath.extendToShape();
-				if (pTweaksHandler->connectTweakNodes(tweakNode, dagPath.node()) == MStatus::kSuccess)
-				{
-					HackPrint::print("connected");
-				}
+				pTweaksHandler->connectTweakNodes(tweakNode, dagPath.node());
 			}
 		}
 
 		// turn tweaks into a node before sending
-		if (sendMesh(dagPath) != MStatus::kSuccess) return MStatus::kFailure;
+		if (registerAndSendMesh(dagPath) != MStatus::kSuccess) return MStatus::kFailure;
 
-		// only gonna handle mesh for now
+		// only gonna handle one mesh for now
 		break;
 	}
 	return MS::kSuccess;
+}
+
+MStatus SendRegister::registerAndSendMesh(MDagPath & meshDAGPath)
+{
+	MStatus status;
+
+	json message;
+	message["requestType"] = ReqType::MESH_UPDATE;
+
+	// grab all nodes and set callbacks
+
+	std::vector<json> nodeList;
+
+	std::function<void(MFnDependencyNode&)> getNodeAddCallbackFunc = [this, &nodeList](MFnDependencyNode& node) {
+
+		json genNode;
+		if (getGenericNode(node, genNode) == MStatus::kSuccess)
+		{
+			nodeList.push_back(genNode);
+			//test
+			CallbackHandler::getInstance().registerCallbacksToNode(node.object());
+		}
+	};
+
+	traverseAllValidNodesForMesh(meshDAGPath, getNodeAddCallbackFunc);
+
+	// should have atleast 3 nodes for a mesh
+	// transform, shape and mesh
+	if (nodeList.size() < 3) return MStatus::kFailure;
+
+	json meshData;
+
+	// names are slightly confusing
+	// we use the shape nodes ID
+	// but its knows by the transforms name
+	// first do the transforms node
+	MFnDependencyNode transformNode(meshDAGPath.transform());
+	meshDAGPath.extendToShape();
+	MFnDependencyNode meshShapeNode(meshDAGPath.node());
+
+	// use shape nodes id.
+	meshData["id"] = std::string(meshShapeNode.uuid().asString().asChar());
+
+	// transforms name, because i dunno
+	meshData["name"] = std::string(transformNode.name().asChar());
+
+	// hardcode cube for now
+	meshData["type"] = PolyType::CUBE;
+
+	// add all its nodes
+	// minor hack
+	// the order of the nodes is going thw wrong way from most recent to older
+	std::reverse(nodeList.begin(), nodeList.end());
+	meshData["nodes"] = nodeList;
+
+	// attach the mesh to the message
+	message["mesh"] = meshData;
+
+	HackPrint::print("sending " + transformNode.name());
+	if (pMessaging->sendUpdate(message))
+	{
+		HackPrint::print("mesh sent succesfully");
+		return MStatus::kSuccess;
+	}
+
+	HackPrint::print("unable to send");
+	return MStatus::kFailure;
 }

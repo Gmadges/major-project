@@ -48,73 +48,6 @@ MSyntax SendAbstract::newSyntax()
 	return syn;
 }
 
-MStatus SendAbstract::sendMesh(MDagPath & meshDAGPath)
-{
-	MStatus status;
-
-	json message;
-	message["requestType"] = ReqType::MESH_UPDATE;
-
-	std::vector<json> nodeList;
-
-	meshDAGPath.extendToShape();
-	MObject meshNodeShape = meshDAGPath.node();
-	MFnDependencyNode depNodeFn(meshNodeShape);
-
-	MFnMesh mesh(meshNodeShape, &status);
-
-	if (!status)
-	{
-		status.perror("MFnMesh:constructor");
-		return status;
-	}
-
-	MFnDependencyNode transformNode(meshDAGPath.transform());
-	json transNode;
-	status = getGenericNode(transformNode, transNode);
-	if (status != MStatus::kSuccess) return status;
-	nodeList.push_back(transNode);
-
-	//test
-	CallbackHandler::getInstance().registerCallbacksToNode(meshDAGPath.transform());
-
-	traverseHistory(depNodeFn, nodeList);
-
-	// should have atleast 3 nodes for a mesh
-	// transform, shape and mesh
-	if (nodeList.size() < 3) return MStatus::kFailure;
-
-	json meshData;
-
-	// use shape nodes id.
-	meshData["id"] = std::string(depNodeFn.uuid().asString().asChar());
-
-	// transforms name, because i dunno
-	meshData["name"] = std::string(transformNode.name().asChar());
-
-	// hardcode cube for now
-	meshData["type"] = PolyType::CUBE;
-
-	// add all its nodes
-	// minor hack
-	// the order of the nodes is going thw wrong way from most recent to older
-	std::reverse(nodeList.begin(), nodeList.end());
-	meshData["nodes"] = nodeList;
-
-	// attach the mesh to the message
-	message["mesh"] = meshData;
-
-	HackPrint::print("sending " + transformNode.name());
-	if (pMessaging->sendUpdate(message))
-	{
-		HackPrint::print("mesh sent succesfully");
-		return MStatus::kSuccess;
-	}
-
-	HackPrint::print("unable to send");
-	return MStatus::kFailure;
-}
-
 MStatus SendAbstract::getArgs(const MArgList& args, MString& address, int& port)
 {
 	MStatus status = MStatus::kSuccess;
@@ -144,24 +77,24 @@ MStatus SendAbstract::getArgs(const MArgList& args, MString& address, int& port)
 	return status;
 }
 
-void SendAbstract::traverseHistory(MFnDependencyNode & node, std::vector<json>& nodeList)
+void SendAbstract::traverseAllValidNodesForMesh(MDagPath& dagPath, std::function<void(MFnDependencyNode&)>& func)
 {
-	HackPrint::print(node.name());
-	HackPrint::print(node.typeName());
+	// first do the transforms node
+	MFnDependencyNode transformNode(dagPath.transform());
+	func(transformNode);
 
-	if (node.typeName() == MString("transform") ||
-		node.typeName() == MString("mesh") ||
-		node.typeName() == MString("polyTweak") ||
-		//node.typeName() == MString("polySplitRing") ||
-		node.typeName() == MString("polyCube"))
+	// now the rest of the meshes history
+	dagPath.extendToShape();
+	MFnDependencyNode meshShapeNode(dagPath.node());
+
+	traverseAllValidNodes(meshShapeNode, func);
+}
+
+void SendAbstract::traverseAllValidNodes(MFnDependencyNode & node, std::function<void(MFnDependencyNode&)>& func)
+{
+	if (isValidNodeType(node.typeName()))
 	{
-		json genNode;
-		if (getGenericNode(node, genNode) == MStatus::kSuccess)
-		{
-			nodeList.push_back(genNode);
-			//test
-			CallbackHandler::getInstance().registerCallbacksToNode(node.object());
-		}
+		func(node);
 	}
 
 	// now lets see if it has a parent
@@ -185,7 +118,7 @@ void SendAbstract::traverseHistory(MFnDependencyNode & node, std::vector<json>& 
 		MPlug upstreamNodeSrcPlug = tempPlugArray[0];
 		MFnDependencyNode upstreamNode(upstreamNodeSrcPlug.node());
 
-		traverseHistory(upstreamNode, nodeList);
+		traverseAllValidNodes(upstreamNode, func);
 	}
 }
 
@@ -340,4 +273,13 @@ MStatus SendAbstract::getAttribFromPlug(MPlug& _plug, json& _attribs)
 	//// TODO look at handling data and objects possibly.
 
 	return MStatus::kFailure;
+}
+
+bool SendAbstract::isValidNodeType(MString& type)
+{
+	return (type == MString("transform") ||
+		type == MString("mesh") ||
+		type == MString("polyTweak") ||
+		//type == MString("polySplitRing") ||
+		type == MString("polyCube"));
 }
