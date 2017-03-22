@@ -8,8 +8,15 @@
 #include "update.h"
 #include "info.h"
 #include "sendUpdate.h"
+#include "setServerCmd.h"
 
 // initialise our plugin and commands
+
+static const MString registerCmd = "RegisterMesh";
+static const MString sendUpdateCmd = "SendUpdates";
+static const MString RecieveUpdateCmd = "ReceiveUpdate";
+static const MString getServerInfoCmd = "GetInfo";
+static const MString setServerCmd = "SetServer";
 
 MStatus initializePlugin(MObject obj)
 {
@@ -17,25 +24,31 @@ MStatus initializePlugin(MObject obj)
 
 	MFnPlugin plugin(obj, PLUGIN_COMPANY, "5.0", "Any");
 
-	status = plugin.registerCommand("RegisterMesh", SendRegister::creator, SendRegister::newSyntax);
+	status = plugin.registerCommand(registerCmd, SendRegister::creator);
 	if (!status)
 	{
 		status.perror("registerCommand");
 	}
 
-	status = plugin.registerCommand("sendUpdates", SendUpdate::creator, SendUpdate::newSyntax);
+	status = plugin.registerCommand(sendUpdateCmd, SendUpdate::creator);
 	if (!status)
 	{
 		status.perror("registerCommand");
 	}
 
-	status = plugin.registerCommand("ReceiveUpdate", Update::creator, Update::newSyntax);
+	status = plugin.registerCommand(RecieveUpdateCmd, Update::creator);
 	if (!status)
 	{
 		status.perror("registerCommand");
 	}
 
-	status = plugin.registerCommand("getInfo", Info::creator, Info::newSyntax);
+	status = plugin.registerCommand(getServerInfoCmd, Info::creator);
+	if (!status)
+	{
+		status.perror("registerCommand");
+	}
+
+	status = plugin.registerCommand(setServerCmd, SetServerCmd::creator, SetServerCmd::newSyntax);
 	if (!status)
 	{
 		status.perror("registerCommand");
@@ -50,29 +63,36 @@ MStatus uninitializePlugin(MObject obj)
 
 	MFnPlugin plugin(obj);
 
-	status = plugin.deregisterCommand("RegisterMesh");
+	status = plugin.deregisterCommand(registerCmd);
 	if (!status)
 	{
 		status.perror("deregisterCommand");
 	}
 
-	status = plugin.deregisterCommand("sendUpdates");
+	status = plugin.deregisterCommand(sendUpdateCmd);
 	if (!status)
 	{
 		status.perror("deregisterCommand");
 	}
 
-	status = plugin.deregisterCommand("ReceiveUpdate");
+	status = plugin.deregisterCommand(RecieveUpdateCmd);
 	if (!status)
 	{
 		status.perror("deregisterCommand");
 	}
 
-	status = plugin.deregisterCommand("getInfo");
+	status = plugin.deregisterCommand(getServerInfoCmd);
 	if (!status)
 	{
 		status.perror("deregisterCommand");
 	}
+
+	status = plugin.deregisterCommand(setServerCmd);
+	if (!status)
+	{
+		status.perror("deregisterCommand");
+	}
+
 
 	return status;
 }

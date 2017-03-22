@@ -24,7 +24,7 @@ public:
 	MStatus	doIt(const MArgList&);
 
 private:
-	MStatus getArgs(const MArgList& args, MString& address, int& port, MString& id);
+	MStatus getArgs(const MArgList& args, MString& id);
 	MStatus setNodeValues(json & _node);
 	bool doesItExist(std::string& id);
 	MStatus createMesh(json& _mesh);

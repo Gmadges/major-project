@@ -35,7 +35,7 @@ void preRemoveCallback(MObject& node, void*)
 
 void timerCallback(float elapsedTime, float lastTime, void *clientData)
 {
-	MGlobal::executeCommandOnIdle("sendUpdates");
+	MGlobal::executeCommandOnIdle("SendUpdates");
 }
 
 

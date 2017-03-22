@@ -23,11 +23,9 @@ public:
 	SendAbstract();
 	~SendAbstract();
 
-	static MSyntax newSyntax();
 	virtual MStatus	doIt(const MArgList&) = 0;
 
 protected:
-	MStatus getArgs(const MArgList& args, MString& address, int& port);
 
 	// gets goes over all nodes for mesh and performs the specified func(including transform)
 	void traverseAllValidNodesForMesh(MDagPath & dagPath, std::function<void(MFnDependencyNode&)>& func);
@@ -37,7 +35,6 @@ protected:
 
 	MStatus getGenericNode(MFnDependencyNode & _inNode, json& _outNode);
 	MStatus getAttribFromPlug(MPlug& _plug, json& _attribs);
-	MStatus sendMesh(MDagPath & meshNode);
 	bool isValidNodeType(MString& type);
 
 	std::unique_ptr<Messaging> pMessaging;

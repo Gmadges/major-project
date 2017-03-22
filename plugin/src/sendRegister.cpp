@@ -24,6 +24,7 @@
 #include "testTypes.h"
 
 #include "callbackHandler.h"
+#include "serverAddress.h"
 
 SendRegister::SendRegister()
 	:
@@ -46,16 +47,13 @@ MStatus	SendRegister::doIt(const MArgList& args)
 	MStatus status;
 
 	// reset socket
-	MString addr;
-	int port;
-	status = getArgs(args, addr, port);
-	if (status != MStatus::kSuccess)
+	if (!ServerAddress::getInstance().isServerSet())
 	{
-		HackPrint::print("no input values specified");
+		HackPrint::print("Set Server using \"SetServer\" command");
 		return status;
 	}
 
-	pMessaging->resetSocket(std::string(addr.asChar()), port);
+	pMessaging->resetSocket(ServerAddress::getInstance().getAddress(), ServerAddress::getInstance().getPort());
 
 	MSelectionList selList;
 	MGlobal::getActiveSelectionList(selList);

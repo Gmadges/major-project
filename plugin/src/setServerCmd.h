@@ -1,5 +1,5 @@
-#ifndef INFO_H
-#define INFO_H
+#ifndef SETSERVERCMD_H
+#define SETSERVERCMD_H
 
 #include <maya/MPxCommand.h>
 #include <maya/MArgList.h>
@@ -7,22 +7,19 @@
 #include <maya/MString.h>
 #include <maya/MSyntax.h>
 
-#include <memory>
-#include "json.h"
-
-class Messaging;
-
-class Info : public MPxCommand
+class SetServerCmd : public MPxCommand
 {
 public:
-	Info();
-	~Info();
+	SetServerCmd();
+	~SetServerCmd();
 
 	static void* creator();
+	static MSyntax newSyntax();
 	virtual MStatus doIt(const MArgList&);
 
 private:
-	std::unique_ptr<Messaging> pMessaging;
+
+	MStatus getArgs(const MArgList& args, MString& address, int& port);
 };
 
 #endif

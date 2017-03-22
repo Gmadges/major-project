@@ -29,6 +29,12 @@
     <ClCompile Include="sendRegister.cpp">
       <Filter>register</Filter>
     </ClCompile>
+    <ClCompile Include="serverAddress.cpp">
+      <Filter>info</Filter>
+    </ClCompile>
+    <ClCompile Include="setServerCmd.cpp">
+      <Filter>info</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hackPrint.h" />
@@ -64,6 +70,12 @@
     </ClInclude>
     <ClInclude Include="sendRegister.h">
       <Filter>register</Filter>
+    </ClInclude>
+    <ClInclude Include="serverAddress.h">
+      <Filter>info</Filter>
+    </ClInclude>
+    <ClInclude Include="setServerCmd.h">
+      <Filter>info</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

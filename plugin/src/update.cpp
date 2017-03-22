@@ -13,6 +13,7 @@
 
 #include "testTypes.h"
 #include "tweakHandler.h"
+#include "serverAddress.h"
 
 Update::Update()
 	:
@@ -34,8 +35,6 @@ MSyntax Update::newSyntax()
 {
 	MSyntax syn;
 
-	syn.addFlag("-a", "-address", MSyntax::kString);
-	syn.addFlag("-p", "-port", MSyntax::kUnsigned);
 	syn.addFlag("-id", "-uuid", MSyntax::kString);
 
 	return syn;
@@ -46,21 +45,23 @@ MStatus	Update::doIt(const MArgList& args)
 	MStatus status = MStatus::kSuccess;
 
 	// reset socket
-	MString addr;
-	int port;
-	MString id;
-	status = getArgs(args, addr, port, id);
-	if (status != MStatus::kSuccess)
+	if (!ServerAddress::getInstance().isServerSet())
 	{
-		HackPrint::print("no input values specified");
+		HackPrint::print("Set Server using \"SetServer\" command");
 		return status;
 	}
 
-	pMessenger->resetSocket(std::string(addr.asChar()), port);
+	pMessenger->resetSocket(ServerAddress::getInstance().getAddress(), ServerAddress::getInstance().getPort());
 
 	// ask the server for any update
 	json data;
-	
+	MString id;
+	if (getArgs(args, id) != MStatus::kSuccess)
+	{
+		HackPrint::print("no id specified!");
+		return MStatus::kFailure;
+	}
+
 	// if false then we couldnt connect to server
 	if (!pMessenger->requestMesh(data, ReqType::MESH_REQUEST, std::string(id.asChar()))) return MStatus::kFailure;
 	
@@ -200,31 +201,12 @@ MStatus Update::setAttribs(MFnDependencyNode& node, json& attribs)
 	return MStatus::kSuccess;
 }
 
-MStatus Update::getArgs(const MArgList& args, MString& address, int& port, MString& id)
+MStatus Update::getArgs(const MArgList& args, MString& id)
 {
 	MStatus status = MStatus::kSuccess;
 	MArgDatabase parser(syntax(), args, &status);
 
 	if (status != MS::kSuccess) return status;
-
-	// get the command line arguments that were specified
-	if (parser.isFlagSet("-p"))
-	{
-		parser.getFlagArgument("-p", 0, port);
-	}
-	else
-	{
-		status = MStatus::kFailure;
-	}
-
-	if (parser.isFlagSet("-a"))
-	{
-		parser.getFlagArgument("-a", 0, address);
-	}
-	else
-	{
-		status = MStatus::kFailure;
-	}
 
 	if (parser.isFlagSet("-id"))
 	{
