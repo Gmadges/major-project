@@ -7,6 +7,7 @@
 #include "register.h"
 #include "update.h"
 #include "info.h"
+#include "send.h"
 
 // initialise our plugin and commands
 
@@ -22,11 +23,11 @@ MStatus initializePlugin(MObject obj)
 		status.perror("registerCommand");
 	}
 
-	//status = plugin.registerCommand("sendMeshchanges", Scan::creator, Scan::newSyntax);
-	//if (!status)
-	//{
-	//	status.perror("registerCommand");
-	//}
+	status = plugin.registerCommand("sendUpdates", Send::creator, Send::newSyntax);
+	if (!status)
+	{
+		status.perror("registerCommand");
+	}
 
 	status = plugin.registerCommand("ReceiveUpdate", Update::creator, Update::newSyntax);
 	if (!status)
@@ -49,11 +50,18 @@ MStatus uninitializePlugin(MObject obj)
 
 	MFnPlugin plugin(obj);
 
-	status = plugin.deregisterCommand("ScanSend");
+	status = plugin.deregisterCommand("RegisterMesh");
 	if (!status)
 	{
 		status.perror("deregisterCommand");
 	}
+
+	status = plugin.deregisterCommand("sendUpdates");
+	if (!status)
+	{
+		status.perror("deregisterCommand");
+	}
+
 	status = plugin.deregisterCommand("ReceiveUpdate");
 	if (!status)
 	{

@@ -23,6 +23,9 @@
     <ClCompile Include="register.cpp">
       <Filter>register</Filter>
     </ClCompile>
+    <ClCompile Include="send.cpp">
+      <Filter>send</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hackPrint.h" />
@@ -53,6 +56,9 @@
     <ClInclude Include="register.h">
       <Filter>register</Filter>
     </ClInclude>
+    <ClInclude Include="send.h">
+      <Filter>send</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="common">
@@ -75,6 +81,9 @@
     </Filter>
     <Filter Include="register">
       <UniqueIdentifier>{156d3de9-f0f9-4682-96dd-be2679a97dd2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="send">
+      <UniqueIdentifier>{e0f1f7e9-f2cb-4006-95b1-5bdc5091b676}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
