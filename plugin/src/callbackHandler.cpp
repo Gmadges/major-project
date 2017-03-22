@@ -18,9 +18,6 @@ void nodeChangeCallback(MNodeMessage::AttributeMessage msg, MPlug & plug, MPlug 
 		msg & MNodeMessage::kAttributeArrayAdded ||
 		msg & MNodeMessage::kAttributeArrayRemoved)
 	{
-		HackPrint::print("change");
-		HackPrint::print(plug.info());
-
 		MFnDependencyNode node(plug.node());
 		std::string uuid = node.uuid().asString().asChar();
 		CallbackHandler::getInstance().addNodeToSendList(uuid, std::time(nullptr));
@@ -29,8 +26,6 @@ void nodeChangeCallback(MNodeMessage::AttributeMessage msg, MPlug & plug, MPlug 
 
 void preRemoveCallback(MObject& node, void*)
 {
-	HackPrint::print("pre-remove");
-	HackPrint::print(node.apiTypeStr());
 	MFnDependencyNode depNode(node);
 	std::string uuid = depNode.uuid().asString().asChar();
 	CallbackHandler::getInstance().addNodeToSendList(uuid, std::time(nullptr));
@@ -66,7 +61,7 @@ MStatus CallbackHandler::registerCallbacksToNode(MObject& _node)
 		callbackIds.append(id);
 	}
 
-	// TODO added stuff
+	// TODO couple more things
 
 	return status;
 }
