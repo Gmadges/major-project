@@ -36,6 +36,11 @@ CallbackHandler::~CallbackHandler()
 	MMessage::removeCallbacks(callbackIds);
 }
 
+std::unordered_map<std::string, std::time_t> CallbackHandler::getSendList()
+{
+	return sendList;
+}
+
 MStatus CallbackHandler::registerCallbacksToNode(MObject& _node)
 {
 	MStatus status;

@@ -13,6 +13,8 @@
 #include <maya/MArgDatabase.h>
 #include <maya/MUuid.h>
 
+#include <string>
+
 #include "messaging.h"
 #include "tweakHandler.h"
 #include "hackPrint.h"
@@ -50,6 +52,25 @@ MSyntax Send::newSyntax()
 MStatus	Send::doIt(const MArgList& args)
 {
 	MStatus status;
+
+	// check for args at some point
+
+	// get list of things we need to send
+	auto list = CallbackHandler::getInstance().getSendList();
+	
+	for (auto& itr : list)
+	{
+		std::string val;
+
+		val += itr.first;
+		val += " : ";
+		val += std::to_string(itr.second);
+
+		HackPrint::print(val);
+	}
+
+	// clear the list
+	CallbackHandler::getInstance().resetSendList();
 
 	return MS::kSuccess;
 }

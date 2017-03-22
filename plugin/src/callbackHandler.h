@@ -32,6 +32,7 @@ public:
 
 	void addNodeToSendList(std::string uuid, time_t time);
 	void resetSendList();
+	std::unordered_map<std::string, std::time_t> getSendList();
 
 private:
 	// dont want people to be able to get this
