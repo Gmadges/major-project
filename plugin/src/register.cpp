@@ -15,6 +15,8 @@
 #include <maya/MSyntax.h>
 #include <maya/MArgDatabase.h>
 #include <maya/MUuid.h>
+#include <maya/MSelectionList.h>
+#include <maya/MItSelectionList.h>
 
 #include "messaging.h"
 #include "tweakHandler.h"
@@ -66,19 +68,25 @@ MStatus	Register::doIt(const MArgList& args)
 
 	pMessaging->resetSocket(std::string(addr.asChar()), port);
 
-	// filter to only meshes
-	MItDag dagIterator(MItDag::kDepthFirst, MFn::kMesh, &status);
+	MSelectionList selList;
+	MGlobal::getActiveSelectionList(selList);
+	MItSelectionList selListIter(selList);
+	selListIter.setFilter(MFn::kMesh);
 
-	if (!status) {
-		status.perror("MItDag constructor");
-		return status;
+	// check any meshes are actually selected
+	if (selListIter.isDone())
+	{
+		HackPrint::print("no mesh selected!");
+		return MStatus::kFailure;
 	}
 
-	for (; !dagIterator.isDone(); dagIterator.next()) {
+	for (; !selListIter.isDone(); selListIter.next())
+	{
 
 		MDagPath dagPath;
 
-		status = dagIterator.getPath(dagPath);
+		status = selListIter.getDagPath(dagPath);
+
 		if (!status) {
 			status.perror("MItDag::getPath");
 			continue;
@@ -107,6 +115,9 @@ MStatus	Register::doIt(const MArgList& args)
 
 		// turn tweaks into a node before sending
 		if (sendMesh(dagPath) != MStatus::kSuccess) return MStatus::kFailure;
+
+		// only gonna handle mesh for now
+		break;
 	}
 	return MS::kSuccess;
 }
