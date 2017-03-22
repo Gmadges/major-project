@@ -12,7 +12,11 @@ public:
 	UpdateHandler(std::shared_ptr<Database> _db);
 	~UpdateHandler();
 
-	bool processRequest(json& _request);
+	bool registerMesh(json& _request);
+	bool updateMesh(json& _request);
+
+private:
+	void updateAndStoreMesh(json _mesh);
 
 private:
 	std::shared_ptr<Database> pDB;

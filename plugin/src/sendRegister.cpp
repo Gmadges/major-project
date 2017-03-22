@@ -119,7 +119,7 @@ MStatus SendRegister::registerAndSendMesh(MDagPath & meshDAGPath)
 	MStatus status;
 
 	json message;
-	message["requestType"] = ReqType::MESH_UPDATE;
+	message["requestType"] = ReqType::NEW_MESH;
 
 	// grab all nodes and set callbacks
 

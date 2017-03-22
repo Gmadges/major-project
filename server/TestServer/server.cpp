@@ -74,9 +74,21 @@ void Server::handleMessage()
 		ReqType reqType = data["requestType"];
 		switch (reqType)
 		{
-			case MESH_UPDATE: 
+			case NEW_MESH: 
 			{
-				bool result = pUpdateHandler->processRequest(data);
+				bool result = pUpdateHandler->registerMesh(data);
+
+				json replyData;
+				replyData["result"] = result;
+				auto sendBuff = json::to_msgpack(replyData);
+				zmq::message_t reply(sendBuff.size());
+				std::memcpy(reply.data(), sendBuff.data(), sendBuff.size());
+				socket.send(reply);
+				break;
+			}
+			case NODE_UPDATE:
+			{
+				bool result = pUpdateHandler->updateMesh(data);
 
 				json replyData;
 				replyData["result"] = result;
