@@ -73,7 +73,11 @@ MStatus	SendUpdate::doIt(const MArgList& args)
 		if (sList.getDependNode(0, node) != MStatus::kSuccess)
 		{
 			HackPrint::print("nodes been deleted");
-			//TODO
+			json delNode;
+			delNode["id"] = itr.first;
+			delNode["time"] = itr.second;
+			delNode["edit"] = EditType::DEL;
+			nodeList.push_back(delNode);
 			continue;
 		}
 
@@ -83,6 +87,7 @@ MStatus	SendUpdate::doIt(const MArgList& args)
 		if (getGenericNode(depNode, genNode) == MStatus::kSuccess)
 		{
 			genNode["time"] = itr.second;
+			genNode["edit"] = EditType::EDIT;
 			nodeList.push_back(genNode);
 		}
 
@@ -95,12 +100,16 @@ MStatus	SendUpdate::doIt(const MArgList& args)
 	// if our valid node is still null then we have tried to delete the whole mesh.
 	if (validNode.isNull()) return MStatus::kFailure;
 
+	MStatus status;
 
 	// send mesh with node list
 	// atm only handling one mesh
 	// re-use the last node we dealt with
 	MDagPathArray dagArray;
-	MDagPath::getAllPathsTo(validNode, dagArray);
+	status = MDagPath::getAllPathsTo(validNode, dagArray);
+
+	if (status != MStatus::kSuccess) return status;
+
 	dagArray[0].extendToShape();
 
 	MFnDependencyNode shapeNode(dagArray[0].node());

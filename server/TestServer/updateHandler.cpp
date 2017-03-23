@@ -1,6 +1,6 @@
 #include "updateHandler.h"
 
-
+#include "testTypes.h"
 #include "database.h"
 #include <thread>
 
@@ -47,18 +47,31 @@ void UpdateHandler::updateAndStoreMesh(json _mesh)
 
 	json currentMesh = pDB->getMesh(_mesh["id"].get<std::string>());
 
+	std::vector<json> nodeList = currentMesh["nodes"];
+
 	for (auto& newNode : _mesh["nodes"])
 	{
 		std::string id = newNode["id"];
 
-		for (auto& curNode : currentMesh["nodes"])
+		for (unsigned int i = 0; i < nodeList.size(); ++i)
 		{
-			if (id.compare(curNode["id"]) == 0)
+			if (id.compare(nodeList[i]["id"]) == 0)
 			{
-				curNode = newNode;
+				if (newNode["edit"] == EditType::EDIT)
+				{
+					std::cout << "edit : " << id << std::endl;
+					nodeList[i] = newNode;
+				}
+				else if (newNode["edit"] == EditType::DEL)
+				{
+					std::cout << "del : " << id << std::endl;
+					nodeList.erase(nodeList.begin() + i);
+				}
 			}
 		}
 	}
+
+	currentMesh["nodes"] = nodeList;;
 
 	pDB->putMesh(currentMesh);
 }

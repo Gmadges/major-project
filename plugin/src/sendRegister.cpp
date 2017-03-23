@@ -130,6 +130,8 @@ MStatus SendRegister::registerAndSendMesh(MDagPath & meshDAGPath)
 		json genNode;
 		if (getGenericNode(node, genNode) == MStatus::kSuccess)
 		{
+			genNode["edit"] = EditType::ADD;
+
 			nodeList.push_back(genNode);
 			//test
 			CallbackHandler::getInstance().registerCallbacksToNode(node.object());
