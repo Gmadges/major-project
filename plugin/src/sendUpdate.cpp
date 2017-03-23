@@ -59,7 +59,9 @@ MStatus	SendUpdate::doIt(const MArgList& args)
 	
 	// create node list
 	std::vector<json> nodeList;
-	MObject node;
+	
+	// need to use a node to find the mesh later
+	MObject validNode;
 
 	for (auto& itr : list)
 	{
@@ -67,7 +69,14 @@ MStatus	SendUpdate::doIt(const MArgList& args)
 		MSelectionList sList;
 		MUuid ID(itr.first.c_str());
 		sList.add(ID);
-		if (sList.getDependNode(0, node) != MStatus::kSuccess) continue;
+		MObject node;
+		if (sList.getDependNode(0, node) != MStatus::kSuccess)
+		{
+			HackPrint::print("nodes been deleted");
+			//TODO
+			continue;
+		}
+
 		MFnDependencyNode depNode(node);
 
 		json genNode;
@@ -76,16 +85,22 @@ MStatus	SendUpdate::doIt(const MArgList& args)
 			genNode["time"] = itr.second;
 			nodeList.push_back(genNode);
 		}
+
+		validNode = node;
 	}
 
 	// clear the list
 	CallbackHandler::getInstance().resetSendList();
 
+	// if our valid node is still null then we have tried to delete the whole mesh.
+	if (validNode.isNull()) return MStatus::kFailure;
+
+
 	// send mesh with node list
 	// atm only handling one mesh
 	// re-use the last node we dealt with
 	MDagPathArray dagArray;
-	MDagPath::getAllPathsTo(node, dagArray);
+	MDagPath::getAllPathsTo(validNode, dagArray);
 	dagArray[0].extendToShape();
 
 	MFnDependencyNode shapeNode(dagArray[0].node());
