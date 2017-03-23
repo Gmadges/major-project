@@ -30,10 +30,12 @@ class CreateUI(QWidget):
         
     def initUI(self):
         # controls
-        self.send_btn = QPushButton('Send', self)
-        self.send_btn.clicked.connect(self.send)
+        self.send_btn = QPushButton('Register', self)
+        self.send_btn.clicked.connect(self.register)
         self.update_btn = QPushButton('Update', self)
         self.update_btn.clicked.connect(self.update)
+        self.server_btn = QPushButton('Set Server', self)
+        self.server_btn.clicked.connect(self.setServerVals)
 
         self.address_line = QLineEdit()
         self.address_line.setText(self.address)
@@ -46,8 +48,6 @@ class CreateUI(QWidget):
 
         self.mesh_combo = QComboBox();
         self.mesh_combo.currentIndexChanged[int].connect(self.meshChanged)
-        # test
-        self.updateMeshList()
 
         # layout code
         settings_layout = QFormLayout()
@@ -60,6 +60,7 @@ class CreateUI(QWidget):
         button_layout.setContentsMargins(2, 2, 2, 2)
         button_layout.addWidget(self.send_btn)
         button_layout.addWidget(self.update_btn)
+        button_layout.addWidget(self.server_btn)
 
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(2, 2, 2, 2)
@@ -85,7 +86,7 @@ class CreateUI(QWidget):
         self.meshChanged(0)
 
     def requestInfo(self):
-        sendCmd = 'getInfo -a "' + self.address + '" -p ' + str(self.port)
+        sendCmd = 'GetInfo'
         meshResult = mel.eval(sendCmd)
         self.meshList = []
         if meshResult is not None :  
@@ -94,13 +95,19 @@ class CreateUI(QWidget):
                 self.meshList.append(meshVal)
 
         
-    def send(self):
-        sendCmd = 'ScanSend -a "' + self.address + '" -p ' + str(self.port)
+    def register(self):
+        sendCmd = 'RegisterMesh'
         mel.eval(sendCmd)
+        self.updateMeshList()
         
     def update(self):
-        updateCmd = 'ReceiveUpdate -a "' + self.address + '" -p ' + str(self.port) + ' -id "' + self.meshList[self.currentMeshIndex][1] + '"'
+        updateCmd = 'ReceiveUpdate -id "' + self.meshList[self.currentMeshIndex][1] + '"'
         mel.eval(updateCmd)
+
+    def setServerVals(self):
+        setServer = 'SetServer -a "' + self.address + '" -p ' + str(self.port)
+        mel.eval(setServer)
+        self.updateMeshList()
             
 def main():
     ui = CreateUI()
