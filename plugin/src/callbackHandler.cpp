@@ -79,7 +79,11 @@ MStatus CallbackHandler::registerCallbacksToNode(MObject& _node)
 		callbackIds.append(id);
 	}
 
-	// TODO couple more things
+	// TODO Name Change
+
+	// TODO added nodes
+
+	// TODO attribute added or removed 
 
 	return status;
 }
