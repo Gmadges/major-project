@@ -35,7 +35,6 @@ protected:
 
 	MStatus getGenericNode(MFnDependencyNode & _inNode, json& _outNode);
 	MStatus getAttribFromPlug(MPlug& _plug, json& _attribs);
-	bool isValidNodeType(MString& type);
 
 	std::unique_ptr<Messaging> pMessaging;
 	std::unique_ptr<TweakHandler> pTweaksHandler;

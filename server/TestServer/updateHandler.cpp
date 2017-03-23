@@ -53,6 +53,12 @@ void UpdateHandler::updateAndStoreMesh(json _mesh)
 	{
 		std::string id = newNode["id"];
 
+		if (newNode["edit"] == EditType::ADD)
+		{
+			// TODO
+			continue;
+		}
+
 		for (unsigned int i = 0; i < nodeList.size(); ++i)
 		{
 			if (id.compare(nodeList[i]["id"]) == 0)

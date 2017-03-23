@@ -35,6 +35,9 @@
     <ClCompile Include="setServerCmd.cpp">
       <Filter>info</Filter>
     </ClCompile>
+    <ClCompile Include="mayaUtils.cpp">
+      <Filter>shared</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hackPrint.h" />
@@ -76,6 +79,9 @@
     </ClInclude>
     <ClInclude Include="setServerCmd.h">
       <Filter>info</Filter>
+    </ClInclude>
+    <ClInclude Include="mayaUtils.h">
+      <Filter>shared</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

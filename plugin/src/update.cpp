@@ -14,6 +14,7 @@
 #include "testTypes.h"
 #include "tweakHandler.h"
 #include "serverAddress.h"
+#include "callbackHandler.h"
 
 Update::Update()
 	:
@@ -83,6 +84,9 @@ MStatus	Update::doIt(const MArgList& args)
 		// does nothing atm
 		createMesh(data);
 	}
+
+	// set this as our current mesh now
+	CallbackHandler::getInstance().setCurrentRegisteredMesh(meshID);
 
 	// get nodes
 	auto nodeList = data["nodes"];

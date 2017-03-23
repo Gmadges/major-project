@@ -133,12 +133,13 @@ MStatus SendRegister::registerAndSendMesh(MDagPath & meshDAGPath)
 			genNode["edit"] = EditType::ADD;
 
 			nodeList.push_back(genNode);
-			//test
 			CallbackHandler::getInstance().registerCallbacksToNode(node.object());
 		}
 	};
 
 	traverseAllValidNodesForMesh(meshDAGPath, getNodeAddCallbackFunc);
+
+	CallbackHandler::getInstance().registerCallbacksToDetectNewNodes();
 
 	// should have atleast 3 nodes for a mesh
 	// transform, shape and mesh
@@ -156,6 +157,8 @@ MStatus SendRegister::registerAndSendMesh(MDagPath & meshDAGPath)
 
 	// use shape nodes id.
 	meshData["id"] = std::string(meshShapeNode.uuid().asString().asChar());
+
+	CallbackHandler::getInstance().setCurrentRegisteredMesh(meshData["id"]);
 
 	// transforms name, because i dunno
 	meshData["name"] = std::string(transformNode.name().asChar());

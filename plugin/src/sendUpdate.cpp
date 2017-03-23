@@ -51,72 +51,21 @@ MStatus	SendUpdate::doIt(const MArgList& args)
 
 	pMessaging->resetSocket(ServerAddress::getInstance().getAddress(), ServerAddress::getInstance().getPort());
 
-
-	// get list of things we need to send
-	auto list = CallbackHandler::getInstance().getSendList();
-
-	if (list.empty()) return MStatus::kSuccess;
-	
-	// create node list
 	std::vector<json> nodeList;
-	
-	// need to use a node to find the mesh later
-	MObject validNode;
 
-	for (auto& itr : list)
-	{
-		// get node
-		MSelectionList sList;
-		MUuid ID(itr.first.c_str());
-		sList.add(ID);
-		MObject node;
-		if (sList.getDependNode(0, node) != MStatus::kSuccess)
-		{
-			HackPrint::print("nodes been deleted");
-			json delNode;
-			delNode["id"] = itr.first;
-			delNode["time"] = itr.second;
-			delNode["edit"] = EditType::DEL;
-			nodeList.push_back(delNode);
-			continue;
-		}
+	// this order is vaguely important we wanna add then update then del in databse i think
+	processNewNodes(nodeList);
 
-		MFnDependencyNode depNode(node);
+	processEditedNodes(nodeList);
 
-		json genNode;
-		if (getGenericNode(depNode, genNode) == MStatus::kSuccess)
-		{
-			genNode["time"] = itr.second;
-			genNode["edit"] = EditType::EDIT;
-			nodeList.push_back(genNode);
-		}
-
-		validNode = node;
-	}
-
-	// clear the list
-	CallbackHandler::getInstance().resetSendList();
+	processDeletedNodes(nodeList);
 
 	// if our valid node is still null then we have tried to delete the whole mesh.
-	if (validNode.isNull()) return MStatus::kFailure;
-
-	MStatus status;
-
-	// send mesh with node list
-	// atm only handling one mesh
-	// re-use the last node we dealt with
-	MDagPathArray dagArray;
-	status = MDagPath::getAllPathsTo(validNode, dagArray);
-
-	if (status != MStatus::kSuccess) return status;
-
-	dagArray[0].extendToShape();
-
-	MFnDependencyNode shapeNode(dagArray[0].node());
+	if (CallbackHandler::getInstance().getCurrentRegisteredMesh().empty()) return MStatus::kFailure;
 
 	json meshData;
 	// use shape nodes id.
-	meshData["id"] = std::string(shapeNode.uuid().asString().asChar());
+	meshData["id"] = CallbackHandler::getInstance().getCurrentRegisteredMesh();
 
 	// add all its nodes
 	meshData["nodes"] = nodeList;
@@ -134,5 +83,87 @@ MStatus	SendUpdate::doIt(const MArgList& args)
 
 	HackPrint::print("unable to send");
 	return MStatus::kFailure;
+}
+
+void SendUpdate::processNewNodes(std::vector<json>& nodeList)
+{
+	// get list of things we need to send
+	auto list = CallbackHandler::getInstance().getAddedList();
+
+	if (list.empty()) return;
+
+	for (auto& itr : list)
+	{
+		// get node
+		MSelectionList sList;
+		MUuid ID(itr.first.c_str());
+		sList.add(ID);
+		MObject node;
+		if (sList.getDependNode(0, node) != MStatus::kSuccess) continue;
+
+		MFnDependencyNode depNode(node);
+
+		json genNode;
+		if (getGenericNode(depNode, genNode) == MStatus::kSuccess)
+		{
+			genNode["time"] = itr.second;
+			genNode["edit"] = EditType::ADD;
+			nodeList.push_back(genNode);
+		}
+	}
+
+	// clear the list
+	CallbackHandler::getInstance().resetAddedList();
+}
+
+void SendUpdate::processEditedNodes(std::vector<json>& nodeList)
+{
+	// get list of things we need to send
+	auto list = CallbackHandler::getInstance().getEditsList();
+
+	if (list.empty()) return;
+
+	for (auto& itr : list)
+	{
+		// get node
+		MSelectionList sList;
+		MUuid ID(itr.first.c_str());
+		sList.add(ID);
+		MObject node;
+		if (sList.getDependNode(0, node) != MStatus::kSuccess) continue;
+
+		MFnDependencyNode depNode(node);
+
+		json genNode;
+		if (getGenericNode(depNode, genNode) == MStatus::kSuccess)
+		{
+			genNode["time"] = itr.second;
+			genNode["edit"] = EditType::EDIT;
+			nodeList.push_back(genNode);
+		}
+	}
+
+	// clear the list
+	CallbackHandler::getInstance().resetEditList();
+}
+
+void SendUpdate::processDeletedNodes(std::vector<json>& nodeList)
+{
+	// get list of things we need to send
+	auto list = CallbackHandler::getInstance().getDeletedList();
+
+	if (list.empty()) return;
+
+	for (auto& itr : list)
+	{
+		json delNode;
+		delNode["id"] = itr.first;
+		delNode["time"] = itr.second;
+		delNode["edit"] = EditType::DEL;
+		nodeList.push_back(delNode);
+	}
+
+	// clear the list
+	CallbackHandler::getInstance().resetDeleteList();
 }
 

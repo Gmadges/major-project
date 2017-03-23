@@ -24,6 +24,12 @@ public:
 	// have to have a creator
 	static void* creator();
 	virtual MStatus	doIt(const MArgList&) override;
+
+private:
+
+	void processNewNodes(std::vector<json>& nodeList);
+	void processEditedNodes(std::vector<json>& nodeList);
+	void processDeletedNodes(std::vector<json>& nodeList);
 };
 
 #endif

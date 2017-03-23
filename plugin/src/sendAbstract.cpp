@@ -24,6 +24,7 @@
 #include "testTypes.h"
 
 #include "callbackHandler.h"
+#include "mayaUtils.h"
 
 SendAbstract::SendAbstract()
 	:
@@ -52,7 +53,7 @@ void SendAbstract::traverseAllValidNodesForMesh(MDagPath& dagPath, std::function
 
 void SendAbstract::traverseAllValidNodes(MFnDependencyNode & node, std::function<void(MFnDependencyNode&)>& func)
 {
-	if (isValidNodeType(node.typeName()))
+	if (MayaUtils::isValidNodeType(node.typeName()))
 	{
 		func(node);
 	}
@@ -234,13 +235,4 @@ MStatus SendAbstract::getAttribFromPlug(MPlug& _plug, json& _attribs)
 	//// TODO look at handling data and objects possibly.
 
 	return MStatus::kFailure;
-}
-
-bool SendAbstract::isValidNodeType(MString& type)
-{
-	return (type == MString("transform") ||
-		type == MString("mesh") ||
-		type == MString("polyTweak") ||
-		//type == MString("polySplitRing") ||
-		type == MString("polyCube"));
 }

@@ -33,9 +33,23 @@ public:
 	MStatus registerCallbacksToNode(MObject& _node);
 	MStatus registerCallbacksToDetectNewNodes();
 
-	void addNodeToSendList(std::string uuid, time_t time);
-	void resetSendList();
-	std::unordered_map<std::string, std::time_t> getSendList();
+	std::string getCurrentRegisteredMesh();
+	void setCurrentRegisteredMesh(std::string meshID);
+
+	// deletes
+	std::unordered_map<std::string, std::time_t> getDeletedList();
+	void addNodeToDeleteList(std::string uuid, time_t time);
+	void resetDeleteList();
+
+	// adds
+	std::unordered_map<std::string, std::time_t> getAddedList();
+	void addNodeToAddedList(std::string uuid, time_t time);
+	void resetAddedList();
+
+	// edits
+	std::unordered_map<std::string, std::time_t> getEditsList();
+	void addNodeToEditList(std::string uuid, time_t time);
+	void resetEditList();
 
 private:
 	// dont want people to be able to get this
@@ -45,7 +59,11 @@ private:
 private:
 	MCallbackIdArray callbackIds;
 
-	std::unordered_map<std::string, std::time_t> sendList;
+	std::unordered_map<std::string, std::time_t> editList;
+	std::unordered_map<std::string, std::time_t> addList;
+	std::unordered_map<std::string, std::time_t> delList;
+
+	std::string currentMeshID;
 };
 
 #endif

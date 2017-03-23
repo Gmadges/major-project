@@ -355,7 +355,7 @@ MStatus TweakHandler::setTweakPlugFromArray(MPlug& _plug, std::vector<json>& twe
 			// find tweak indici
 			try
 			{
-				unsigned int pos = tweak.key().find("[") + 1;
+				size_t pos = tweak.key().find("[") + 1;
 				std::string indString = tweak.key().substr(pos, 1);
 				indice = std::stoi(indString);
 			}
