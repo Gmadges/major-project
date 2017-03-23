@@ -1,7 +1,14 @@
 #include "database.h"
 
+#include <fstream>
+
 Database::Database()
 {
+	std::ifstream inputFile("database.json");
+	if (inputFile.is_open())
+	{
+		inputFile >> db;
+	}
 }
 
 
@@ -17,6 +24,8 @@ bool Database::putMesh(json& _mesh)
 		std::string id = _mesh["id"];
 		std::cout << "storing: " << id << std::endl;
 		db[id] = _mesh;
+
+		storeToFile();
 		return true;
 	}
 
@@ -37,4 +46,11 @@ json Database::getMesh(std::string& _id)
 json Database::getAllMeshes()
 {
 	return db;
+}
+
+void Database::storeToFile()
+{
+	std::ofstream outputFile("database.json");
+	outputFile << std::setw(4) << db << std::endl;
+	outputFile.close();
 }

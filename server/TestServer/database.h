@@ -16,6 +16,9 @@ public:
 	json getAllMeshes();
 
 private:
+	void storeToFile();
+
+private:
 	json db;
 };
 
