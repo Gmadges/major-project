@@ -20,6 +20,9 @@ void nodeChangeCallback(MNodeMessage::AttributeMessage msg, MPlug & plug, MPlug 
 		msg & MNodeMessage::kAttributeArrayAdded ||
 		msg & MNodeMessage::kAttributeArrayRemoved)
 	{
+		// not bothered about cache inputs
+		if (plug.partialName() == "cin") return;
+
 		MFnDependencyNode node(plug.node());
 		std::string uuid = node.uuid().asString().asChar();
 		CallbackHandler::getInstance().addNodeToSendList(uuid, std::time(nullptr));
