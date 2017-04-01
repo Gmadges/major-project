@@ -60,6 +60,8 @@ MStatus	SendUpdate::doIt(const MArgList& args)
 
 	processDeletedNodes(nodeList);
 
+	if (nodeList.empty()) return MStatus::kSuccess;
+
 	// if our valid node is still null then we have tried to delete the whole mesh.
 	if (CallbackHandler::getInstance().getCurrentRegisteredMesh().empty()) return MStatus::kFailure;
 
