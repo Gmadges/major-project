@@ -105,6 +105,11 @@ void SendUpdate::processNewNodes(std::vector<json>& nodeList)
 
 		MFnDependencyNode depNode(node);
 
+		// TODO
+		// check its a node for the correct mesh
+
+		// register this node with callbacks
+
 		json genNode;
 		if (getGenericNode(depNode, genNode) == MStatus::kSuccess)
 		{

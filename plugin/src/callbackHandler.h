@@ -56,6 +56,8 @@ private:
 	CallbackHandler() {};
 	~CallbackHandler();
 
+	MStatus cleanNodeOfCallbacks(MObject& _node);
+
 private:
 	MCallbackIdArray callbackIds;
 

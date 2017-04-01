@@ -104,12 +104,18 @@ MStatus	RequestMesh::doIt(const MArgList& args)
 			status = createNode(itr);
 			status = setNodeValues(itr);
 			status = setConnections(data, itr);
-			continue;
 		}
-		// set values
-		// no need to worry about re-wireing anything
-		// just change the values
-		setNodeValues(itr);
+		else
+		{		
+			// set values
+			// no need to worry about re-wireing anything
+			// just change the values
+			setNodeValues(itr);
+		}
+
+		// register node with callbacks
+		CallbackHandler::getInstance().registerCallbacksToNode(node.object());
+
 	}
 	return status;
 }

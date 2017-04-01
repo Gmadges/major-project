@@ -69,6 +69,9 @@ MStatus CallbackHandler::registerCallbacksToNode(MObject& _node)
 {
 	MStatus status;
 
+	// wipe the callbacks off a node if its already has them
+	status = cleanNodeOfCallbacks(_node);
+
 	MCallbackId id = MNodeMessage::addAttributeChangedCallback(_node,
 																nodeChangeCallback,
 																NULL,
@@ -127,6 +130,33 @@ MStatus CallbackHandler::startTimerCallback()
 	if (status == MStatus::kSuccess)
 	{
 		callbackIds.append(id);
+	}
+
+	return status;
+}
+
+MStatus CallbackHandler::cleanNodeOfCallbacks(MObject& _node)
+{
+	MCallbackIdArray nodeCallbacks;
+
+	MStatus status = MMessage::nodeCallbacks(_node, nodeCallbacks);
+
+	// remove the callbacks 
+	
+	for (unsigned int i = 0; i < nodeCallbacks.length(); i++)
+	{
+		// remove the callback in general
+		status = MMessage::removeCallback(nodeCallbacks[i]);
+
+		// remove the id from our list
+		for (unsigned int j = 0; i < callbackIds.length(); i++)
+		{
+			if (nodeCallbacks[i] == callbackIds[i])
+			{
+				callbackIds.remove(j);
+				break;
+			}
+		}
 	}
 
 	return status;
