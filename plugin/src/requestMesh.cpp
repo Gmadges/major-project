@@ -15,6 +15,7 @@
 #include "tweakHandler.h"
 #include "serverAddress.h"
 #include "callbackHandler.h"
+#include "mayaUtils.h"
 
 RequestMesh::RequestMesh()
 	:
@@ -114,19 +115,24 @@ MStatus	RequestMesh::doIt(const MArgList& args)
 		}
 
 		// register node with callbacks
-		CallbackHandler::getInstance().registerCallbacksToNode(node.object());
-
+		MObject node;
+		MString id = stringID.c_str();
+		status = MayaUtils::getNodeObjectFromUUID(id, node);
+		CallbackHandler::getInstance().registerCallbacksToNode(node);
 	}
+
+	// register other callbacks
+	CallbackHandler::getInstance().registerCallbacksToDetectNewNodes();
+	CallbackHandler::getInstance().startTimerCallback();
+
 	return status;
 }
 
 MStatus RequestMesh::setNodeValues(json & _node)
 {
-	MSelectionList sList;
-	MUuid ID(_node["id"].get<std::string>().c_str());
-	sList.add(ID);
 	MObject node;
-	if (sList.getDependNode(0, node) != MStatus::kSuccess) return MStatus::kFailure;
+	MString id = _node["id"].get<std::string>().c_str();
+	if (MayaUtils::getNodeObjectFromUUID(id, node) != MStatus::kSuccess) return MStatus::kFailure;
 	// rename and set correct details
 	MFnDependencyNode depNode(node);
 
@@ -257,11 +263,11 @@ MStatus RequestMesh::createMesh(json& _mesh)
 			if (sList.getDependNode(0, node) != MStatus::kSuccess) return MStatus::kFailure;
 
 			// rename and set correct details
-			MDagPathArray dagArray;
-			MDagPath::getAllPathsTo(node, dagArray);
-			dagArray[0].extendToShape();
+			MDagPath dagPath;
+			MDagPath::getAPathTo(node, dagPath);
+			dagPath.extendToShape();
 
-			MFnDependencyNode shapeNode(dagArray[0].node());
+			MFnDependencyNode shapeNode(dagPath.node());
 			matchIDs(shapeNode, _mesh);
 
 			//transform node
@@ -347,29 +353,20 @@ MStatus RequestMesh::setConnections(json& _mesh, json& _node)
 		type.compare("polyTweak") == 0 )
 	{
 		// get mesh and set it to be the one we're effecting
-		MSelectionList selList;
-		MUuid meshID(_mesh["id"].get<std::string>().c_str());
-		
-		status = selList.add(meshID);
+		MString meshID(_mesh["id"].get<std::string>().c_str());
 		MObject meshNode;
-		status = selList.getDependNode(0, meshNode);
+		status = MayaUtils::getNodeObjectFromUUID(meshID, meshNode);
 		if(status != MStatus::kSuccess) return status;
 
-		// rename and set correct details
-		MDagPathArray dagArray;
-		MDagPath::getAllPathsTo(meshNode, dagArray);
-		dagArray[0].extendToShape();
-		setMeshNode(dagArray[0]);
+		MDagPath dagPath;
+		MDagPath::getAPathTo(meshNode, dagPath);
+		dagPath.extendToShape();
+		setMeshNode(dagPath);
 
 		// get node and do the connections
-		MSelectionList sList;
-		MUuid nodeID(_node["id"].get<std::string>().c_str());
-
-		status = sList.add(nodeID);
-		if (status != MStatus::kSuccess) return status;
-		
+		MString nodeID(_node["id"].get<std::string>().c_str());
 		MObject node;
-		status = sList.getDependNode(0, node);
+		status = MayaUtils::getNodeObjectFromUUID(nodeID, node);
 		if (status != MStatus::kSuccess) return status;
 
 		//// and add it to the DAG

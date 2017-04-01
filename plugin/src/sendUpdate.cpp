@@ -21,6 +21,7 @@
 #include "tweakHandler.h"
 #include "hackPrint.h"
 #include "testTypes.h"
+#include "mayaUtils.h"
 
 #include "callbackHandler.h"
 #include "serverAddress.h"
@@ -96,20 +97,17 @@ void SendUpdate::processNewNodes(std::vector<json>& nodeList)
 
 	for (auto& itr : list)
 	{
-		// get node
-		MSelectionList sList;
-		MUuid ID(itr.first.c_str());
-		sList.add(ID);
 		MObject node;
-		if (sList.getDependNode(0, node) != MStatus::kSuccess) continue;
+		MString id = itr.first.c_str();
+		if (MayaUtils::getNodeObjectFromUUID(id, node) != MStatus::kSuccess) continue;
 
-		MFnDependencyNode depNode(node);
-
-		// TODO
 		// check its a node for the correct mesh
+		if(!isNodeFromRegisteredMesh(node)) continue;
 
 		// register this node with callbacks
+		CallbackHandler::getInstance().registerCallbacksToNode(node);
 
+		MFnDependencyNode depNode(node);
 		json genNode;
 		if (getGenericNode(depNode, genNode) == MStatus::kSuccess)
 		{
@@ -132,12 +130,9 @@ void SendUpdate::processEditedNodes(std::vector<json>& nodeList)
 
 	for (auto& itr : list)
 	{
-		// get node
-		MSelectionList sList;
-		MUuid ID(itr.first.c_str());
-		sList.add(ID);
 		MObject node;
-		if (sList.getDependNode(0, node) != MStatus::kSuccess) continue;
+		MString id = itr.first.c_str();
+		if (MayaUtils::getNodeObjectFromUUID(id, node) != MStatus::kSuccess) continue;
 
 		MFnDependencyNode depNode(node);
 
@@ -172,5 +167,36 @@ void SendUpdate::processDeletedNodes(std::vector<json>& nodeList)
 
 	// clear the list
 	CallbackHandler::getInstance().resetDeleteList();
+}
+
+bool SendUpdate::isNodeFromRegisteredMesh(MObject& _node)
+{
+	MStatus status;
+
+	MFnDependencyNode depNode(_node);
+	MString currentMeshID = CallbackHandler::getInstance().getCurrentRegisteredMesh().c_str();
+	MUuid id = depNode.uuid();
+
+	if (id.asString() != currentMeshID)
+	{
+		// try and grab the mesh that the node is in
+		MDagPath dagPath;
+		status = MDagPath::getAPathTo(_node, dagPath);
+		MString test = status.errorString();
+		if (status != MStatus::kSuccess) return false;
+
+		status = dagPath.extendToShape();
+		if (status != MStatus::kSuccess) return false;
+
+		MFnDependencyNode meshDepNode(dagPath.node(), &status);
+		if (status != MStatus::kSuccess) return false;
+
+		// get the ids for comparison
+		id = meshDepNode.uuid();
+
+		return id.asString() == currentMeshID;
+	}
+
+	return true;
 }
 

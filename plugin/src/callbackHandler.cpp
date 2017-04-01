@@ -126,7 +126,7 @@ MStatus CallbackHandler::registerCallbacksToDetectNewNodes()
 		newNodeCallbackEnabled = true;
 	}
 
-	return MStatus::kFailure;
+	return status;
 }
 
 MStatus CallbackHandler::startTimerCallback()

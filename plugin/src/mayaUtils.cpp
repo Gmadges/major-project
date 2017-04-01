@@ -1,5 +1,8 @@
 #include "mayaUtils.h"
 
+#include <maya/MSelectionList.h>
+#include <maya/MUuid.h>
+
 MayaUtils::MayaUtils()
 {
 }
@@ -18,3 +21,15 @@ bool MayaUtils::isValidNodeType(MString& _type)
 			//_type == MString("polySplitRing") ||
 			_type == MString("polyCube"));
 }
+
+MStatus MayaUtils::getNodeObjectFromUUID(MString& uuid, MObject& _node)
+{
+	// get node
+	MSelectionList sList;
+	MUuid ID(uuid);
+	sList.add(ID);
+	return sList.getDependNode(0, _node);
+}
+
+
+

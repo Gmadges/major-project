@@ -26,6 +26,9 @@ public:
 	virtual MStatus	doIt(const MArgList&) override;
 
 private:
+	bool isNodeFromRegisteredMesh(MObject& _depNode);
+
+private:
 
 	void processNewNodes(std::vector<json>& nodeList);
 	void processEditedNodes(std::vector<json>& nodeList);
