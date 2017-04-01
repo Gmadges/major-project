@@ -1,4 +1,4 @@
-#include "update.h"
+#include "requestMesh.h"
 #include "hackPrint.h"
 #include "messaging.h"
 
@@ -16,23 +16,23 @@
 #include "serverAddress.h"
 #include "callbackHandler.h"
 
-Update::Update()
+RequestMesh::RequestMesh()
 	:
 	pMessenger(new Messaging("localhost",8080)),
 	pTweakHandler(new TweakHandler())
 {
 }
 
-Update::~Update()
+RequestMesh::~RequestMesh()
 {
 }
 
-void* Update::creator()
+void* RequestMesh::creator()
 {
-	return new Update;
+	return new RequestMesh;
 }
 
-MSyntax Update::newSyntax()
+MSyntax RequestMesh::newSyntax()
 {
 	MSyntax syn;
 
@@ -41,7 +41,7 @@ MSyntax Update::newSyntax()
 	return syn;
 }
 
-MStatus	Update::doIt(const MArgList& args)
+MStatus	RequestMesh::doIt(const MArgList& args)
 {
 	MStatus status = MStatus::kSuccess;
 
@@ -114,7 +114,7 @@ MStatus	Update::doIt(const MArgList& args)
 	return status;
 }
 
-MStatus Update::setNodeValues(json & _node)
+MStatus RequestMesh::setNodeValues(json & _node)
 {
 	MSelectionList sList;
 	MUuid ID(_node["id"].get<std::string>().c_str());
@@ -133,7 +133,7 @@ MStatus Update::setNodeValues(json & _node)
 	return setAttribs(depNode, dataAttribs);
 }
 
-MStatus Update::setAttribs(MFnDependencyNode& node, json& attribs)
+MStatus RequestMesh::setAttribs(MFnDependencyNode& node, json& attribs)
 {
 	MStatus status;
 
@@ -205,7 +205,7 @@ MStatus Update::setAttribs(MFnDependencyNode& node, json& attribs)
 	return MStatus::kSuccess;
 }
 
-MStatus Update::getArgs(const MArgList& args, MString& id)
+MStatus RequestMesh::getArgs(const MArgList& args, MString& id)
 {
 	MStatus status = MStatus::kSuccess;
 	MArgDatabase parser(syntax(), args, &status);
@@ -224,7 +224,7 @@ MStatus Update::getArgs(const MArgList& args, MString& id)
 	return status;
 }
 
-MStatus Update::createMesh(json& _mesh)
+MStatus RequestMesh::createMesh(json& _mesh)
 {
 	MStatus status;
 
@@ -269,7 +269,7 @@ MStatus Update::createMesh(json& _mesh)
 	return MStatus::kFailure;
 }
 
-void Update::matchIDs(MFnDependencyNode & node, json& mesh)
+void RequestMesh::matchIDs(MFnDependencyNode & node, json& mesh)
 {
 	// we should really only have 3 nodes because we just made a fresh one
 	// so we're only reset the ID's for the shape, transform and polymesh
@@ -312,7 +312,7 @@ void Update::matchIDs(MFnDependencyNode & node, json& mesh)
 	}
 }
 
-MStatus Update::createNode(json& _node)
+MStatus RequestMesh::createNode(json& _node)
 {
 	MStatus status;
 
@@ -330,7 +330,7 @@ MStatus Update::createNode(json& _node)
 	return fDGModifier.doIt();
 }
 
-MStatus Update::setConnections(json& _mesh, json& _node)
+MStatus RequestMesh::setConnections(json& _mesh, json& _node)
 {
 	// if its not a mesh we'll have to wire it in
 	std::string type = _node["type"];
@@ -388,7 +388,7 @@ MStatus Update::setConnections(json& _mesh, json& _node)
 	return MStatus::kSuccess;
 }
 
-bool Update::doesItExist(std::string& _id)
+bool RequestMesh::doesItExist(std::string& _id)
 {
 	MStatus status;
 	MSelectionList selList;

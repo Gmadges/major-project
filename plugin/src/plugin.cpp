@@ -5,7 +5,7 @@
 
 #include <memory>
 #include "sendRegister.h"
-#include "update.h"
+#include "requestMesh.h"
 #include "info.h"
 #include "sendUpdate.h"
 #include "setServerCmd.h"
@@ -36,7 +36,7 @@ MStatus initializePlugin(MObject obj)
 		status.perror("registerCommand");
 	}
 
-	status = plugin.registerCommand(RecieveUpdateCmd, Update::creator, Update::newSyntax);
+	status = plugin.registerCommand(RecieveUpdateCmd, RequestMesh::creator, RequestMesh::newSyntax);
 	if (!status)
 	{
 		status.perror("registerCommand");

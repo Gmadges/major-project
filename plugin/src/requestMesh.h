@@ -1,5 +1,5 @@
-#ifndef UPDATE_H
-#define UPDATE_H
+#ifndef REQUESTMESH_H
+#define REQUESTMESH_H
 
 #include "polyModifierCmd.h"
 
@@ -13,14 +13,14 @@
 class Messaging;
 class TweakHandler;
 
-class Update : public polyModifierCmd
+class RequestMesh : public polyModifierCmd
 {
 public:
-	Update();
-	~Update();
+	RequestMesh();
+	~RequestMesh();
 
 	static void* creator();
-	static MSyntax Update::newSyntax();
+	static MSyntax newSyntax();
 	MStatus	doIt(const MArgList&);
 
 private:
