@@ -60,6 +60,14 @@ void timerCallback(float elapsedTime, float lastTime, void *clientData)
 
 //////////////////////////class methods
 
+CallbackHandler::CallbackHandler()
+	:
+	timerCallbackEnabled(false),
+	newNodeCallbackEnabled(false)
+{
+}
+
+
 CallbackHandler::~CallbackHandler()
 {
 	MMessage::removeCallbacks(callbackIds);
@@ -104,6 +112,8 @@ MStatus CallbackHandler::registerCallbacksToNode(MObject& _node)
 
 MStatus CallbackHandler::registerCallbacksToDetectNewNodes()
 {
+	if (newNodeCallbackEnabled) return MStatus::kSuccess;
+
 	MStatus status;
 
 	MCallbackId id = MDGMessage::addNodeAddedCallback(newNodeCallback,
@@ -113,6 +123,7 @@ MStatus CallbackHandler::registerCallbacksToDetectNewNodes()
 	if (status == MStatus::kSuccess)
 	{
 		callbackIds.append(id);
+		newNodeCallbackEnabled = true;
 	}
 
 	return MStatus::kFailure;
@@ -120,6 +131,8 @@ MStatus CallbackHandler::registerCallbacksToDetectNewNodes()
 
 MStatus CallbackHandler::startTimerCallback()
 {
+	if (timerCallbackEnabled) return MStatus::kSuccess;
+	
 	MStatus status;
 
 	MCallbackId id = MTimerMessage::addTimerCallback(2.0f,
@@ -130,6 +143,7 @@ MStatus CallbackHandler::startTimerCallback()
 	if (status == MStatus::kSuccess)
 	{
 		callbackIds.append(id);
+		timerCallbackEnabled = true;
 	}
 
 	return status;

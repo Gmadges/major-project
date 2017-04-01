@@ -53,7 +53,7 @@ public:
 
 private:
 	// dont want people to be able to get this
-	CallbackHandler() {};
+	CallbackHandler();
 	~CallbackHandler();
 
 	MStatus cleanNodeOfCallbacks(MObject& _node);
@@ -66,6 +66,9 @@ private:
 	std::unordered_map<std::string, std::time_t> delList;
 
 	std::string currentMeshID;
+
+	bool timerCallbackEnabled;
+	bool newNodeCallbackEnabled;
 };
 
 #endif
