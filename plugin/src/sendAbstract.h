@@ -35,6 +35,9 @@ protected:
 
 	MStatus getGenericNode(MFnDependencyNode & _inNode, json& _outNode);
 	MStatus getAttribFromPlug(MPlug& _plug, json& _attribs);
+	MStatus getIncomingID(MFnDependencyNode & _inNode, MString& _id);
+	MStatus getOutgoingID(MFnDependencyNode & _inNode, MString& _id);
+
 
 	std::unique_ptr<Messaging> pMessaging;
 	std::unique_ptr<TweakHandler> pTweaksHandler;

@@ -116,7 +116,72 @@ MStatus SendAbstract::getGenericNode(MFnDependencyNode & _inNode, json& _outNode
 	_outNode["time"] = std::time(nullptr);
 	_outNode["attribs"] = nodeAttribs;
 
+	// use plugs to get node ordering
+	_outNode["out"] = nullptr;
+	_outNode["in"] = nullptr;
+
+	MString inID;
+	if (getIncomingID(_inNode, inID) == MStatus::kSuccess)
+	{
+		_outNode["in"] = std::string(inID.asChar());
+	}
+
+	MString outID;
+	if (getOutgoingID(_inNode, outID) == MStatus::kSuccess)
+	{
+		_outNode["out"] = std::string(outID.asChar());
+	}
+
 	return MStatus::kSuccess;
+}
+
+MStatus SendAbstract::getIncomingID(MFnDependencyNode & _inNode, MString& _id)
+{
+	MStatus status;
+	MPlug inMeshPlug;
+	inMeshPlug = _inNode.findPlug("inputPolymesh", &status);
+
+	// if it doesnt have that plug try this one
+	if (status != MStatus::kSuccess)
+	{
+		inMeshPlug = _inNode.findPlug("inMesh");
+	}
+
+	if (inMeshPlug.isConnected())
+	{
+		MPlugArray tempPlugArray;
+		inMeshPlug.connectedTo(tempPlugArray, true, false);
+		// Only one connection should exist on meshNodeShape.inMesh!
+		MPlug upstreamNodeSrcPlug = tempPlugArray[0];
+		MFnDependencyNode upstreamNode(upstreamNodeSrcPlug.node());
+
+		_id = upstreamNode.uuid().asString();
+		
+		return MStatus::kSuccess;
+	}
+
+	return status;
+}
+
+MStatus SendAbstract::getOutgoingID(MFnDependencyNode & _inNode, MString& _id)
+{
+	MStatus status;
+	MPlug outMeshPlug;
+	outMeshPlug = _inNode.findPlug("output", &status);
+
+	if (outMeshPlug.isConnected())
+	{
+		MPlugArray tempPlugArray;
+		outMeshPlug.connectedTo(tempPlugArray, false, true);
+		MPlug downStreamNodeSrcPlug = tempPlugArray[0];
+		MFnDependencyNode downStreamNode(downStreamNodeSrcPlug.node());
+
+		_id = downStreamNode.uuid().asString();
+
+		return MStatus::kSuccess;
+	}
+
+	return status;
 }
 
 MStatus SendAbstract::getAttribFromPlug(MPlug& _plug, json& _attribs)
