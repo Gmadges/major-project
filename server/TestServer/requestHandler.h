@@ -12,7 +12,8 @@ public:
 	RequestHandler(std::shared_ptr<Database> _db);
 	~RequestHandler();
 
-	json processRequest(json& _request);
+	json requestMesh(json& _request);
+	json requestMeshUpdates(json& _request);
 
 private:
 	std::shared_ptr<Database> pDB;

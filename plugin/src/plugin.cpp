@@ -14,7 +14,7 @@
 
 static const MString registerCmd = "RegisterMesh";
 static const MString sendUpdateCmd = "SendUpdates";
-static const MString RecieveUpdateCmd = "ReceiveUpdate";
+static const MString RecieveUpdateCmd = "RequestMesh";
 static const MString getServerInfoCmd = "GetInfo";
 static const MString setServerCmd = "SetServer";
 

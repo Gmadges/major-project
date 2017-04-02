@@ -92,31 +92,38 @@ MStatus	RequestMesh::doIt(const MArgList& args)
 	// get nodes
 	auto nodeList = data["nodes"];
 
-	for (auto itr : nodeList)
+	// new work flow
+
+	// create nodes
+	for (auto& itr : nodeList)
 	{
-		// check if node exists
 		std::string stringID = itr["id"];
 		bool nodeExists = doesItExist(stringID);
-
+		
 		if (!nodeExists)
 		{
 			HackPrint::print("Creating Node: " + itr["name"].get<std::string>());
-			// create set and wire
 			status = createNode(itr);
-			status = setNodeValues(itr);
-			status = setConnections(data, itr);
 		}
-		else
-		{		
-			// set values
-			// no need to worry about re-wireing anything
-			// just change the values
-			setNodeValues(itr);
-		}
+	}
 
-		// register node with callbacks
+	// set values
+	for (auto& itr : nodeList)
+	{
+		status = setNodeValues(itr);
+	}
+
+	// set and check connections
+	for (auto& itr : nodeList)
+	{
+		status = setConnections(data, itr);
+	}
+
+	// set callbacks
+	for (auto& itr : nodeList)
+	{
 		MObject node;
-		MString id = stringID.c_str();
+		MString id = itr["id"].get<std::string>().c_str();
 		status = MayaUtils::getNodeObjectFromUUID(id, node);
 		CallbackHandler::getInstance().registerCallbacksToNode(node);
 	}
@@ -344,11 +351,13 @@ MStatus RequestMesh::createNode(json& _node)
 
 MStatus RequestMesh::setConnections(json& _mesh, json& _node)
 {
+	MStatus status;
+
+	// TODO check that the nodes in and out match correctly
+
 	// if its not a mesh we'll have to wire it in
 	std::string type = _node["type"];
 
-	MStatus status;
-	
 	if (type.compare("polySplitRing") == 0 ||
 		type.compare("polyTweak") == 0 )
 	{

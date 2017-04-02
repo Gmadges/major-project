@@ -13,12 +13,21 @@ RequestHandler::~RequestHandler()
 {
 }
 
-json RequestHandler::processRequest(json& _request)
+json RequestHandler::requestMesh(json& _request)
 {
 	if (_request.count("id") > 0)
 	{
 		return pDB->getMesh(_request["id"].get<std::string>());
 	}
+
+	return json();
+}
+
+json RequestHandler::requestMeshUpdates(json& _request)
+{
+	// todo 
+	// grab changes
+
 
 	return json();
 }
