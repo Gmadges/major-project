@@ -7,7 +7,8 @@ int main(int argc, char* argv[])
 
 	if (argc >= 2)
 	{
-		try {
+		try 
+		{
 			port = std::stoi(argv[1]);
 		}
 		catch (std::invalid_argument&) {

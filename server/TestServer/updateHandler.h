@@ -18,6 +18,10 @@ public:
 private:
 	void updateAndStoreMesh(json _mesh);
 
+	void removeNodefromList(json _node, std::vector<json> _nodeList);
+	void editNodeInList(json _node, std::vector<json> _nodeList);
+	void insertNodeIntoList(json _node, std::vector<json> _nodeList);
+
 private:
 	std::shared_ptr<Database> pDB;
 };
