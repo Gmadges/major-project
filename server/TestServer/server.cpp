@@ -12,15 +12,16 @@
 // this is only for our fake one right now
 #include "database.h"
 
+#include "crow.h"
+
 Server::Server(int _port)
 	:
 	context(1),
 	recieveSocket(context, ZMQ_ROUTER),
 	workersSocket(context, ZMQ_DEALER),
-	port(_port)
+	port(_port),
+	pDB(new Database())
 {
-	std::shared_ptr<Database> pDB(new Database());
-
 	pUpdateHandler.reset(new UpdateHandler(pDB));
 	pRequestHandler.reset(new RequestHandler(pDB));
 	pInfoHandler.reset(new InfoHandler(pDB));
@@ -44,6 +45,8 @@ int Server::run()
 		workers.push_back(std::thread(&Server::handleMessage, this));
 	}
 
+	reqServerThread = std::thread(&Server::runDataServer, this);
+
 	//  Connect work threads to client threads via a queue
 	zmq::proxy(recieveSocket, workersSocket, NULL);
 
@@ -52,7 +55,29 @@ int Server::run()
 		workers[i].join();
 	}
 
+	reqServerThread.join();
+
 	return 1;
+}
+
+void Server::runDataServer()
+{
+	crow::SimpleApp app;
+
+	CROW_ROUTE(app, "/")([this]() {
+		crow::json::wvalue info;
+		
+		for (auto& item : pDB->getAllMeshes())
+		{
+			std::string name = item["name"].get<std::string>();
+			std::string id = item["id"].get<std::string>();
+			info[id] = name;
+		}
+
+		return info;
+	});
+
+	app.port(port + 1).run();
 }
 
 void Server::handleMessage() 
