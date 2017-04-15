@@ -26,6 +26,7 @@ MSyntax SetServerCmd::newSyntax()
 
 	syn.addFlag("-a", "-address", MSyntax::kString);
 	syn.addFlag("-p", "-port", MSyntax::kUnsigned);
+	syn.addFlag("-uid", "-userid", MSyntax::kString);
 
 	return syn;
 }
@@ -35,22 +36,23 @@ MStatus SetServerCmd::doIt(const MArgList& args)
 	MStatus status;
 
 	// reset socket
-	MString addr;
+	MString addr, uid;
 	int port;
-	status = getArgs(args, addr, port);
+	status = getArgs(args, addr, port, uid);
 	if (status != MStatus::kSuccess)
 	{
-		HackPrint::print("both address and port is needed!");
+		HackPrint::print("all flags needed!");
 		return status;
 	}
 
 	ServerAddress::getInstance().setPort(port);
 	ServerAddress::getInstance().setAddress(addr.asChar());
+	ServerAddress::getInstance().setUserID(uid.asChar());
 
 	return MS::kSuccess;
 }
 
-MStatus SetServerCmd::getArgs(const MArgList& args, MString& address, int& port)
+MStatus SetServerCmd::getArgs(const MArgList& args, MString& address, int& port, MString& uid)
 {
 	MStatus status = MStatus::kSuccess;
 	MArgDatabase parser(syntax(), args, &status);
@@ -70,6 +72,15 @@ MStatus SetServerCmd::getArgs(const MArgList& args, MString& address, int& port)
 	if (parser.isFlagSet("-a"))
 	{
 		parser.getFlagArgument("-a", 0, address);
+	}
+	else
+	{
+		status = MStatus::kFailure;
+	}
+
+	if (parser.isFlagSet("-uid"))
+	{
+		parser.getFlagArgument("-uid", 0, uid);
 	}
 	else
 	{

@@ -4,10 +4,16 @@
 
 Database::Database()
 {
-	std::ifstream inputFile("database.json");
-	if (inputFile.is_open())
+	std::ifstream dbfile("database.json");
+	if (dbfile.is_open())
 	{
-		inputFile >> db;
+		dbfile >> db;
+	}
+
+	std::ifstream userFile("users.json");
+	if (userFile.is_open())
+	{
+		userFile >> userDB;
 	}
 }
 
@@ -29,7 +35,7 @@ bool Database::putMesh(json& _mesh)
 
 		db[id] = object;
 
-		storeToFile();
+		storeDBToFile();
 		return true;
 	}
 
@@ -65,9 +71,12 @@ bool Database::putMeshWithEdits(json& _object)
 		std::string id = _object["mesh"]["id"];
 		std::cout << "storing: " << id << std::endl;
 
+		// lets timestamp the last entry to the db
+		_object["edits"].back()["db_time"] = std::time(nullptr);
+
 		db[id] = _object;
 
-		storeToFile();
+		storeDBToFile();
 		return true;
 	}
 
@@ -79,9 +88,16 @@ json Database::getAllMeshes()
 	return db;
 }
 
-void Database::storeToFile()
+void Database::storeDBToFile()
 {
 	std::ofstream outputFile("database.json");
 	outputFile << std::setw(4) << db << std::endl;
+	outputFile.close();
+}
+
+void Database::storeUsersToFile()
+{
+	std::ofstream outputFile("users.json");
+	outputFile << std::setw(4) << userDB << std::endl;
 	outputFile.close();
 }

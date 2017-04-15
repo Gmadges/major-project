@@ -42,7 +42,7 @@ MStatus Info::doIt(const MArgList& args)
 	// ask for the info
 	json data;
 	// if false then we couldnt connect to server
-	if (!pMessaging->requestData(data, ReqType::INFO_REQUEST))
+	if (!pMessaging->requestData(data, ReqType::INFO_REQUEST, ServerAddress::getInstance().getUserID()))
 	{
 		setResult(result);
 		return MStatus::kFailure;

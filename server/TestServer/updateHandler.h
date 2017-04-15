@@ -16,7 +16,7 @@ public:
 	bool updateMesh(json& _request);
 
 private:
-	void updateAndStoreMesh(json _mesh);
+	void updateAndStoreMesh(json _mesh, std::string userID);
 
 	void removeNodefromList(json _node, std::vector<json> _nodeList);
 	void editNodeInList(json _node, std::vector<json> _nodeList);

@@ -19,10 +19,12 @@ public:
 	json getAllMeshes();
 
 private:
-	void storeToFile();
+	void storeDBToFile();
+	void storeUsersToFile();
 
 private:
 	json db;
+	json userDB;
 };
 
 #endif

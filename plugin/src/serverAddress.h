@@ -21,8 +21,10 @@ public:
 	
 	void setAddress(std::string _address);
 	void setPort(int _port);
+	void setUserID(std::string _id);
 
 	std::string getAddress();
+	std::string getUserID();
 	int getPort();
 
 	bool isServerSet();
@@ -36,6 +38,7 @@ private:
 
 	int port;
 	std::string address;
+	std::string userID;
 
 	// this might be overkill
 	bool bPortSet;

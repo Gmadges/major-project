@@ -44,6 +44,9 @@
     <ClCompile Include="infoHandler.cpp">
       <Filter>server</Filter>
     </ClCompile>
+    <ClCompile Include="userInfo.cpp">
+      <Filter>shared</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\common\json.h">
@@ -66,6 +69,9 @@
     </ClInclude>
     <ClInclude Include="infoHandler.h">
       <Filter>server</Filter>
+    </ClInclude>
+    <ClInclude Include="userInfo.h">
+      <Filter>shared</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

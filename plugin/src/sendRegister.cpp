@@ -118,9 +118,6 @@ MStatus SendRegister::registerAndSendMesh(MDagPath & meshDAGPath)
 {
 	MStatus status;
 
-	json message;
-	message["requestType"] = ReqType::REGISTER_MESH;
-
 	// grab all nodes and set callbacks
 
 	std::vector<json> nodeList;
@@ -172,7 +169,9 @@ MStatus SendRegister::registerAndSendMesh(MDagPath & meshDAGPath)
 	std::reverse(nodeList.begin(), nodeList.end());
 	meshData["nodes"] = nodeList;
 
-	// attach the mesh to the message
+	json message;
+	message["uid"] = ServerAddress::getInstance().getUserID();
+	message["requestType"] = ReqType::REGISTER_MESH;
 	message["mesh"] = meshData;
 
 	HackPrint::print("sending " + transformNode.name());

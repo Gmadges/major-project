@@ -8,6 +8,7 @@
 #include "requestHandler.h"
 #include "updateHandler.h"
 #include "infoHandler.h"
+#include "userInfo.h"
 
 // this is only for our fake one right now
 #include "database.h"
@@ -17,7 +18,8 @@ Server::Server(int _port)
 	context(1),
 	recieveSocket(context, ZMQ_ROUTER),
 	workersSocket(context, ZMQ_DEALER),
-	port(_port)
+	port(_port),
+	pUserInfo(new UserInfo())
 {
 	std::shared_ptr<Database> pDB(new Database());
 
@@ -100,6 +102,8 @@ void Server::handleMessage()
 			}
 			case REQUEST_MESH:
 			{
+				pUserInfo->updateUser(data["uid"].get<std::string>());
+
 				json replyData = pRequestHandler->requestMesh(data);
 				auto sendBuff = json::to_msgpack(replyData);
 				zmq::message_t reply(sendBuff.size());
@@ -109,6 +113,7 @@ void Server::handleMessage()
 			}
 			case REQUEST_MESH_UPDATE:
 			{
+				pUserInfo->updateUser(data["uid"].get<std::string>());
 				//TODO
 				json replyData = pRequestHandler->requestMeshUpdates(data);
 				break;

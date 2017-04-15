@@ -65,7 +65,7 @@ MStatus	RequestMesh::doIt(const MArgList& args)
 	}
 
 	// if false then we couldnt connect to server
-	if (!pMessenger->requestMesh(data, ReqType::REQUEST_MESH, std::string(id.asChar()))) return MStatus::kFailure;
+	if (!pMessenger->requestMesh(data, ReqType::REQUEST_MESH, std::string(id.asChar()), ServerAddress::getInstance().getUserID())) return MStatus::kFailure;
 	
 	// is there actually anything?
 	if (data.empty())
