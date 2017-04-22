@@ -73,6 +73,8 @@ void Server::runDataServer()
 			std::string id = item["id"].get<std::string>();
 			info[id] = name;
 		}
+		
+		info["status"] = 200;
 
 		return info;
 	});
