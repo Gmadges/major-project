@@ -20,7 +20,6 @@ mayaMainWindowPtr = omui.MQtUtil.mainWindow()
 mayaMainWindow = wrapInstance(long(mayaMainWindowPtr), QWidget)
 
 class ServerMessenger(object):
-
     def __init__(self):
         self.serverAddress = ''
 
@@ -42,14 +41,14 @@ class serverConnectWidget(QWidget):
         self.initUI()
 
     def initUI(self):
-        self.connect_btn = QPushButton('Register', self)
+        self.connect_btn = QPushButton('Connect', self)
+        self.connect_btn.clicked.connect(self.connectToServer)
         self.connection_label = QLabel('disconnected')
         self.connection_label.setStyleSheet('color: red')
 
         button_layout = QHBoxLayout()
         button_layout.setContentsMargins(2, 2, 2, 2)
         button_layout.addWidget(self.connect_btn)
-        self.connect_btn.clicked.connect(self.connectToServer)
         button_layout.addWidget(self.connection_label)
 
         self.address_line = QLineEdit()
@@ -68,19 +67,78 @@ class serverConnectWidget(QWidget):
         main_layout.addLayout(button_layout)
         self.setLayout(main_layout)
 
+        self.setStyleSheet("border:1px solid rgb(0, 255, 0);")
+
     def connectToServer(self):
         address = self.address_line.text()
         port = self.port_spin.value()
         self.messenger.setServer(address, port)
         request = self.messenger.requestAllMeshes()
-        print request
         if request['status'] is 200 :
             self.connection_label.setText('connected')
             self.connection_label.setStyleSheet('color: green')
+            #todo set server command
         else:
             self.connection_label.setText('disconnected')
             self.connection_label.setStyleSheet('color: red')
 
+class meshSelectionWidget(QWidget):
+
+    def __init__(self, messenger):
+        super(meshSelectionWidget, self).__init__()
+        self.messenger = messenger
+        self.initUI()
+
+    def initUI(self):
+        self.list = QListWidget()
+
+        self.getMesh_btn = QPushButton('Get', self)
+        self.delMesh_btn = QPushButton('Delete', self)
+
+        button_layout = QHBoxLayout()
+        button_layout.setContentsMargins(2, 2, 2, 2)
+        button_layout.addWidget(self.getMesh_btn)
+        button_layout.addWidget(self.delMesh_btn)
+
+        main_layout = QVBoxLayout()
+        main_layout.setContentsMargins(2, 2, 2, 2)
+        main_layout.addWidget(self.list)
+        main_layout.addLayout(button_layout)
+        self.setLayout(main_layout)
+
+
+class currentMeshWidget(QWidget):
+
+    def __init__(self, messenger):
+        super(currentMeshWidget, self).__init__()
+        self.messenger = messenger
+        self.initUI()
+
+    def initUI(self):
+        self.currentMesh_label = QLabel('current Mesh:', self)
+        
+        self.send_btn = QPushButton('send', self)
+        self.update_btn = QPushButton('update', self)
+
+        self.reg_btn = QPushButton('register selected', self)
+        self.unReg_btn = QPushButton('un-register', self)
+
+        button_layout = QHBoxLayout()
+        button_layout.setContentsMargins(2, 2, 2, 2)
+        button_layout.addWidget(self.send_btn)
+        button_layout.addWidget(self.update_btn)
+
+        button1_layout = QHBoxLayout()
+        button1_layout.setContentsMargins(2, 2, 2, 2)
+        button1_layout.addWidget(self.reg_btn)
+        button1_layout.addWidget(self.unReg_btn)
+
+        main_layout = QVBoxLayout()
+        main_layout.setContentsMargins(2, 2, 2, 2)
+        main_layout.addWidget(self.currentMesh_label)
+        main_layout.addLayout(button_layout)
+        main_layout.addLayout(button1_layout)
+        self.setLayout(main_layout)
 
 class CreateUI(QWidget):
     def __init__(self, *args, **kwargs):
@@ -92,9 +150,13 @@ class CreateUI(QWidget):
 
     def initUI(self):
         self.connectionWid = serverConnectWidget(self.messenger)
+        self.meshSelectWid = meshSelectionWidget(self.messenger)
+        self.currentMeshWid = currentMeshWidget(self.messenger)
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(2, 2, 2, 2)
         main_layout.addWidget(self.connectionWid)
+        main_layout.addWidget(self.meshSelectWid)
+        main_layout.addWidget(self.currentMeshWid)
         self.setLayout(main_layout)
             
 def main():
