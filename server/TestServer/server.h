@@ -34,7 +34,7 @@ private:
 	std::unique_ptr<UpdateHandler> pUpdateHandler;
 	std::unique_ptr<RequestHandler> pRequestHandler;
 	std::unique_ptr<InfoHandler> pInfoHandler;
-	std::unique_ptr<UserInfo> pUserInfo;
+	std::shared_ptr<UserInfo> pUserInfo;
 };
 
 #endif

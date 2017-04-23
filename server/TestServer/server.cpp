@@ -24,7 +24,7 @@ Server::Server(int _port)
 	std::shared_ptr<Database> pDB(new Database());
 
 	pUpdateHandler.reset(new UpdateHandler(pDB));
-	pRequestHandler.reset(new RequestHandler(pDB));
+	pRequestHandler.reset(new RequestHandler(pDB, pUserInfo));
 	pInfoHandler.reset(new InfoHandler(pDB));
 }
 
@@ -102,9 +102,8 @@ void Server::handleMessage()
 			}
 			case REQUEST_MESH:
 			{
-				pUserInfo->updateUser(data["uid"].get<std::string>());
-
 				json replyData = pRequestHandler->requestMesh(data);
+				pUserInfo->updateUser(data["uid"].get<std::string>());
 				auto sendBuff = json::to_msgpack(replyData);
 				zmq::message_t reply(sendBuff.size());
 				std::memcpy(reply.data(), sendBuff.data(), sendBuff.size());
@@ -113,9 +112,13 @@ void Server::handleMessage()
 			}
 			case REQUEST_MESH_UPDATE:
 			{
-				pUserInfo->updateUser(data["uid"].get<std::string>());
-				//TODO
+				//TODO TEST
 				json replyData = pRequestHandler->requestMeshUpdates(data);
+				pUserInfo->updateUser(data["uid"].get<std::string>());
+				auto sendBuff = json::to_msgpack(replyData);
+				zmq::message_t reply(sendBuff.size());
+				std::memcpy(reply.data(), sendBuff.data(), sendBuff.size());
+				socket.send(reply);
 				break;
 			}
 			case INFO_REQUEST:

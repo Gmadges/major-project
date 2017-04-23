@@ -14,6 +14,7 @@ public:
 
 	json getMesh(std::string& _id);
 	json getMeshWithEdits(std::string& _id);
+	std::vector<json> getMeshEdits(std::string& _id);
 
 	// this method will change later, i'm sure of it
 	json getAllMeshes();

@@ -22,6 +22,16 @@ void UserInfo::updateUser(std::string& _id)
 	userDB[_id] = std::time(nullptr);
 }
 
+time_t UserInfo::getUsersLastUpdate(std::string& _id)
+{
+	if (userDB.count(_id) > 0)
+	{
+		return userDB[_id].get<time_t>();
+	}
+
+	return 0;
+}
+
 void UserInfo::storeUsersToFile()
 {
 	std::ofstream outputFile("users.json");

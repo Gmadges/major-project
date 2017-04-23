@@ -64,6 +64,17 @@ json Database::getMeshWithEdits(std::string& _id)
 	return json();
 }
 
+std::vector<json> Database::getMeshEdits(std::string& _id)
+{
+	if (db.count(_id) > 0)
+	{
+		std::cout << "getting: " << _id << std::endl;
+		return db[_id]["edits"];
+	}
+
+	return std::vector<json>();
+}
+
 bool Database::putMeshWithEdits(json& _object)
 {
 	if (_object["mesh"].count("id") > 0)
