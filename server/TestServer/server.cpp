@@ -66,16 +66,20 @@ void Server::runDataServer()
 
 	CROW_ROUTE(app, "/")([this]() {
 		crow::json::wvalue info;
-		
+	
+		info["status"] = 200;
+		std::vector<std::string> meshNames;
+		std::vector<std::string> meshIds;
+
 		for (auto& item : pDB->getAllMeshes())
 		{
-			std::string name = item["name"].get<std::string>();
-			std::string id = item["id"].get<std::string>();
-			info[id] = name;
+			meshNames.push_back(item["name"].get<std::string>());
+			meshIds.push_back(item["id"].get<std::string>());
 		}
 		
-		info["status"] = 200;
-
+		info["meshNames"] = meshNames;
+		info["meshIds"] = meshIds;
+		
 		return info;
 	});
 
