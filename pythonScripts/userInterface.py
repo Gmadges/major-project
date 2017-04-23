@@ -33,12 +33,13 @@ class ServerMessenger(object):
         response.close()
         return data
 
-class serverConnectWidget(QWidget):
+class serverConnectWidget(QFrame):
 
     def __init__(self, messenger):
         super(serverConnectWidget, self).__init__()
         self.messenger = messenger
         self.initUI()
+        self.setFrameStyle(QFrame.StyledPanel)
 
     def initUI(self):
         self.connect_btn = QPushButton('Connect', self)
@@ -67,8 +68,6 @@ class serverConnectWidget(QWidget):
         main_layout.addLayout(button_layout)
         self.setLayout(main_layout)
 
-        self.setStyleSheet("border:1px solid rgb(0, 255, 0);")
-
     def connectToServer(self):
         address = self.address_line.text()
         port = self.port_spin.value()
@@ -82,12 +81,13 @@ class serverConnectWidget(QWidget):
             self.connection_label.setText('disconnected')
             self.connection_label.setStyleSheet('color: red')
 
-class meshSelectionWidget(QWidget):
+class meshSelectionWidget(QFrame):
 
     def __init__(self, messenger):
         super(meshSelectionWidget, self).__init__()
         self.messenger = messenger
         self.initUI()
+        self.setFrameStyle(QFrame.StyledPanel)
 
     def initUI(self):
         self.list = QListWidget()
@@ -107,12 +107,13 @@ class meshSelectionWidget(QWidget):
         self.setLayout(main_layout)
 
 
-class currentMeshWidget(QWidget):
+class currentMeshWidget(QFrame):
 
     def __init__(self, messenger):
         super(currentMeshWidget, self).__init__()
         self.messenger = messenger
         self.initUI()
+        self.setFrameStyle(QFrame.StyledPanel)
 
     def initUI(self):
         self.currentMesh_label = QLabel('current Mesh:', self)
@@ -140,6 +141,21 @@ class currentMeshWidget(QWidget):
         main_layout.addLayout(button1_layout)
         self.setLayout(main_layout)
 
+class settingsWidget(QFrame):
+
+    def __init__(self):
+        super(settingsWidget, self).__init__()
+        self.initUI()
+        self.setFrameStyle(QFrame.StyledPanel)
+
+    def initUI(self):
+        self.settings_label = QLabel('Settings', self)
+        main_layout = QVBoxLayout()
+        main_layout.setContentsMargins(2, 2, 2, 2)
+        main_layout.addWidget(self.settings_label)
+        self.setLayout(main_layout)
+
+
 class CreateUI(QWidget):
     def __init__(self, *args, **kwargs):
         super(CreateUI, self).__init__(*args, **kwargs)
@@ -152,11 +168,13 @@ class CreateUI(QWidget):
         self.connectionWid = serverConnectWidget(self.messenger)
         self.meshSelectWid = meshSelectionWidget(self.messenger)
         self.currentMeshWid = currentMeshWidget(self.messenger)
+        self.settingsWid = settingsWidget()
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(2, 2, 2, 2)
         main_layout.addWidget(self.connectionWid)
         main_layout.addWidget(self.meshSelectWid)
         main_layout.addWidget(self.currentMeshWid)
+        main_layout.addWidget(self.settingsWid)
         self.setLayout(main_layout)
             
 def main():
