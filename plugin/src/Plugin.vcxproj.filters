@@ -3,7 +3,7 @@
   <ItemGroup>
     <ClCompile Include="plugin.cpp" />
     <ClCompile Include="polyModifierCmd.cpp">
-      <Filter>update</Filter>
+      <Filter>request</Filter>
     </ClCompile>
     <ClCompile Include="messaging.cpp">
       <Filter>message</Filter>
@@ -36,13 +36,16 @@
       <Filter>shared</Filter>
     </ClCompile>
     <ClCompile Include="requestMesh.cpp">
-      <Filter>update</Filter>
+      <Filter>request</Filter>
+    </ClCompile>
+    <ClCompile Include="requestUpdate.cpp">
+      <Filter>request</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hackPrint.h" />
     <ClInclude Include="polyModifierCmd.h">
-      <Filter>update</Filter>
+      <Filter>request</Filter>
     </ClInclude>
     <ClInclude Include="messaging.h">
       <Filter>message</Filter>
@@ -81,15 +84,15 @@
       <Filter>shared</Filter>
     </ClInclude>
     <ClInclude Include="requestMesh.h">
-      <Filter>update</Filter>
+      <Filter>request</Filter>
+    </ClInclude>
+    <ClInclude Include="requestUpdate.h">
+      <Filter>request</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="common">
       <UniqueIdentifier>{4259fb9a-4b9e-4a3c-8218-7fa06f2ce1d8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="update">
-      <UniqueIdentifier>{5428d30f-54ff-431d-a528-db434b93969c}</UniqueIdentifier>
     </Filter>
     <Filter Include="message">
       <UniqueIdentifier>{0b43f097-faa6-4a22-bd7c-ad8c94c201a2}</UniqueIdentifier>
@@ -108,6 +111,9 @@
     </Filter>
     <Filter Include="send">
       <UniqueIdentifier>{e0f1f7e9-f2cb-4006-95b1-5bdc5091b676}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="request">
+      <UniqueIdentifier>{5428d30f-54ff-431d-a528-db434b93969c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

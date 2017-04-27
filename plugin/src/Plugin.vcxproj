@@ -147,6 +147,7 @@
     <ClCompile Include="callbackHandler.cpp" />
     <ClCompile Include="info.cpp" />
     <ClCompile Include="mayaUtils.cpp" />
+    <ClCompile Include="requestUpdate.cpp" />
     <ClCompile Include="sendAbstract.cpp" />
     <ClCompile Include="messaging.cpp" />
     <ClCompile Include="plugin.cpp" />
@@ -165,6 +166,7 @@
     <ClInclude Include="info.h" />
     <ClInclude Include="json.h" />
     <ClInclude Include="mayaUtils.h" />
+    <ClInclude Include="requestUpdate.h" />
     <ClInclude Include="sendAbstract.h" />
     <ClInclude Include="messaging.h" />
     <ClInclude Include="polyModifierCmd.h" />
