@@ -80,6 +80,11 @@ void Server::handleMessage()
 			{
 				bool result = pUpdateHandler->registerMesh(data);
 
+				if (result)
+				{
+					pUserInfo->updateUser(data["uid"].get<std::string>());
+				}
+
 				json replyData;
 				replyData["result"] = result;
 				auto sendBuff = json::to_msgpack(replyData);

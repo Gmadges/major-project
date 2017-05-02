@@ -64,35 +64,40 @@ MStatus	RequestUpdate::doIt(const MArgList& args)
 {
 	MStatus status = MStatus::kSuccess;
 
-	//// reset socket
-	//if (!ServerAddress::getInstance().isServerSet())
-	//{
-	//	HackPrint::print("Set Server using \"SetServer\" command");
-	//	return status;
-	//}
+	// reset socket
+	if (!ServerAddress::getInstance().isServerSet())
+	{
+		HackPrint::print("Set Server using \"SetServer\" command");
+		return status;
+	}
 
-	//pMessenger->resetSocket(ServerAddress::getInstance().getAddress(), ServerAddress::getInstance().getPort());
+	pMessenger->resetSocket(ServerAddress::getInstance().getAddress(), ServerAddress::getInstance().getPort());
 
-	//// ask the server for any update
-	//json data;
-	//MString id;
-	//if (getArgs(args, id) != MStatus::kSuccess)
-	//{
-	//	HackPrint::print("no id specified!");
-	//	return MStatus::kFailure;
-	//}
+	// ask the server for any update
+	json data;
+	MString id;
+	if (getArgs(args, id) != MStatus::kSuccess)
+	{
+		HackPrint::print("no id specified!");
+		return MStatus::kFailure;
+	}
 
-	//// if false then we couldnt connect to server
-	//if (!pMessenger->requestMesh(data, ReqType::REQUEST_MESH, std::string(id.asChar()), ServerAddress::getInstance().getUserID())) return MStatus::kFailure;
+	// if false then we couldnt connect to server
+	if (!pMessenger->requestMesh(data, ReqType::REQUEST_MESH_UPDATE, std::string(id.asChar()), ServerAddress::getInstance().getUserID())) return MStatus::kFailure;
 
-	//// is there actually anything?
-	//if (data.empty())
-	//{
-	//	HackPrint::print("Nothing to update");
-	//	return status;
-	//}
+	// is there actually anything?
+	if (data.empty())
+	{
+		HackPrint::print("Nothing to update");
+		return status;
+	}
+	else if (data["edits"].empty())
+	{
+		HackPrint::print("No Edits");
+		return status;
+	}
 
+	HackPrint::print(data.dump(4));
 
-	
 	return status;
 }
