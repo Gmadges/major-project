@@ -12,6 +12,7 @@ public:
 
 	static bool isValidNodeType(MString& _type);
 	static MStatus getNodeObjectFromUUID(MString& uuid, MObject& _node);
+	static bool doesItExist(std::string& id);
 };
 
 #endif

@@ -1,6 +1,8 @@
 #ifndef REQUESTUPDATE_H
 #define REQUESTUPDATE_H
 
+#include "requestAbstract.h"
+
 #include <maya/MPxCommand.h>
 #include <maya/MArgList.h>
 #include <maya/MSyntax.h>
@@ -8,18 +10,14 @@
 
 class Messaging;
 
-class RequestUpdate : public MPxCommand
+class RequestUpdate : public RequestAbstract
 {
 public:
 	RequestUpdate();
 	~RequestUpdate();
 
 	static void* creator();
-	static MSyntax newSyntax();
 	MStatus	doIt(const MArgList&);
-
-private:
-	MStatus getArgs(const MArgList& args, MString& id);
 
 private:
 	std::unique_ptr<Messaging> pMessenger;

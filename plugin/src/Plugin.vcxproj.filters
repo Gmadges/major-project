@@ -20,9 +20,6 @@
     <ClCompile Include="sendUpdate.cpp">
       <Filter>send</Filter>
     </ClCompile>
-    <ClCompile Include="sendAbstract.cpp">
-      <Filter>shared</Filter>
-    </ClCompile>
     <ClCompile Include="sendRegister.cpp">
       <Filter>register</Filter>
     </ClCompile>
@@ -39,6 +36,12 @@
       <Filter>request</Filter>
     </ClCompile>
     <ClCompile Include="requestUpdate.cpp">
+      <Filter>request</Filter>
+    </ClCompile>
+    <ClCompile Include="sendAbstract.cpp">
+      <Filter>send</Filter>
+    </ClCompile>
+    <ClCompile Include="requestAbstract.cpp">
       <Filter>request</Filter>
     </ClCompile>
   </ItemGroup>
@@ -87,6 +90,9 @@
       <Filter>request</Filter>
     </ClInclude>
     <ClInclude Include="requestUpdate.h">
+      <Filter>request</Filter>
+    </ClInclude>
+    <ClInclude Include="requestAbstract.h">
       <Filter>request</Filter>
     </ClInclude>
   </ItemGroup>

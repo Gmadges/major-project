@@ -32,34 +32,6 @@ void* RequestUpdate::creator()
 	return new RequestUpdate;
 }
 
-MSyntax RequestUpdate::newSyntax()
-{
-	MSyntax syn;
-
-	syn.addFlag("-id", "-uuid", MSyntax::kString);
-
-	return syn;
-}
-
-MStatus RequestUpdate::getArgs(const MArgList& args, MString& id)
-{
-	MStatus status = MStatus::kSuccess;
-	MArgDatabase parser(syntax(), args, &status);
-
-	if (status != MS::kSuccess) return status;
-
-	if (parser.isFlagSet("-id"))
-	{
-		parser.getFlagArgument("-id", 0, id);
-	}
-	else
-	{
-		status = MStatus::kFailure;
-	}
-
-	return status;
-}
-
 MStatus	RequestUpdate::doIt(const MArgList& args)
 {
 	MStatus status = MStatus::kSuccess;
@@ -98,6 +70,16 @@ MStatus	RequestUpdate::doIt(const MArgList& args)
 	}
 
 	HackPrint::print(data.dump(4));
+
+	// cycle through edits
+
+	// figure out if we need to create or delete something
+
+	// create in the correct place or move to right place
+
+	// store values in the node.
+
+	// done i guess
 
 	return status;
 }
