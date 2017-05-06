@@ -73,6 +73,15 @@ CallbackHandler::~CallbackHandler()
 	MMessage::removeCallbacks(callbackIds);
 }
 
+MStatus CallbackHandler::clearCallbacks()
+{
+	MStatus status = MMessage::removeCallbacks(callbackIds);
+	callbackIds.clear();
+	timerCallbackEnabled = false;
+	newNodeCallbackEnabled = false;
+	return status;
+}
+
 MStatus CallbackHandler::registerCallbacksToNode(MObject& _node)
 {
 	MStatus status;

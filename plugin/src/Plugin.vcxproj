@@ -145,7 +145,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="callbackHandler.cpp" />
-    <ClCompile Include="info.cpp" />
+    <ClCompile Include="clearCurrentMesh.cpp" />
     <ClCompile Include="mayaUtils.cpp" />
     <ClCompile Include="requestAbstract.cpp" />
     <ClCompile Include="requestUpdate.cpp" />
@@ -163,8 +163,8 @@
   <ItemGroup>
     <ClInclude Include="..\..\common\testTypes.h" />
     <ClInclude Include="callbackHandler.h" />
+    <ClInclude Include="clearCurrentMesh.h" />
     <ClInclude Include="hackPrint.h" />
-    <ClInclude Include="info.h" />
     <ClInclude Include="json.h" />
     <ClInclude Include="mayaUtils.h" />
     <ClInclude Include="requestAbstract.h" />

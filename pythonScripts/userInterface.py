@@ -104,6 +104,8 @@ class serverConnectWidget(QFrame):
 
 class meshSelectionWidget(QFrame):
 
+    meshRequested = Signal(str)
+
     def __init__(self, messenger):
         super(meshSelectionWidget, self).__init__()
         self.messenger = messenger
@@ -148,6 +150,7 @@ class meshSelectionWidget(QFrame):
         index = self.list.currentRow()
         meshId = self.meshTuples[index][1]
         self.requestMeshCmd(meshId)
+        self.meshRequested.emit(self.meshTuples[index][0])
 
     def requestMeshCmd(self, meshId):
         cmd = 'RequestMesh -id "' + meshId + '"'
@@ -176,7 +179,7 @@ class currentMeshWidget(QFrame):
         self.update_btn = QPushButton('update', self)
 
         self.reg_btn = QPushButton('register selected', self)
-        self.unReg_btn = QPushButton('un-register', self)
+        self.clear_btn = QPushButton('clear', self)
 
         button_layout = QHBoxLayout()
         button_layout.setContentsMargins(2, 2, 2, 2)
@@ -189,10 +192,10 @@ class currentMeshWidget(QFrame):
         button1_layout = QHBoxLayout()
         button1_layout.setContentsMargins(2, 2, 2, 2)
         button1_layout.addWidget(self.reg_btn)
-        button1_layout.addWidget(self.unReg_btn)
+        button1_layout.addWidget(self.clear_btn)
 
         self.reg_btn.clicked.connect(self.registerMeshCmd)
-        self.unReg_btn.clicked.connect(self.unregisterCmd)
+        self.clear_btn.clicked.connect(self.clearCmd)
 
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(2, 2, 2, 2)
@@ -204,21 +207,24 @@ class currentMeshWidget(QFrame):
     def registerMeshCmd(self):
         cmd = "RegisterMesh"
         mel.eval(cmd)
+        self.updateCurrentMeshLabel("test")
         self.meshRegistered.emit()
-
-    def unregisterCmd(self):
-        cmd = ''
-        #todo
+        
+    def clearCmd(self):
+        cmd = 'ClearCurrentMesh'
         mel.eval(cmd)
+        self.updateCurrentMeshLabel('')
 
     def forceSendCmd(self):
         cmd = "SendUpdates"
         mel.eval(cmd)
             
     def forceUpdateCmd(self):
-        cmd = ''
-        #todo
+        cmd = 'RequestUpdate'
         mel.eval(cmd)
+
+    def updateCurrentMeshLabel(self, meshName):
+        self.currentMesh_label.setText('current Mesh: ' + meshName)
     
 
 class settingsWidget(QFrame):
@@ -254,6 +260,7 @@ class CreateUI(QWidget):
         self.connectionWid.connected.connect(self.meshSelectWid.requestAllMesh)
         self.connectionWid.connected.connect(self.enableWidgets)
         self.currentMeshWid.meshRegistered.connect(self.meshSelectWid.requestAllMesh)
+        self.meshSelectWid.meshRequested.connect(self.currentMeshWid.updateCurrentMeshLabel)
 
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(2, 2, 2, 2)

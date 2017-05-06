@@ -25,6 +25,8 @@ public:
 	void operator=(CallbackHandler const&) = delete;
 
 public:
+
+	MStatus clearCallbacks();
 	
 	// timer callback
 	MStatus startTimerCallback();
