@@ -7,11 +7,14 @@
 
 #include "requestHandler.h"
 #include "updateHandler.h"
-#include "infoHandler.h"
 #include "userInfo.h"
 
 // this is only for our fake one right now
 #include "database.h"
+
+#pragma warning(push, 0)
+#include "crow.h"
+#pragma warning(pop)
 
 Server::Server(int _port)
 	:
@@ -19,13 +22,11 @@ Server::Server(int _port)
 	recieveSocket(context, ZMQ_ROUTER),
 	workersSocket(context, ZMQ_DEALER),
 	port(_port),
+	pDB(new Database()),
 	pUserInfo(new UserInfo())
 {
-	std::shared_ptr<Database> pDB(new Database());
-
 	pUpdateHandler.reset(new UpdateHandler(pDB));
 	pRequestHandler.reset(new RequestHandler(pDB, pUserInfo));
-	pInfoHandler.reset(new InfoHandler(pDB));
 }
 
 Server::~Server()
@@ -46,6 +47,8 @@ int Server::run()
 		workers.push_back(std::thread(&Server::handleMessage, this));
 	}
 
+	reqServerThread = std::thread(&Server::runDataServer, this);
+
 	//  Connect work threads to client threads via a queue
 	zmq::proxy(recieveSocket, workersSocket, NULL);
 
@@ -54,7 +57,49 @@ int Server::run()
 		workers[i].join();
 	}
 
+	reqServerThread.join();
+
 	return 1;
+}
+
+void Server::runDataServer()
+{
+	crow::SimpleApp app;
+
+	CROW_ROUTE(app, "/")([this]() {
+		crow::json::wvalue info;
+	
+		info["status"] = 200;
+		std::vector<std::string> meshNames;
+		std::vector<std::string> meshIds;
+
+		for (auto& item : pDB->getAllMeshes())
+		{
+			json mesh = item["mesh"];
+			meshNames.push_back(mesh["name"].get<std::string>());
+			meshIds.push_back(mesh["id"].get<std::string>());
+		}
+		
+		info["meshNames"] = meshNames;
+		info["meshIds"] = meshIds;
+		
+		return info;
+	});
+
+	CROW_ROUTE(app, "/<str>/delete")([this](std::string id) {
+		crow::json::wvalue info;
+
+		if (pDB->deleteMesh(id))
+		{
+			info["status"] = 200;
+			return info;
+		}
+		
+		info["status"] = 404;
+		return info;
+	});
+
+	app.port(port + 1).run();
 }
 
 void Server::handleMessage() 
@@ -125,16 +170,7 @@ void Server::handleMessage()
 				std::memcpy(reply.data(), sendBuff.data(), sendBuff.size());
 				socket.send(reply);
 				break;
-			}
-			case INFO_REQUEST:
-			{
-				json replyData = pInfoHandler->processRequest();
-				auto sendBuff = json::to_msgpack(replyData);
-				zmq::message_t reply(sendBuff.size());
-				std::memcpy(reply.data(), sendBuff.data(), sendBuff.size());
-				socket.send(reply);
-				break;
-			}
+			}			
 			default : 
 			{
 				std::cout << "got a weird request!" << std::endl;

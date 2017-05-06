@@ -106,6 +106,16 @@ void Database::storeDBToFile()
 	outputFile.close();
 }
 
+bool Database::deleteMesh(std::string& id)
+{
+	if (db.count(id) > 0)
+	{
+		db.erase(id);
+		return true;
+	}
+	return false;
+}
+
 void Database::storeUsersToFile()
 {
 	std::ofstream outputFile("users.json");

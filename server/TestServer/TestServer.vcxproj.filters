@@ -41,9 +41,6 @@
     <ClCompile Include="server.cpp">
       <Filter>server</Filter>
     </ClCompile>
-    <ClCompile Include="infoHandler.cpp">
-      <Filter>server</Filter>
-    </ClCompile>
     <ClCompile Include="userInfo.cpp">
       <Filter>shared</Filter>
     </ClCompile>
@@ -65,9 +62,6 @@
       <Filter>requesting</Filter>
     </ClInclude>
     <ClInclude Include="server.h">
-      <Filter>server</Filter>
-    </ClInclude>
-    <ClInclude Include="infoHandler.h">
       <Filter>server</Filter>
     </ClInclude>
     <ClInclude Include="userInfo.h">
