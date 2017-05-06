@@ -3,6 +3,7 @@ from maya import mel
 from maya import OpenMayaUI as omui
 import urllib2
 import json
+import socket
 
 try:
     from PySide2.QtCore import * 
@@ -33,11 +34,21 @@ class ServerMessenger(object):
         response.close()
         return data
 
+    def deleteMesh(self, meshId):
+        if not self.serverAddress : return
+        if not meshId : return
+        response = urllib2.urlopen( self.serverAddress + "/" + meshId + "/delete")
+        response.close()
+
+
 class serverConnectWidget(QFrame):
+
+    connected = Signal()
 
     def __init__(self, messenger):
         super(serverConnectWidget, self).__init__()
         self.messenger = messenger
+        
         self.initUI()
         self.setFrameStyle(QFrame.StyledPanel)
 
@@ -52,6 +63,7 @@ class serverConnectWidget(QFrame):
         button_layout.addWidget(self.connect_btn)
         button_layout.addWidget(self.connection_label)
 
+        self.user_id_line = QLineEdit()
         self.address_line = QLineEdit()
         self.address_line.setText('localhost')
         self.port_spin = QSpinBox()
@@ -59,6 +71,7 @@ class serverConnectWidget(QFrame):
         self.port_spin.setValue(8081)
         settings_layout = QFormLayout()
         settings_layout.setContentsMargins(2, 2, 2, 2)
+        settings_layout.addRow(QLabel('User ID (optional)'), self.user_id_line)
         settings_layout.addRow(QLabel('Network address'), self.address_line)
         settings_layout.addRow(QLabel('Port number'), self.port_spin)
 
@@ -71,15 +84,22 @@ class serverConnectWidget(QFrame):
     def connectToServer(self):
         address = self.address_line.text()
         port = self.port_spin.value()
+        userID = self.user_id_line.text()
         self.messenger.setServer(address, port)
         request = self.messenger.requestAllMeshes()
         if request['status'] is 200 :
             self.connection_label.setText('connected')
             self.connection_label.setStyleSheet('color: green')
-            #todo set server command
+            self.setServerCmd(address, port, userID)
+            self.connected.emit()
         else:
             self.connection_label.setText('disconnected')
             self.connection_label.setStyleSheet('color: red')
+
+    def setServerCmd(self, address, port, userID):
+        id = socket.gethostbyname(socket.gethostname())
+        cmd = 'SetServer -a "' + address + '" -p ' + str(port) + ' -uid "' + id + '"'
+        mel.eval(cmd)
 
 class meshSelectionWidget(QFrame):
 
@@ -88,12 +108,18 @@ class meshSelectionWidget(QFrame):
         self.messenger = messenger
         self.initUI()
         self.setFrameStyle(QFrame.StyledPanel)
+        self.meshTuples = []
 
     def initUI(self):
         self.list = QListWidget()
 
         self.getMesh_btn = QPushButton('Get', self)
         self.delMesh_btn = QPushButton('Delete', self)
+        self.updateMeshes_btn = QPushButton('Request All Meshes', self)
+
+        self.getMesh_btn.clicked.connect(self.getMesh)
+        self.delMesh_btn.clicked.connect(self.delMesh)
+        self.updateMeshes_btn.clicked.connect(self.requestAllMesh)
 
         button_layout = QHBoxLayout()
         button_layout.setContentsMargins(2, 2, 2, 2)
@@ -102,10 +128,35 @@ class meshSelectionWidget(QFrame):
 
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(2, 2, 2, 2)
+        main_layout.addWidget(self.updateMeshes_btn)
         main_layout.addWidget(self.list)
         main_layout.addLayout(button_layout)
         self.setLayout(main_layout)
 
+    def requestAllMesh(self):
+        request = self.messenger.requestAllMeshes()
+        self.list.clear()
+        self.meshTuples = []
+        for i in range(len(request['meshNames'])):
+            self.meshTuples.append((request['meshNames'][i], request['meshIds'][i]))
+            newItem = QListWidgetItem()
+            newItem.setText(request['meshNames'][i])
+            self.list.addItem(newItem)
+
+    def getMesh(self):
+        index = self.list.currentRow()
+        meshId = self.meshTuples[index][1]
+        self.requestMeshCmd(meshId)
+
+    def requestMeshCmd(self, meshId):
+        cmd = 'RequestMesh -id "' + meshId + '"'
+        mel.eval(cmd)
+
+    def delMesh(self):
+        index = self.list.currentRow()
+        meshId = self.meshTuples[index][1]
+        self.messenger.deleteMesh(meshId)
+        self.requestAllMesh()
 
 class currentMeshWidget(QFrame):
 
@@ -129,10 +180,16 @@ class currentMeshWidget(QFrame):
         button_layout.addWidget(self.send_btn)
         button_layout.addWidget(self.update_btn)
 
+        self.send_btn.clicked.connect(self.forceSendCmd)
+        self.update_btn.clicked.connect(self.forceUpdateCmd)
+
         button1_layout = QHBoxLayout()
         button1_layout.setContentsMargins(2, 2, 2, 2)
         button1_layout.addWidget(self.reg_btn)
         button1_layout.addWidget(self.unReg_btn)
+
+        self.reg_btn.clicked.connect(self.registerMeshCmd)
+        self.unReg_btn.clicked.connect(self.unregisterCmd)
 
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(2, 2, 2, 2)
@@ -140,6 +197,25 @@ class currentMeshWidget(QFrame):
         main_layout.addLayout(button_layout)
         main_layout.addLayout(button1_layout)
         self.setLayout(main_layout)
+
+    def registerMeshCmd(self):
+        cmd = 'RegisterMesh'
+        mel.eval(cmd)
+
+    def unregisterCmd(self):
+        cmd = ''
+        #todo
+        mel.eval(cmd)
+
+    def forceSendCmd(self):
+        cmd = 'SendUpdates'
+        mel.eval(cmd)
+            
+    def forceUpdateCmd(self):
+        cmd = ''
+        #todo
+        mel.eval(cmd)
+    
 
 class settingsWidget(QFrame):
 
@@ -169,6 +245,11 @@ class CreateUI(QWidget):
         self.meshSelectWid = meshSelectionWidget(self.messenger)
         self.currentMeshWid = currentMeshWidget(self.messenger)
         self.settingsWid = settingsWidget()
+
+        # connect items
+        self.connectionWid.connected.connect(self.meshSelectWid.requestAllMesh)
+        self.connectionWid.connected.connect(self.enableWidgets)
+
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(2, 2, 2, 2)
         main_layout.addWidget(self.connectionWid)
@@ -176,6 +257,17 @@ class CreateUI(QWidget):
         main_layout.addWidget(self.currentMeshWid)
         main_layout.addWidget(self.settingsWid)
         self.setLayout(main_layout)
+        self.disableWidgets()
+
+    def disableWidgets(self):
+        self.meshSelectWid.setEnabled(False)
+        self.currentMeshWid.setEnabled(False)
+        self.settingsWid.setEnabled(False)
+
+    def enableWidgets(self):
+        self.meshSelectWid.setEnabled(True)
+        self.currentMeshWid.setEnabled(True)
+        self.settingsWid.setEnabled(True)
             
 def main():
     ui = CreateUI()
