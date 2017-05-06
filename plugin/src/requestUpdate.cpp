@@ -69,8 +69,6 @@ MStatus	RequestUpdate::doIt(const MArgList& args)
 		return status;
 	}
 
-	HackPrint::print(data.dump(4));
-
 	// cycle through edits
 
 	// figure out if we need to create or delete something
@@ -80,6 +78,45 @@ MStatus	RequestUpdate::doIt(const MArgList& args)
 	// store values in the node.
 
 	// done i guess
+
+	// get edits
+
+	auto editList = data["edits"];
+
+	for (auto& edit : editList)
+	{
+		for (auto& itr : edit["nodes"])
+		{
+
+			if (itr["edit"] == EditType::ADD)
+			{
+				std::string stringID = itr["id"];
+				bool nodeExists = MayaUtils::doesItExist(stringID);
+
+				if (!nodeExists)
+				{
+					status = createNode(itr);
+					MObject node;
+					MString id = itr["id"].get<std::string>().c_str();
+					status = MayaUtils::getNodeObjectFromUUID(id, node);
+					CallbackHandler::getInstance().registerCallbacksToNode(node);
+
+					// connect
+					status = setConnections(edit, itr);
+				}
+			}
+			else if (itr["edit"] == EditType::EDIT)
+			{
+				status = setNodeValues(itr);
+			}
+			else if (itr["edit"] == EditType::DEL)
+			{
+				// TODO delete node
+			}
+
+			// TODO check connections
+		}
+	}
 
 	return status;
 }

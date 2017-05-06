@@ -158,7 +158,7 @@ MStatus RequestAbstract::setConnections(json& _mesh, json& _node)
 {
 	MStatus status;
 
-	// TODO check that the nodes in and out match correctly
+	// TODO rewrite to connect based on in and out connections.
 
 	// if its not a mesh we'll have to wire it in
 	std::string type = _node["type"];
