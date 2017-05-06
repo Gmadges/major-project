@@ -137,6 +137,7 @@
     <ClCompile Include="requestHandler.cpp" />
     <ClCompile Include="server.cpp" />
     <ClCompile Include="updateHandler.cpp" />
+    <ClCompile Include="userInfo.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\common\json.h" />
@@ -145,6 +146,7 @@
     <ClInclude Include="requestHandler.h" />
     <ClInclude Include="server.h" />
     <ClInclude Include="updateHandler.h" />
+    <ClInclude Include="userInfo.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

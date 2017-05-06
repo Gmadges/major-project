@@ -11,6 +11,7 @@ class RequestHandler;
 class UpdateHandler;
 class InfoHandler;
 class Database;
+class UserInfo;
 
 class Server
 {
@@ -36,6 +37,7 @@ private:
 	std::shared_ptr<Database> pDB;
 	std::unique_ptr<UpdateHandler> pUpdateHandler;
 	std::unique_ptr<RequestHandler> pRequestHandler;
+	std::shared_ptr<UserInfo> pUserInfo;
 };
 
 #endif

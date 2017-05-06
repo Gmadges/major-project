@@ -6,6 +6,7 @@
 #include <memory>
 #include "sendRegister.h"
 #include "requestMesh.h"
+#include "requestUpdate.h"
 #include "info.h"
 #include "sendUpdate.h"
 #include "setServerCmd.h"
@@ -14,7 +15,8 @@
 
 static const MString registerCmd = "RegisterMesh";
 static const MString sendUpdateCmd = "SendUpdates";
-static const MString RecieveUpdateCmd = "RequestMesh";
+static const MString RequestMeshCmd = "RequestMesh";
+static const MString RequestUpdateCmd = "RequestUpdate";
 static const MString getServerInfoCmd = "GetInfo";
 static const MString setServerCmd = "SetServer";
 
@@ -36,7 +38,13 @@ MStatus initializePlugin(MObject obj)
 		status.perror("registerCommand");
 	}
 
-	status = plugin.registerCommand(RecieveUpdateCmd, RequestMesh::creator, RequestMesh::newSyntax);
+	status = plugin.registerCommand(RequestMeshCmd, RequestMesh::creator, RequestAbstract::newSyntax);
+	if (!status)
+	{
+		status.perror("registerCommand");
+	}
+
+	status = plugin.registerCommand(RequestUpdateCmd, RequestUpdate::creator, RequestAbstract::newSyntax);
 	if (!status)
 	{
 		status.perror("registerCommand");
@@ -75,7 +83,13 @@ MStatus uninitializePlugin(MObject obj)
 		status.perror("deregisterCommand");
 	}
 
-	status = plugin.deregisterCommand(RecieveUpdateCmd);
+	status = plugin.deregisterCommand(RequestMeshCmd);
+	if (!status)
+	{
+		status.perror("deregisterCommand");
+	}
+
+	status = plugin.deregisterCommand(RequestUpdateCmd);
 	if (!status)
 	{
 		status.perror("deregisterCommand");

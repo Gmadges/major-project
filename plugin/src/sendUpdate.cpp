@@ -75,7 +75,8 @@ MStatus	SendUpdate::doIt(const MArgList& args)
 
 	// create message and attach
 	json message;
-	message["requestType"] = ReqType::NODE_UPDATE;
+	message["uid"] = ServerAddress::getInstance().getUserID();
+	message["requestType"] = ReqType::MESH_UPDATE;
 	message["mesh"] = meshData;
 
 	if (pMessaging->sendUpdate(message))

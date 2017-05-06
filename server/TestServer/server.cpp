@@ -7,6 +7,7 @@
 
 #include "requestHandler.h"
 #include "updateHandler.h"
+#include "userInfo.h"
 
 // this is only for our fake one right now
 #include "database.h"
@@ -21,10 +22,11 @@ Server::Server(int _port)
 	recieveSocket(context, ZMQ_ROUTER),
 	workersSocket(context, ZMQ_DEALER),
 	port(_port),
-	pDB(new Database())
+	pDB(new Database()),
+	pUserInfo(new UserInfo())
 {
 	pUpdateHandler.reset(new UpdateHandler(pDB));
-	pRequestHandler.reset(new RequestHandler(pDB));
+	pRequestHandler.reset(new RequestHandler(pDB, pUserInfo));
 }
 
 Server::~Server()
@@ -123,6 +125,11 @@ void Server::handleMessage()
 			{
 				bool result = pUpdateHandler->registerMesh(data);
 
+				if (result)
+				{
+					pUserInfo->updateUser(data["uid"].get<std::string>());
+				}
+
 				json replyData;
 				replyData["result"] = result;
 				auto sendBuff = json::to_msgpack(replyData);
@@ -146,6 +153,7 @@ void Server::handleMessage()
 			case REQUEST_MESH:
 			{
 				json replyData = pRequestHandler->requestMesh(data);
+				pUserInfo->updateUser(data["uid"].get<std::string>());
 				auto sendBuff = json::to_msgpack(replyData);
 				zmq::message_t reply(sendBuff.size());
 				std::memcpy(reply.data(), sendBuff.data(), sendBuff.size());
@@ -154,8 +162,13 @@ void Server::handleMessage()
 			}
 			case REQUEST_MESH_UPDATE:
 			{
-				//TODO
+				//TODO TEST
 				json replyData = pRequestHandler->requestMeshUpdates(data);
+				pUserInfo->updateUser(data["uid"].get<std::string>());
+				auto sendBuff = json::to_msgpack(replyData);
+				zmq::message_t reply(sendBuff.size());
+				std::memcpy(reply.data(), sendBuff.data(), sendBuff.size());
+				socket.send(reply);
 				break;
 			}			
 			default : 

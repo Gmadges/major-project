@@ -1,10 +1,12 @@
 #include "requestHandler.h"
 
 #include "database.h"
+#include "userInfo.h"
 
-RequestHandler::RequestHandler(std::shared_ptr<Database> _db)
+RequestHandler::RequestHandler(std::shared_ptr<Database> _db, std::shared_ptr<UserInfo> _user)
 	:
-	pDB(_db)
+	pDB(_db),
+	pUserInfo(_user)
 {
 }
 
@@ -25,9 +27,38 @@ json RequestHandler::requestMesh(json& _request)
 
 json RequestHandler::requestMeshUpdates(json& _request)
 {
-	// todo 
-	// grab changes
+	json response;
 
+	if (_request.count("id") > 0)
+	{
+		if (_request.count("uid") > 0)
+		{
+			std::vector<json> edits = pDB->getMeshEdits(_request["id"].get<std::string>());
 
-	return json();
+			if(edits.empty()) return response;
+
+			// first iterate back to find if any changes have occured.
+			std::string userId = _request["uid"].get<std::string>();
+			time_t lastReq = pUserInfo->getUsersLastUpdate(userId);
+
+			if (lastReq == 0) return response;
+
+			response["edits"] = std::vector<json>();
+
+			for (auto& edit : edits)
+			{
+				// now spot which changes are not by the user
+				if (edit["db_time"].get<time_t>() > lastReq)
+				{
+					if (edit["uid"].get<std::string>().compare(userId) != 0)
+					{
+						// we have a change that isnt ours
+						response["edits"].push_back(edit);
+					}
+				}
+			}
+		}
+	}
+
+	return response;
 }

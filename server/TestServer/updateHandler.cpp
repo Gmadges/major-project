@@ -31,7 +31,7 @@ bool UpdateHandler::updateMesh(json& _request)
 	{
 		// fire off to do comparison
 		// do on another thread might be long
-		std::thread job(&UpdateHandler::updateAndStoreMesh, this, _request["mesh"]);
+		std::thread job(&UpdateHandler::updateAndStoreMesh, this, _request["mesh"], _request["uid"]);
 		job.detach();
 
 		return true;
@@ -40,7 +40,7 @@ bool UpdateHandler::updateMesh(json& _request)
 	return false;
 }
 
-void UpdateHandler::updateAndStoreMesh(json _mesh)
+void UpdateHandler::updateAndStoreMesh(json _mesh, std::string userID)
 {
 	// super right now
 	// replaces any nodes with the new versions of them selves.
@@ -65,8 +65,9 @@ void UpdateHandler::updateAndStoreMesh(json _mesh)
 		}
 	}
 
-	currentMesh["nodes"] = nodeList;;
+	currentMesh["nodes"] = nodeList;
 	edits.push_back(_mesh);
+	edits.back()["uid"] = userID;
 
 	meshAndEdit["mesh"] = currentMesh;
 	meshAndEdit["edits"] = edits;

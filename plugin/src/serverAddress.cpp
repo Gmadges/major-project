@@ -39,3 +39,13 @@ bool ServerAddress::isServerSet()
 {
 	return (bPortSet && bAddressSet);
 }
+
+void ServerAddress::setUserID(std::string _id)
+{
+	userID = _id;
+}
+
+std::string ServerAddress::getUserID()
+{
+	return userID;
+}

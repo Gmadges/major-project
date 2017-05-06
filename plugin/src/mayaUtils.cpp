@@ -31,5 +31,15 @@ MStatus MayaUtils::getNodeObjectFromUUID(MString& uuid, MObject& _node)
 	return sList.getDependNode(0, _node);
 }
 
+bool MayaUtils::doesItExist(std::string& _id)
+{
+	MStatus status;
+	MSelectionList selList;
+	MUuid id(_id.c_str());
+	status = selList.add(id);
+
+	return (status == MStatus::kSuccess);
+}
+
 
 
