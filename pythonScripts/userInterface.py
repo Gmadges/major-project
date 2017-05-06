@@ -153,8 +153,10 @@ class meshSelectionWidget(QFrame):
         self.meshRequested.emit(self.meshTuples[index][0])
 
     def requestMeshCmd(self, meshId):
-        cmd = 'RequestMesh -id "' + meshId + '"'
-        mel.eval(cmd)
+        clearCmd = 'ClearCurrentMesh'
+        reqCmd = 'RequestMesh -id "' + meshId + '"'
+        mel.eval(clearCmd)
+        mel.eval(reqCmd)
 
     def delMesh(self):
         index = self.list.currentRow()
@@ -207,7 +209,8 @@ class currentMeshWidget(QFrame):
     def registerMeshCmd(self):
         cmd = "RegisterMesh"
         mel.eval(cmd)
-        self.updateCurrentMeshLabel("test")
+
+        self.updateCurrentMeshLabel(self.getSelectedMesh())
         self.meshRegistered.emit()
         
     def clearCmd(self):
@@ -225,6 +228,11 @@ class currentMeshWidget(QFrame):
 
     def updateCurrentMeshLabel(self, meshName):
         self.currentMesh_label.setText('current Mesh: ' + meshName)
+
+    def getSelectedMesh(self):
+        meshes = cmds.ls(sl=True, type='transform')
+        if not meshes: return ''
+        return meshes[0]
     
 
 class settingsWidget(QFrame):
