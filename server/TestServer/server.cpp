@@ -123,15 +123,25 @@ void Server::handleMessage()
 		{
 			case REGISTER_MESH: 
 			{
-				bool result = pUpdateHandler->registerMesh(data);
+				json replyData;
 
-				if (result)
+				try
 				{
-					pUserInfo->updateUser(data["uid"].get<std::string>());
+					bool result = pUpdateHandler->registerMesh(data);
+
+					if (result)
+					{
+						pUserInfo->updateUser(data["uid"].get<std::string>());
+					}
+
+					replyData["result"] = result;
+				}
+				catch(std::exception& e)
+				{
+					std::cout << e.what() << std::endl;
+					replyData["result"] = false;
 				}
 
-				json replyData;
-				replyData["result"] = result;
 				auto sendBuff = json::to_msgpack(replyData);
 				zmq::message_t reply(sendBuff.size());
 				std::memcpy(reply.data(), sendBuff.data(), sendBuff.size());
@@ -140,10 +150,18 @@ void Server::handleMessage()
 			}
 			case MESH_UPDATE:
 			{
-				bool result = pUpdateHandler->updateMesh(data);
-
 				json replyData;
-				replyData["result"] = result;
+
+				try
+				{
+					replyData["result"] = pUpdateHandler->updateMesh(data);
+				}
+				catch (std::exception& e)
+				{
+					std::cout << e.what() << std::endl;
+					replyData["result"] = false;
+				}
+
 				auto sendBuff = json::to_msgpack(replyData);
 				zmq::message_t reply(sendBuff.size());
 				std::memcpy(reply.data(), sendBuff.data(), sendBuff.size());
@@ -152,8 +170,18 @@ void Server::handleMessage()
 			}
 			case REQUEST_MESH:
 			{
-				json replyData = pRequestHandler->requestMesh(data);
-				pUserInfo->updateUser(data["uid"].get<std::string>());
+				json replyData;
+
+				try
+				{
+					replyData = pRequestHandler->requestMesh(data);
+					pUserInfo->updateUser(data["uid"].get<std::string>());
+				}
+				catch (std::exception& e)
+				{
+					std::cout << e.what() << std::endl;
+				}
+
 				auto sendBuff = json::to_msgpack(replyData);
 				zmq::message_t reply(sendBuff.size());
 				std::memcpy(reply.data(), sendBuff.data(), sendBuff.size());
@@ -162,9 +190,18 @@ void Server::handleMessage()
 			}
 			case REQUEST_MESH_UPDATE:
 			{
-				//TODO TEST
-				json replyData = pRequestHandler->requestMeshUpdates(data);
-				pUserInfo->updateUser(data["uid"].get<std::string>());
+				json replyData;
+
+				try
+				{
+					replyData = pRequestHandler->requestMeshUpdates(data);
+					pUserInfo->updateUser(data["uid"].get<std::string>());
+				}
+				catch (std::exception& e)
+				{
+					std::cout << e.what() << std::endl;
+				}
+
 				auto sendBuff = json::to_msgpack(replyData);
 				zmq::message_t reply(sendBuff.size());
 				std::memcpy(reply.data(), sendBuff.data(), sendBuff.size());

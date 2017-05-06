@@ -42,37 +42,44 @@ bool UpdateHandler::updateMesh(json& _request)
 
 void UpdateHandler::updateAndStoreMesh(json _mesh, std::string userID)
 {
-	// super right now
-	// replaces any nodes with the new versions of them selves.
-	json meshAndEdit = pDB->getMeshWithEdits(_mesh["id"].get<std::string>());
-	json currentMesh = meshAndEdit["mesh"];
-	std::vector<json> edits = meshAndEdit["edits"];
-	std::vector<json> nodeList = currentMesh["nodes"];
-
-	for (auto& newNode : _mesh["nodes"])
+	try 
 	{
-		if (newNode["edit"] == EditType::ADD)
+		// super basic right now
+		// replaces any nodes with the new versions of them selves.
+		json meshAndEdit = pDB->getMeshWithEdits(_mesh["id"].get<std::string>());
+		json currentMesh = meshAndEdit["mesh"];
+		std::vector<json> edits = meshAndEdit["edits"];
+		std::vector<json> nodeList = currentMesh["nodes"];
+
+		for (auto& newNode : _mesh["nodes"])
 		{
-			insertNodeIntoList(newNode, nodeList);
+			if (newNode["edit"] == EditType::ADD)
+			{
+				insertNodeIntoList(newNode, nodeList);
+			}
+			else if (newNode["edit"] == EditType::EDIT)
+			{
+				editNodeInList(newNode, nodeList);
+			}
+			else if (newNode["edit"] == EditType::DEL)
+			{
+				removeNodefromList(newNode, nodeList);
+			}
 		}
-		else if (newNode["edit"] == EditType::EDIT)
-		{
-			editNodeInList(newNode, nodeList);
-		}
-		else if (newNode["edit"] == EditType::DEL)
-		{
-			removeNodefromList(newNode, nodeList);
-		}
+
+		currentMesh["nodes"] = nodeList;
+		edits.push_back(_mesh);
+		edits.back()["uid"] = userID;
+
+		meshAndEdit["mesh"] = currentMesh;
+		meshAndEdit["edits"] = edits;
+
+		pDB->putMeshWithEdits(meshAndEdit);
 	}
-
-	currentMesh["nodes"] = nodeList;
-	edits.push_back(_mesh);
-	edits.back()["uid"] = userID;
-
-	meshAndEdit["mesh"] = currentMesh;
-	meshAndEdit["edits"] = edits;
-
-	pDB->putMeshWithEdits(meshAndEdit);
+	catch (std::exception& e)
+	{
+		std::cout << e.what() << std::endl;
+	}
 }
 
 void UpdateHandler::insertNodeIntoList(json _node, std::vector<json> _nodeList)
