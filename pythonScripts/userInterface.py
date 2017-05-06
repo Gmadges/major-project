@@ -68,7 +68,7 @@ class serverConnectWidget(QFrame):
         self.address_line.setText('localhost')
         self.port_spin = QSpinBox()
         self.port_spin.setRange(1, 65536)
-        self.port_spin.setValue(8081)
+        self.port_spin.setValue(8080)
         settings_layout = QFormLayout()
         settings_layout.setContentsMargins(2, 2, 2, 2)
         settings_layout.addRow(QLabel('User ID (optional)'), self.user_id_line)
@@ -85,7 +85,8 @@ class serverConnectWidget(QFrame):
         address = self.address_line.text()
         port = self.port_spin.value()
         userID = self.user_id_line.text()
-        self.messenger.setServer(address, port)
+        # add one to the port
+        self.messenger.setServer(address, port + 1)
         request = self.messenger.requestAllMeshes()
         if request['status'] is 200 :
             self.connection_label.setText('connected')
@@ -160,6 +161,8 @@ class meshSelectionWidget(QFrame):
 
 class currentMeshWidget(QFrame):
 
+    meshRegistered = Signal()
+
     def __init__(self, messenger):
         super(currentMeshWidget, self).__init__()
         self.messenger = messenger
@@ -199,8 +202,9 @@ class currentMeshWidget(QFrame):
         self.setLayout(main_layout)
 
     def registerMeshCmd(self):
-        cmd = 'RegisterMesh'
+        cmd = "RegisterMesh"
         mel.eval(cmd)
+        self.meshRegistered.emit()
 
     def unregisterCmd(self):
         cmd = ''
@@ -208,7 +212,7 @@ class currentMeshWidget(QFrame):
         mel.eval(cmd)
 
     def forceSendCmd(self):
-        cmd = 'SendUpdates'
+        cmd = "SendUpdates"
         mel.eval(cmd)
             
     def forceUpdateCmd(self):
@@ -249,6 +253,7 @@ class CreateUI(QWidget):
         # connect items
         self.connectionWid.connected.connect(self.meshSelectWid.requestAllMesh)
         self.connectionWid.connected.connect(self.enableWidgets)
+        self.currentMeshWid.meshRegistered.connect(self.meshSelectWid.requestAllMesh)
 
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(2, 2, 2, 2)
