@@ -7,7 +7,6 @@
 
 #include "requestHandler.h"
 #include "updateHandler.h"
-#include "infoHandler.h"
 
 // this is only for our fake one right now
 #include "database.h"
@@ -26,7 +25,6 @@ Server::Server(int _port)
 {
 	pUpdateHandler.reset(new UpdateHandler(pDB));
 	pRequestHandler.reset(new RequestHandler(pDB));
-	pInfoHandler.reset(new InfoHandler(pDB));
 }
 
 Server::~Server()
@@ -75,13 +73,27 @@ void Server::runDataServer()
 
 		for (auto& item : pDB->getAllMeshes())
 		{
-			meshNames.push_back(item["name"].get<std::string>());
-			meshIds.push_back(item["id"].get<std::string>());
+			json mesh = item["mesh"];
+			meshNames.push_back(mesh["name"].get<std::string>());
+			meshIds.push_back(mesh["id"].get<std::string>());
 		}
 		
 		info["meshNames"] = meshNames;
 		info["meshIds"] = meshIds;
 		
+		return info;
+	});
+
+	CROW_ROUTE(app, "/<str>/delete")([this](std::string id) {
+		crow::json::wvalue info;
+
+		if (pDB->deleteMesh(id))
+		{
+			info["status"] = 200;
+			return info;
+		}
+		
+		info["status"] = 404;
 		return info;
 	});
 
@@ -145,16 +157,7 @@ void Server::handleMessage()
 				//TODO
 				json replyData = pRequestHandler->requestMeshUpdates(data);
 				break;
-			}
-			case INFO_REQUEST:
-			{
-				json replyData = pInfoHandler->processRequest();
-				auto sendBuff = json::to_msgpack(replyData);
-				zmq::message_t reply(sendBuff.size());
-				std::memcpy(reply.data(), sendBuff.data(), sendBuff.size());
-				socket.send(reply);
-				break;
-			}
+			}			
 			default : 
 			{
 				std::cout << "got a weird request!" << std::endl;

@@ -85,3 +85,13 @@ void Database::storeToFile()
 	outputFile << std::setw(4) << db << std::endl;
 	outputFile.close();
 }
+
+bool Database::deleteMesh(std::string& id)
+{
+	if (db.count(id) > 0)
+	{
+		db.erase(id);
+		return true;
+	}
+	return false;
+}

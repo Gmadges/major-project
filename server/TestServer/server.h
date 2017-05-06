@@ -36,7 +36,6 @@ private:
 	std::shared_ptr<Database> pDB;
 	std::unique_ptr<UpdateHandler> pUpdateHandler;
 	std::unique_ptr<RequestHandler> pRequestHandler;
-	std::unique_ptr<InfoHandler> pInfoHandler;
 };
 
 #endif
