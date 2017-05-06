@@ -12,7 +12,9 @@
 // this is only for our fake one right now
 #include "database.h"
 
+#pragma warning(push, 0)
 #include "crow.h"
+#pragma warning(pop)
 
 Server::Server(int _port)
 	:
