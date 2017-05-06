@@ -244,7 +244,7 @@ class CreateUI(QWidget):
         self.connectionWid = serverConnectWidget(self.messenger)
         self.meshSelectWid = meshSelectionWidget(self.messenger)
         self.currentMeshWid = currentMeshWidget(self.messenger)
-        self.settingsWid = settingsWidget()
+        #self.settingsWid = settingsWidget()
 
         # connect items
         self.connectionWid.connected.connect(self.meshSelectWid.requestAllMesh)
@@ -255,19 +255,19 @@ class CreateUI(QWidget):
         main_layout.addWidget(self.connectionWid)
         main_layout.addWidget(self.meshSelectWid)
         main_layout.addWidget(self.currentMeshWid)
-        main_layout.addWidget(self.settingsWid)
+        #main_layout.addWidget(self.settingsWid)
         self.setLayout(main_layout)
         self.disableWidgets()
 
     def disableWidgets(self):
         self.meshSelectWid.setEnabled(False)
         self.currentMeshWid.setEnabled(False)
-        self.settingsWid.setEnabled(False)
+        #self.settingsWid.setEnabled(False)
 
     def enableWidgets(self):
         self.meshSelectWid.setEnabled(True)
         self.currentMeshWid.setEnabled(True)
-        self.settingsWid.setEnabled(True)
+        #self.settingsWid.setEnabled(True)
             
 def main():
     ui = CreateUI()
