@@ -41,6 +41,43 @@ void preRemoveCallback(MObject& node, void*)
 	CallbackHandler::getInstance().addNodeToDeleteList(uuid, std::time(nullptr));
 }
 
+
+void uuidChangeCallback(MObject &node, const MUuid &uuid, void *clientData)
+{
+	// TODO
+	// find a nice way of handling uuid changes
+	//MFnDependencyNode depNode(node);
+	//std::string uuid = depNode.uuid().asString().asChar();
+	//CallbackHandler::getInstance().addNodeToDeleteList(uuid, std::time(nullptr));
+}
+
+void nodeNameChangeCallback(MObject &node, const MString &str, void *clientData)
+{
+	MFnDependencyNode depNode(node);
+	std::string uuid = depNode.uuid().asString().asChar();
+	CallbackHandler::getInstance().addNodeToDeleteList(uuid, std::time(nullptr));
+}
+
+void nodeAttribAddCallback(MNodeMessage::AttributeMessage msg, MPlug &plug, void *clientData)
+{
+	if (msg & MNodeMessage::kAttributeSet ||
+		msg & MNodeMessage::kAttributeRemoved ||
+		msg & MNodeMessage::kAttributeRenamed ||
+		msg & MNodeMessage::kAttributeAdded ||
+		msg & MNodeMessage::kAttributeArrayAdded ||
+		msg & MNodeMessage::kAttributeArrayRemoved)
+	{
+		// not bothered about cache inputs
+		if (plug.partialName() == "cin") return;
+
+		std::string test = plug.info().asChar();
+
+		MFnDependencyNode node(plug.node());
+		std::string uuid = node.uuid().asString().asChar();
+		CallbackHandler::getInstance().addNodeToEditList(uuid, std::time(nullptr));
+	}
+}
+
 void newNodeCallback(MObject &node, void *clientData)
 {
 	MFnDependencyNode depNode(node);
@@ -110,11 +147,35 @@ MStatus CallbackHandler::registerCallbacksToNode(MObject& _node)
 		callbackIds.append(id);
 	}
 
-	// TODO Name Change
+	id = MNodeMessage::addUuidChangedCallback( _node, 
+												uuidChangeCallback, 
+												NULL, 
+												&status);
 
-	// TODO added nodes
+	if (status == MStatus::kSuccess)
+	{
+		callbackIds.append(id);
+	}
 
-	// TODO attribute added or removed 
+	id = MNodeMessage::addNameChangedCallback( _node,
+												nodeNameChangeCallback,
+												NULL,
+												&status);
+	
+	if (status == MStatus::kSuccess)
+	{
+		callbackIds.append(id);
+	}
+
+	id = MNodeMessage::addAttributeAddedOrRemovedCallback( _node,
+															nodeAttribAddCallback,
+															NULL,
+															&status);
+
+	if (status == MStatus::kSuccess)
+	{
+		callbackIds.append(id);
+	}
 
 	return status;
 }
