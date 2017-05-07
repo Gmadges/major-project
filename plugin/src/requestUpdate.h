@@ -20,6 +20,9 @@ public:
 	MStatus	doIt(const MArgList&);
 
 private:
+	MStatus deleteNode(MObject& node);
+
+private:
 	std::unique_ptr<Messaging> pMessenger;
 };
 

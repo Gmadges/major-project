@@ -45,17 +45,10 @@ MStatus	RequestUpdate::doIt(const MArgList& args)
 
 	pMessenger->resetSocket(ServerAddress::getInstance().getAddress(), ServerAddress::getInstance().getPort());
 
-	// ask the server for any update
 	json data;
-	MString id;
-	if (getArgs(args, id) != MStatus::kSuccess)
-	{
-		HackPrint::print("no id specified!");
-		return MStatus::kFailure;
-	}
-
+	
 	// if false then we couldnt connect to server
-	if (!pMessenger->requestMesh(data, ReqType::REQUEST_MESH_UPDATE, std::string(id.asChar()), ServerAddress::getInstance().getUserID())) return MStatus::kFailure;
+	if (!pMessenger->requestMesh(data, ReqType::REQUEST_MESH_UPDATE, CallbackHandler::getInstance().getCurrentRegisteredMesh(), ServerAddress::getInstance().getUserID())) return MStatus::kFailure;
 
 	// is there actually anything?
 	if (data.empty())
@@ -68,18 +61,6 @@ MStatus	RequestUpdate::doIt(const MArgList& args)
 		HackPrint::print("No Edits");
 		return status;
 	}
-
-	// cycle through edits
-
-	// figure out if we need to create or delete something
-
-	// create in the correct place or move to right place
-
-	// store values in the node.
-
-	// done i guess
-
-	// get edits
 
 	auto editList = data["edits"];
 
@@ -111,12 +92,21 @@ MStatus	RequestUpdate::doIt(const MArgList& args)
 			}
 			else if (itr["edit"] == EditType::DEL)
 			{
-				// TODO delete node
+				MObject node;
+				MString id = itr["id"].get<std::string>().c_str();
+				status = MayaUtils::getNodeObjectFromUUID(id, node);
+				deleteNode(node);
 			}
 
-			// TODO check connections
+			// TODO check connection order possibly?
 		}
 	}
 
 	return status;
+}
+
+MStatus RequestUpdate::deleteNode(MObject& node)
+{
+	fDGModifier.deleteNode(node);
+	fDGModifier.doIt();
 }
