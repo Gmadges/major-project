@@ -1,6 +1,7 @@
 from maya import cmds
 from maya import mel
 from maya import OpenMayaUI as omui
+from threading import Timer
 import urllib2
 import json
 import socket
@@ -29,10 +30,14 @@ class ServerMessenger(object):
 
     def requestAllMeshes(self):
         if not self.serverAddress : return
-        response = urllib2.urlopen( self.serverAddress + "/")
-        data = json.load(response)
-        response.close()
-        return data
+        try:
+            response = urllib2.urlopen( self.serverAddress + "/")
+            data = json.load(response)
+            response.close()
+            return data
+        except urllib2.URLError, e:
+            data["result"] = 404
+            return data
 
     def deleteMesh(self, meshId):
         if not self.serverAddress : return
@@ -40,6 +45,17 @@ class ServerMessenger(object):
         response = urllib2.urlopen( self.serverAddress + "/" + meshId + "/delete")
         response.close()
 
+    def heartbeat(self):
+        try:
+            response = urllib2.urlopen( self.serverAddress + "/heartbeat")
+            data = json.load(response)
+            response.close()
+            if data['status'] is 200 :
+                return True
+            else:
+                return False
+        except urllib2.URLError, e:
+            return False
 
 class serverConnectWidget(QFrame):
 
@@ -48,9 +64,14 @@ class serverConnectWidget(QFrame):
     def __init__(self, messenger):
         super(serverConnectWidget, self).__init__()
         self.messenger = messenger
-        
         self.initUI()
+        # perform hertbeat func every 10 seconds
+        self.heartbeatWait = 5.0
+        self.heartbeatTimer = Timer(self.heartbeatWait, self.heartbeatFunc)
         self.setFrameStyle(QFrame.StyledPanel)
+
+    def __del__(self):
+        self.heartbeatTimer.cancel()
 
     def initUI(self):
         self.connect_btn = QPushButton('Connect', self)
@@ -82,6 +103,7 @@ class serverConnectWidget(QFrame):
         self.setLayout(main_layout)
 
     def connectToServer(self):
+        self.stopHeartbeat()
         address = self.address_line.text()
         port = self.port_spin.value()
         userID = self.user_id_line.text()
@@ -89,13 +111,34 @@ class serverConnectWidget(QFrame):
         self.messenger.setServer(address, port + 1)
         request = self.messenger.requestAllMeshes()
         if request['status'] is 200 :
-            self.connection_label.setText('connected')
-            self.connection_label.setStyleSheet('color: green')
+            self.setConnectedLabel(True)
             self.setServerCmd(address, port, userID)
+            self.startHeartbeat()
             self.connected.emit()
         else:
+            self.setConnectedLabel(False)
+
+    def startHeartbeat(self):
+        def interval_wrapper():
+            self.startHeartbeat() 
+            self.heartbeatFunc()
+        self.heartbeatTimer = Timer(self.heartbeatWait, interval_wrapper)
+        self.heartbeatTimer.start()
+
+    def stopHeartbeat(self):
+        self.heartbeatTimer.cancel()
+
+    def heartbeatFunc(self):
+        self.setConnectedLabel(self.messenger.heartbeat())
+
+    def setConnectedLabel(self, isConnected):
+        if isConnected is True:
+            self.connection_label.setText('connected')
+            self.connection_label.setStyleSheet('color: green')
+        else :
             self.connection_label.setText('disconnected')
             self.connection_label.setStyleSheet('color: red')
+
 
     def setServerCmd(self, address, port, userID):
         id = socket.gethostbyname(socket.gethostname())
@@ -290,6 +333,8 @@ class CreateUI(QWidget):
         #self.settingsWid.setEnabled(True)
             
 def main():
+    # todo
+    # add plugin loading stuff here
     ui = CreateUI()
     ui.show()
     return ui

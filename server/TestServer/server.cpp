@@ -86,6 +86,12 @@ void Server::runDataServer()
 		return info;
 	});
 
+	CROW_ROUTE(app, "/heartbeat")([this]() {
+		crow::json::wvalue info;
+		info["status"] = 200;
+		return info;
+	});
+
 	CROW_ROUTE(app, "/<str>/delete")([this](std::string id) {
 		crow::json::wvalue info;
 
@@ -99,7 +105,7 @@ void Server::runDataServer()
 		return info;
 	});
 
-	app.port(port + 1).run();
+	app.port(port + 1).multithreaded().run();
 }
 
 void Server::handleMessage() 
