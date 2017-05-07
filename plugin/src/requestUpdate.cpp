@@ -107,6 +107,8 @@ MStatus	RequestUpdate::doIt(const MArgList& args)
 
 MStatus RequestUpdate::deleteNode(MObject& node)
 {
-	fDGModifier.deleteNode(node);
-	fDGModifier.doIt();
+	MStatus status = fDGModifier.deleteNode(node);
+	if (status != MStatus::kSuccess) return status;
+	status = fDGModifier.doIt();
+	return status;
 }
