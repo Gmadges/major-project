@@ -36,7 +36,8 @@ class ServerMessenger(object):
             response.close()
             return data
         except urllib2.URLError, e:
-            data["result"] = 404
+            data = {}
+            data["status"] = 404
             return data
 
     def deleteMesh(self, meshId):
@@ -141,8 +142,10 @@ class serverConnectWidget(QFrame):
 
 
     def setServerCmd(self, address, port, userID):
-        id = socket.gethostbyname(socket.gethostname())
-        cmd = 'SetServer -a "' + address + '" -p ' + str(port) + ' -uid "' + id + '"'
+        if not userID:
+            userID = socket.gethostbyname(socket.gethostname())
+        cmd = 'SetServer -a "' + address + '" -p ' + str(port) + ' -uid "' + userID + '"'
+        print cmd
         mel.eval(cmd)
 
 class meshSelectionWidget(QFrame):
