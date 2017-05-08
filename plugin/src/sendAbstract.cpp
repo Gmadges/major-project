@@ -63,13 +63,7 @@ void SendAbstract::traverseAllValidNodes(MFnDependencyNode & node, std::function
 	// If the inpuPolymesh is connected, we have history
 	MStatus status;
 	MPlug inMeshPlug;
-	inMeshPlug = node.findPlug("inputPolymesh", &status);
-
-	// if it doesnt have that plug try this one
-	if (status != MStatus::kSuccess)
-	{
-		inMeshPlug = node.findPlug("inMesh");
-	}
+	inMeshPlug = MayaUtils::getInPlug(node, status);
 
 	if (inMeshPlug.isConnected())
 	{
@@ -137,51 +131,26 @@ MStatus SendAbstract::getGenericNode(MFnDependencyNode & _inNode, json& _outNode
 
 MStatus SendAbstract::getIncomingID(MFnDependencyNode & _inNode, MString& _id)
 {
-	MStatus status;
-	MPlug inMeshPlug;
-	inMeshPlug = _inNode.findPlug("inputPolymesh", &status);
-
-	// if it doesnt have that plug try this one
-	if (status != MStatus::kSuccess)
+	MFnDependencyNode upstreamNode;
+	if (MayaUtils::getIncomingNodeObject(_inNode, upstreamNode) == MStatus::kSuccess)
 	{
-		inMeshPlug = _inNode.findPlug("inMesh");
-	}
-
-	if (inMeshPlug.isConnected())
-	{
-		MPlugArray tempPlugArray;
-		inMeshPlug.connectedTo(tempPlugArray, true, false);
-		// Only one connection should exist on meshNodeShape.inMesh!
-		MPlug upstreamNodeSrcPlug = tempPlugArray[0];
-		MFnDependencyNode upstreamNode(upstreamNodeSrcPlug.node());
-
 		_id = upstreamNode.uuid().asString();
-		
 		return MStatus::kSuccess;
 	}
 
-	return status;
+	return MStatus::kFailure;
 }
 
 MStatus SendAbstract::getOutgoingID(MFnDependencyNode & _inNode, MString& _id)
 {
-	MStatus status;
-	MPlug outMeshPlug;
-	outMeshPlug = _inNode.findPlug("output", &status);
-
-	if (outMeshPlug.isConnected())
+	MFnDependencyNode downStreamNode;
+	if (MayaUtils::getOutgoingNodeObject(_inNode, downStreamNode) == MStatus::kSuccess)
 	{
-		MPlugArray tempPlugArray;
-		outMeshPlug.connectedTo(tempPlugArray, false, true);
-		MPlug downStreamNodeSrcPlug = tempPlugArray[0];
-		MFnDependencyNode downStreamNode(downStreamNodeSrcPlug.node());
-
 		_id = downStreamNode.uuid().asString();
-
 		return MStatus::kSuccess;
 	}
 
-	return status;
+	return MStatus::kFailure;
 }
 
 MStatus SendAbstract::getAttribFromPlug(MPlug& _plug, json& _attribs)

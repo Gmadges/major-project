@@ -1,18 +1,18 @@
 #ifndef REQUESTABSTRACT_H
 #define REQUESTABSTRACT_H
 
-#include "polyModifierCmd.h"
-
 #include "maya/MArgList.h"
 #include "maya/MFnDependencyNode.h"
 #include <maya/MSyntax.h>
+#include <maya/MPxCommand.h>
+#include <maya/MDGModifier.h>
 #include <memory>
 
 #include "json.h"
 
 class TweakHandler;
 
-class RequestAbstract : public polyModifierCmd
+class RequestAbstract : public MPxCommand
 {
 public:
 	RequestAbstract();
@@ -25,9 +25,11 @@ protected:
 	MStatus createNode(json& _node);
 	MStatus setConnections(json& _mesh, json& _node);
 	MStatus setAttribs(MFnDependencyNode& node, json& attribs);
+	MStatus disconnectNodes(MFnDependencyNode& inNode, MFnDependencyNode& outnode);
 
 protected:
 	std::unique_ptr<TweakHandler> pTweakHandler;
+	MDGModifier fDGModifier;
 };
 
 #endif

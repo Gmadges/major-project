@@ -156,9 +156,7 @@ MStatus RequestAbstract::createNode(json& _node)
 
 MStatus RequestAbstract::setConnections(json& _mesh, json& _node)
 {
-	MStatus status;
-
-	// TODO rewrite to connect based on in and out connections.
+	MStatus status = MStatus::kSuccess;
 
 	// if its not a mesh we'll have to wire it in
 	std::string type = _node["type"];
@@ -166,26 +164,67 @@ MStatus RequestAbstract::setConnections(json& _mesh, json& _node)
 	if (type.compare("polySplitRing") == 0 ||
 		type.compare("polyTweak") == 0)
 	{
-		// get mesh and set it to be the one we're effecting
-		MString meshID(_mesh["id"].get<std::string>().c_str());
-		MObject meshNode;
-		status = MayaUtils::getNodeObjectFromUUID(meshID, meshNode);
-		if (status != MStatus::kSuccess) return status;
+		// redo of our connecting code.
 
-		MDagPath dagPath;
-		MDagPath::getAPathTo(meshNode, dagPath);
-		dagPath.extendToShape();
-		setMeshNode(dagPath);
+		MFnDependencyNode inNode, outNode, newNode;
 
-		// get node and do the connections
-		MString nodeID(_node["id"].get<std::string>().c_str());
-		MObject node;
-		status = MayaUtils::getNodeObjectFromUUID(nodeID, node);
-		if (status != MStatus::kSuccess) return status;
+		// grab the in and out nodes from this node
+		if (_node["in"] != nullptr)
+		{
+			MString inNodeID(_mesh["in"].get<std::string>().c_str());
+			MObject tmp;
+			status = MayaUtils::getNodeObjectFromUUID(inNodeID, tmp);
+			if (status != MStatus::kSuccess) return status;
+			inNode.setObject(tmp);
+		}
 
-		//// and add it to the DAG
-		status = doModifyPoly(node);
+		if (_node["out"] != nullptr)
+		{
+			MString outNodeID(_mesh["out"].get<std::string>().c_str());
+			MObject tmp;
+			status = MayaUtils::getNodeObjectFromUUID(outNodeID, tmp);
+			if (status != MStatus::kSuccess) return status;
+			outNode.setObject(tmp);
+		}
+
+		MString newNodeID(_mesh["id"].get<std::string>().c_str());
+		MObject tmp;
+		status = MayaUtils::getNodeObjectFromUUID(newNodeID, tmp);
 		if (status != MStatus::kSuccess) return status;
+		newNode.setObject(tmp);
+		
+		// check what connections we have and siconnect if we need to
+		if (!inNode.object().isNull())
+		{
+			MFnDependencyNode tmpDepNode;
+			if (MayaUtils::getOutgoingNodeObject(inNode, tmpDepNode) == MStatus::kSuccess)
+			{
+				status = disconnectNodes(inNode, tmpDepNode);
+			}
+		}
+
+		// most of the time this shouldnt have to happen because we just disconnected the node its most likely to be connected to
+		if (!outNode.object().isNull())
+		{
+			MFnDependencyNode tmpDepNode;
+			if (MayaUtils::getIncomingNodeObject(outNode, tmpDepNode) == MStatus::kSuccess)
+			{
+				status = disconnectNodes(tmpDepNode, outNode);
+			}
+		}
+
+		// attach everything
+
+		MPlug nodeOutPlug = MayaUtils::getOutPlug(newNode, status);
+		MPlug nodeInPlug = MayaUtils::getInPlug(newNode, status);
+
+		MPlug inNodePlug = MayaUtils::getOutPlug(inNode, status);
+		MPlug outNodePlug = MayaUtils::getInPlug(outNode, status);
+
+		status = fDGModifier.connect(inNodePlug, nodeInPlug);
+		status = fDGModifier.connect(nodeOutPlug, outNodePlug);
+		
+		status = fDGModifier.doIt();
 
 		// this is if we require extra connections
 		if (type.compare("polySplitRing") == 0)
@@ -202,7 +241,18 @@ MStatus RequestAbstract::setConnections(json& _mesh, json& _node)
 		}
 	}
 
-	return MStatus::kSuccess;
+	return status;
 }
 
+MStatus RequestAbstract::disconnectNodes(MFnDependencyNode& inNode, MFnDependencyNode& outnode)
+{
+	MStatus status;
+	MPlug out = MayaUtils::getOutPlug(outnode, status);
+	MPlug in = MayaUtils::getInPlug(inNode, status);
 
+	status = fDGModifier.disconnect(out, in);
+
+	if (status != MStatus::kSuccess) return status;
+
+	return fDGModifier.doIt();
+}

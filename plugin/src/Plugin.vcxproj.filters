@@ -2,9 +2,6 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="plugin.cpp" />
-    <ClCompile Include="polyModifierCmd.cpp">
-      <Filter>request</Filter>
-    </ClCompile>
     <ClCompile Include="messaging.cpp">
       <Filter>message</Filter>
     </ClCompile>
@@ -47,9 +44,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hackPrint.h" />
-    <ClInclude Include="polyModifierCmd.h">
-      <Filter>request</Filter>
-    </ClInclude>
     <ClInclude Include="messaging.h">
       <Filter>message</Filter>
     </ClInclude>
@@ -67,9 +61,6 @@
     </ClInclude>
     <ClInclude Include="sendUpdate.h">
       <Filter>send</Filter>
-    </ClInclude>
-    <ClInclude Include="sendAbstract.h">
-      <Filter>shared</Filter>
     </ClInclude>
     <ClInclude Include="sendRegister.h">
       <Filter>register</Filter>
@@ -94,6 +85,9 @@
     </ClInclude>
     <ClInclude Include="clearCurrentMesh.h">
       <Filter>info</Filter>
+    </ClInclude>
+    <ClInclude Include="sendAbstract.h">
+      <Filter>send</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
