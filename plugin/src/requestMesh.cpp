@@ -106,7 +106,7 @@ MStatus	RequestMesh::doIt(const MArgList& args)
 	// set and check connections
 	for (auto& itr : nodeList)
 	{
-		status = setConnections(data, itr);
+		status = setConnections(itr);
 	}
 
 	// set callbacks

@@ -83,7 +83,7 @@ MStatus	RequestUpdate::doIt(const MArgList& args)
 					CallbackHandler::getInstance().registerCallbacksToNode(node);
 
 					// connect
-					status = setConnections(edit, itr);
+					status = setConnections(itr);
 				}
 			}
 			else if (itr["edit"] == EditType::EDIT)

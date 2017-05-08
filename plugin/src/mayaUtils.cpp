@@ -80,7 +80,7 @@ MStatus MayaUtils::getOutgoingNodeObject(MFnDependencyNode& node, MFnDependencyN
 	return status;
 }
 
-MPlug MayaUtils::getInPlug(MFnDependencyNode& node ,MStatus& status)
+MPlug MayaUtils::getInPlug(MFnDependencyNode& node, MStatus& status)
 {
 	MPlug in = node.findPlug("inputPolymesh", &status);
 

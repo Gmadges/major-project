@@ -23,7 +23,7 @@ protected:
 	MStatus getArgs(const MArgList& args, MString& id);
 	MStatus setNodeValues(json & _node);
 	MStatus createNode(json& _node);
-	MStatus setConnections(json& _mesh, json& _node);
+	MStatus setConnections(json& _node);
 	MStatus setAttribs(MFnDependencyNode& node, json& attribs);
 	MStatus disconnectNodes(MFnDependencyNode& inNode, MFnDependencyNode& outnode);
 

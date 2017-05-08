@@ -154,7 +154,7 @@ MStatus RequestAbstract::createNode(json& _node)
 	return fDGModifier.doIt();
 }
 
-MStatus RequestAbstract::setConnections(json& _mesh, json& _node)
+MStatus RequestAbstract::setConnections(json& _node)
 {
 	MStatus status = MStatus::kSuccess;
 
@@ -171,7 +171,7 @@ MStatus RequestAbstract::setConnections(json& _mesh, json& _node)
 		// grab the in and out nodes from this node
 		if (_node["in"] != nullptr)
 		{
-			MString inNodeID(_mesh["in"].get<std::string>().c_str());
+			MString inNodeID(_node["in"].get<std::string>().c_str());
 			MObject tmp;
 			status = MayaUtils::getNodeObjectFromUUID(inNodeID, tmp);
 			if (status != MStatus::kSuccess) return status;
@@ -180,65 +180,90 @@ MStatus RequestAbstract::setConnections(json& _mesh, json& _node)
 
 		if (_node["out"] != nullptr)
 		{
-			MString outNodeID(_mesh["out"].get<std::string>().c_str());
+			MString outNodeID(_node["out"].get<std::string>().c_str());
 			MObject tmp;
 			status = MayaUtils::getNodeObjectFromUUID(outNodeID, tmp);
 			if (status != MStatus::kSuccess) return status;
 			outNode.setObject(tmp);
 		}
 
-		MString newNodeID(_mesh["id"].get<std::string>().c_str());
+		MString newNodeID(_node["id"].get<std::string>().c_str());
 		MObject tmp;
 		status = MayaUtils::getNodeObjectFromUUID(newNodeID, tmp);
 		if (status != MStatus::kSuccess) return status;
 		newNode.setObject(tmp);
-		
-		// check what connections we have and siconnect if we need to
-		if (!inNode.object().isNull())
-		{
-			MFnDependencyNode tmpDepNode;
-			if (MayaUtils::getOutgoingNodeObject(inNode, tmpDepNode) == MStatus::kSuccess)
-			{
-				status = disconnectNodes(inNode, tmpDepNode);
-			}
-		}
 
-		// most of the time this shouldnt have to happen because we just disconnected the node its most likely to be connected to
-		if (!outNode.object().isNull())
-		{
-			MFnDependencyNode tmpDepNode;
-			if (MayaUtils::getIncomingNodeObject(outNode, tmpDepNode) == MStatus::kSuccess)
-			{
-				status = disconnectNodes(tmpDepNode, outNode);
-			}
-		}
+		//TODO look into a better disconnecting solution
+		
+		//// check what connections we have and siconnect if we need to
+		//if (!inNode.object().isNull())
+		//{
+		//	MFnDependencyNode tmpDepNode;
+		//	if (MayaUtils::getOutgoingNodeObject(inNode, tmpDepNode) == MStatus::kSuccess)
+		//	{
+		//		status = disconnectNodes(inNode, tmpDepNode);
+		//	}
+		//}
+
+		//// most of the time this shouldnt have to happen because we just disconnected the node its most likely to be connected to
+		//if (!outNode.object().isNull())
+		//{
+		//	MFnDependencyNode tmpDepNode;
+		//	if (MayaUtils::getIncomingNodeObject(outNode, tmpDepNode) == MStatus::kSuccess)
+		//	{
+		//		status = disconnectNodes(tmpDepNode, outNode);
+		//	}
+		//}
 
 		// attach everything
-
 		MPlug nodeOutPlug = MayaUtils::getOutPlug(newNode, status);
 		MPlug nodeInPlug = MayaUtils::getInPlug(newNode, status);
 
 		MPlug inNodePlug = MayaUtils::getOutPlug(inNode, status);
 		MPlug outNodePlug = MayaUtils::getInPlug(outNode, status);
 
+		status = fDGModifier.disconnect(inNodePlug, outNodePlug);
 		status = fDGModifier.connect(inNodePlug, nodeInPlug);
 		status = fDGModifier.connect(nodeOutPlug, outNodePlug);
-		
 		status = fDGModifier.doIt();
 
-		// this is if we require extra connections
-		if (type.compare("polySplitRing") == 0)
-		{
-			MString connectCmd;
-			connectCmd += "connectAttr ";
-			std::string meshName = _mesh["name"];
-			connectCmd += meshName.c_str();
-			connectCmd += ".worldMatrix[0] ";
-			std::string nodeName = _node["name"];
-			connectCmd += nodeName.c_str();
-			connectCmd += ".manipMatrix;";
-			MGlobal::executeCommand(connectCmd);
-		}
+		////test
+		//MString disconnectCmd;
+		//disconnectCmd += "disconnectAttr ";
+		//disconnectCmd += inNodePlug.name();
+		//disconnectCmd += " ";
+		//disconnectCmd += outNodePlug.name();
+		//MGlobal::executeCommand(disconnectCmd);
+
+		//MString connectCmd;
+		//connectCmd += "connectAttr ";
+		//connectCmd += inNodePlug.name();
+		//connectCmd += " ";
+		//connectCmd += nodeInPlug.name();
+		//MGlobal::executeCommand(connectCmd);
+
+		//MString connectCmd2;
+		//connectCmd2 += "connectAttr ";
+		//connectCmd2 += nodeOutPlug.name();
+		//connectCmd2 += " ";
+		//connectCmd2 += outNodePlug.name();
+		//MGlobal::executeCommand(connectCmd2);
+
+		// this connection method assumes that the new node isnt connected to anything and that we dont care about what the other nodes were connected to before hand.
+
+		//// this is if we require extra connections //TODO
+		//if (type.compare("polySplitRing") == 0)
+		//{
+		//	MString connectCmd;
+		//	connectCmd += "connectAttr ";
+		//	std::string meshName = _mesh["name"];
+		//	connectCmd += meshName.c_str();
+		//	connectCmd += ".worldMatrix[0] ";
+		//	std::string nodeName = _node["name"];
+		//	connectCmd += nodeName.c_str();
+		//	connectCmd += ".manipMatrix;";
+		//	MGlobal::executeCommand(connectCmd);
+		//}
 	}
 
 	return status;
@@ -249,10 +274,6 @@ MStatus RequestAbstract::disconnectNodes(MFnDependencyNode& inNode, MFnDependenc
 	MStatus status;
 	MPlug out = MayaUtils::getOutPlug(outnode, status);
 	MPlug in = MayaUtils::getInPlug(inNode, status);
-
 	status = fDGModifier.disconnect(out, in);
-
-	if (status != MStatus::kSuccess) return status;
-
 	return fDGModifier.doIt();
 }
