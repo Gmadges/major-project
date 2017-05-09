@@ -7,6 +7,7 @@
 #include <maya/MGlobal.h>
 #include <maya/MUuid.h>
 #include <maya/MFnDependencyNode.h>
+#include <maya/MPlugArray.h>
 
 RequestAbstract::RequestAbstract()
 	:
@@ -193,28 +194,7 @@ MStatus RequestAbstract::setConnections(json& _node)
 		if (status != MStatus::kSuccess) return status;
 		newNode.setObject(tmp);
 
-		//TODO look into a better disconnecting solution
-		
-		//// check what connections we have and siconnect if we need to
-		//if (!inNode.object().isNull())
-		//{
-		//	MFnDependencyNode tmpDepNode;
-		//	if (MayaUtils::getOutgoingNodeObject(inNode, tmpDepNode) == MStatus::kSuccess)
-		//	{
-		//		status = disconnectNodes(inNode, tmpDepNode);
-		//	}
-		//}
-
-		//// most of the time this shouldnt have to happen because we just disconnected the node its most likely to be connected to
-		//if (!outNode.object().isNull())
-		//{
-		//	MFnDependencyNode tmpDepNode;
-		//	if (MayaUtils::getIncomingNodeObject(outNode, tmpDepNode) == MStatus::kSuccess)
-		//	{
-		//		status = disconnectNodes(tmpDepNode, outNode);
-		//	}
-		//}
-
+	
 		// attach everything
 		MPlug nodeOutPlug = MayaUtils::getOutPlug(newNode, status);
 		MPlug nodeInPlug = MayaUtils::getInPlug(newNode, status);
@@ -222,32 +202,23 @@ MStatus RequestAbstract::setConnections(json& _node)
 		MPlug inNodePlug = MayaUtils::getOutPlug(inNode, status);
 		MPlug outNodePlug = MayaUtils::getInPlug(outNode, status);
 
-		status = fDGModifier.disconnect(inNodePlug, outNodePlug);
+		if (inNodePlug.isConnected())
+		{
+			MPlugArray tempPlugArray;
+			inNodePlug.connectedTo(tempPlugArray, false, true);
+			status = fDGModifier.disconnect(inNodePlug, tempPlugArray[0]);
+		}
+
+		if (outNodePlug.isConnected())
+		{
+			MPlugArray tempPlugArray;
+			outNodePlug.connectedTo(tempPlugArray, true, false);
+			status = fDGModifier.disconnect(tempPlugArray[0], outNodePlug);
+		}
+
 		status = fDGModifier.connect(inNodePlug, nodeInPlug);
 		status = fDGModifier.connect(nodeOutPlug, outNodePlug);
 		status = fDGModifier.doIt();
-
-		////test
-		//MString disconnectCmd;
-		//disconnectCmd += "disconnectAttr ";
-		//disconnectCmd += inNodePlug.name();
-		//disconnectCmd += " ";
-		//disconnectCmd += outNodePlug.name();
-		//MGlobal::executeCommand(disconnectCmd);
-
-		//MString connectCmd;
-		//connectCmd += "connectAttr ";
-		//connectCmd += inNodePlug.name();
-		//connectCmd += " ";
-		//connectCmd += nodeInPlug.name();
-		//MGlobal::executeCommand(connectCmd);
-
-		//MString connectCmd2;
-		//connectCmd2 += "connectAttr ";
-		//connectCmd2 += nodeOutPlug.name();
-		//connectCmd2 += " ";
-		//connectCmd2 += outNodePlug.name();
-		//MGlobal::executeCommand(connectCmd2);
 
 		// this connection method assumes that the new node isnt connected to anything and that we dont care about what the other nodes were connected to before hand.
 
@@ -267,13 +238,4 @@ MStatus RequestAbstract::setConnections(json& _node)
 	}
 
 	return status;
-}
-
-MStatus RequestAbstract::disconnectNodes(MFnDependencyNode& inNode, MFnDependencyNode& outnode)
-{
-	MStatus status;
-	MPlug out = MayaUtils::getOutPlug(outnode, status);
-	MPlug in = MayaUtils::getInPlug(inNode, status);
-	status = fDGModifier.disconnect(out, in);
-	return fDGModifier.doIt();
 }

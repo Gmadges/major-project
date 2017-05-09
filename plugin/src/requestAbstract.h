@@ -25,7 +25,6 @@ protected:
 	MStatus createNode(json& _node);
 	MStatus setConnections(json& _node);
 	MStatus setAttribs(MFnDependencyNode& node, json& attribs);
-	MStatus disconnectNodes(MFnDependencyNode& inNode, MFnDependencyNode& outnode);
 
 protected:
 	std::unique_ptr<TweakHandler> pTweakHandler;
