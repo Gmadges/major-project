@@ -51,16 +51,13 @@ MStatus	RequestUpdate::doIt(const MArgList& args)
 	if (!pMessenger->requestMesh(data, ReqType::REQUEST_MESH_UPDATE, CallbackHandler::getInstance().getCurrentRegisteredMesh(), ServerAddress::getInstance().getUserID())) return MStatus::kFailure;
 
 	// is there actually anything?
-	if (data.empty())
+	if (data.empty() || data["edits"].empty())
 	{
-		HackPrint::print("Nothing to update");
 		return status;
 	}
-	else if (data["edits"].empty())
-	{
-		HackPrint::print("No Edits");
-		return status;
-	}
+
+	// we should stop listening for changes because otherwise we'll keep sending back the changes we just made.
+	CallbackHandler::getInstance().ignoreChanges(true);
 
 	auto editList = data["edits"];
 
@@ -101,6 +98,9 @@ MStatus	RequestUpdate::doIt(const MArgList& args)
 			// TODO check connection order possibly?
 		}
 	}
+
+	// we should stop listening for changes because otherwise we'll keep sending back the changes we just made.
+	CallbackHandler::getInstance().ignoreChanges(false);
 
 	return status;
 }

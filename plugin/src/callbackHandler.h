@@ -38,6 +38,7 @@ public:
 	std::string getCurrentRegisteredMesh();
 	void setCurrentRegisteredMesh(std::string meshID);
 
+	void ignoreChanges(bool ignore);
 	bool anyChanges();
 
 	// deletes
@@ -73,6 +74,7 @@ private:
 
 	bool timerCallbackEnabled;
 	bool newNodeCallbackEnabled;
+	bool bIgnoreChanges;
 };
 
 #endif

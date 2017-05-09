@@ -106,7 +106,8 @@ void timerCallback(float elapsedTime, float lastTime, void *clientData)
 CallbackHandler::CallbackHandler()
 	:
 	timerCallbackEnabled(false),
-	newNodeCallbackEnabled(false)
+	newNodeCallbackEnabled(false),
+	bIgnoreChanges(false)
 {
 }
 
@@ -260,7 +261,10 @@ std::unordered_map<std::string, std::time_t> CallbackHandler::getDeletedList()
 
 void CallbackHandler::addNodeToDeleteList(std::string uuid, time_t time)
 {
-	delList[uuid] = time;
+	if (!bIgnoreChanges)
+	{
+		delList[uuid] = time;
+	}
 }
 
 void CallbackHandler::resetDeleteList()
@@ -276,7 +280,10 @@ std::unordered_map<std::string, std::time_t> CallbackHandler::getAddedList()
 
 void CallbackHandler::addNodeToAddedList(std::string uuid, time_t time)
 {
-	addList[uuid] = time;
+	if (!bIgnoreChanges)
+	{
+		addList[uuid] = time;
+	}
 }
 
 void CallbackHandler::resetAddedList()
@@ -292,7 +299,10 @@ std::unordered_map<std::string, std::time_t> CallbackHandler::getEditsList()
 
 void CallbackHandler::addNodeToEditList(std::string uuid, time_t time)
 {
-	editList[uuid] = time;
+	if (!bIgnoreChanges)
+	{
+		editList[uuid] = time;
+	}
 }
 
 void CallbackHandler::resetEditList()
@@ -315,4 +325,9 @@ bool CallbackHandler::anyChanges()
 	return (!addList.empty() ||
 			!editList.empty() ||
 			!delList.empty());
+}
+
+void CallbackHandler::ignoreChanges(bool ignore)
+{
+	bIgnoreChanges = ignore;
 }
