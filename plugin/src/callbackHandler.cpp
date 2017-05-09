@@ -91,9 +91,15 @@ void newNodeCallback(MObject &node, void *clientData)
 
 void timerCallback(float elapsedTime, float lastTime, void *clientData)
 {
-	MGlobal::executeCommandOnIdle("SendUpdates");
+	if (CallbackHandler::getInstance().anyChanges())
+	{
+		MGlobal::executeCommandOnIdle("SendUpdates");
+	}
+	else
+	{
+		MGlobal::executeCommandOnIdle("RequestUpdate");
+	}
 }
-
 
 //////////////////////////class methods
 
@@ -302,4 +308,11 @@ std::string CallbackHandler::getCurrentRegisteredMesh()
 void CallbackHandler::setCurrentRegisteredMesh(std::string meshID)
 {
 	currentMeshID = meshID;
+}
+
+bool CallbackHandler::anyChanges()
+{
+	return (!addList.empty() ||
+			!editList.empty() ||
+			!delList.empty());
 }

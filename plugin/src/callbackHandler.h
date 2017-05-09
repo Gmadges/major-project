@@ -38,6 +38,8 @@ public:
 	std::string getCurrentRegisteredMesh();
 	void setCurrentRegisteredMesh(std::string meshID);
 
+	bool anyChanges();
+
 	// deletes
 	std::unordered_map<std::string, std::time_t> getDeletedList();
 	void addNodeToDeleteList(std::string uuid, time_t time);
