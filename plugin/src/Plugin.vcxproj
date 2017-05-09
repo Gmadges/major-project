@@ -144,24 +144,38 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="info.cpp" />
+    <ClCompile Include="callbackHandler.cpp" />
+    <ClCompile Include="clearCurrentMesh.cpp" />
+    <ClCompile Include="mayaUtils.cpp" />
+    <ClCompile Include="requestAbstract.cpp" />
+    <ClCompile Include="requestUpdate.cpp" />
+    <ClCompile Include="sendAbstract.cpp" />
     <ClCompile Include="messaging.cpp" />
     <ClCompile Include="plugin.cpp" />
-    <ClCompile Include="polyModifierCmd.cpp" />
-    <ClCompile Include="scan.cpp" />
+    <ClCompile Include="sendRegister.cpp" />
+    <ClCompile Include="sendUpdate.cpp" />
+    <ClCompile Include="serverAddress.cpp" />
+    <ClCompile Include="setServerCmd.cpp" />
     <ClCompile Include="tweakHandler.cpp" />
-    <ClCompile Include="update.cpp" />
+    <ClCompile Include="requestMesh.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\common\testTypes.h" />
+    <ClInclude Include="callbackHandler.h" />
+    <ClInclude Include="clearCurrentMesh.h" />
     <ClInclude Include="hackPrint.h" />
-    <ClInclude Include="info.h" />
     <ClInclude Include="json.h" />
+    <ClInclude Include="mayaUtils.h" />
+    <ClInclude Include="requestAbstract.h" />
+    <ClInclude Include="requestUpdate.h" />
+    <ClInclude Include="sendAbstract.h" />
     <ClInclude Include="messaging.h" />
-    <ClInclude Include="polyModifierCmd.h" />
-    <ClInclude Include="scan.h" />
+    <ClInclude Include="sendRegister.h" />
+    <ClInclude Include="sendUpdate.h" />
+    <ClInclude Include="serverAddress.h" />
+    <ClInclude Include="setServerCmd.h" />
     <ClInclude Include="tweakHandler.h" />
-    <ClInclude Include="update.h" />
+    <ClInclude Include="requestMesh.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

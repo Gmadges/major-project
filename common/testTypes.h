@@ -1,7 +1,9 @@
 #ifndef TESTTYPES_H
 #define TESTTYPES_H
 
-enum ReqType { MESH_UPDATE, MESH_REQUEST, INFO_REQUEST};
+enum ReqType { REGISTER_MESH, REQUEST_MESH, INFO_REQUEST, MESH_UPDATE, REQUEST_MESH_UPDATE};
+
+enum EditType { ADD, DEL, EDIT };
 
 enum PolyType { CUBE };
 

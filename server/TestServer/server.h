@@ -10,6 +10,8 @@
 class RequestHandler;
 class UpdateHandler;
 class InfoHandler;
+class Database;
+class UserInfo;
 
 class Server
 {
@@ -21,6 +23,7 @@ public:
 
 private:
 	void handleMessage();
+	void runDataServer();
 
 private:
 	zmq::context_t context;
@@ -29,10 +32,12 @@ private:
 	int port;
 
 	std::vector<std::thread> workers;
+	std::thread reqServerThread;
 
+	std::shared_ptr<Database> pDB;
 	std::unique_ptr<UpdateHandler> pUpdateHandler;
 	std::unique_ptr<RequestHandler> pRequestHandler;
-	std::unique_ptr<InfoHandler> pInfoHandler;
+	std::shared_ptr<UserInfo> pUserInfo;
 };
 
 #endif

@@ -5,10 +5,6 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
-    </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
@@ -16,31 +12,40 @@
     <Filter Include="common">
       <UniqueIdentifier>{69a48cc8-ea91-47bd-adac-4a7df7d4224d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="shared">
+      <UniqueIdentifier>{365bf2a3-a8ff-4da4-bc38-f6047a387503}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="storing">
+      <UniqueIdentifier>{929058a6-727c-4bb5-b3ee-208d920036c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="requesting">
+      <UniqueIdentifier>{d9fa7ee2-f3c0-4685-a63a-29887aa74515}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="server">
+      <UniqueIdentifier>{25deba8d-2129-4b52-9231-3a41856b21c2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="server.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="updateHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="requestHandler.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>storing</Filter>
     </ClCompile>
     <ClCompile Include="database.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>shared</Filter>
     </ClCompile>
-    <ClCompile Include="infoHandler.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="requestHandler.cpp">
+      <Filter>requesting</Filter>
+    </ClCompile>
+    <ClCompile Include="server.cpp">
+      <Filter>server</Filter>
+    </ClCompile>
+    <ClCompile Include="userInfo.cpp">
+      <Filter>shared</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="server.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\common\json.h">
       <Filter>common</Filter>
     </ClInclude>
@@ -48,16 +53,19 @@
       <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="updateHandler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="requestHandler.h">
-      <Filter>Header Files</Filter>
+      <Filter>storing</Filter>
     </ClInclude>
     <ClInclude Include="database.h">
-      <Filter>Header Files</Filter>
+      <Filter>shared</Filter>
     </ClInclude>
-    <ClInclude Include="infoHandler.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="requestHandler.h">
+      <Filter>requesting</Filter>
+    </ClInclude>
+    <ClInclude Include="server.h">
+      <Filter>server</Filter>
+    </ClInclude>
+    <ClInclude Include="userInfo.h">
+      <Filter>shared</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

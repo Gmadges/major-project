@@ -1,6 +1,10 @@
 from maya import cmds
 from maya import mel
-from maya import OpenMayaUI as omui 
+from maya import OpenMayaUI as omui
+from threading import Timer
+import urllib2
+import json
+import socket
 
 try:
     from PySide2.QtCore import * 
@@ -15,94 +19,325 @@ except ImportError:
     from shiboken import wrapInstance 
 
 mayaMainWindowPtr = omui.MQtUtil.mainWindow() 
-mayaMainWindow = wrapInstance(long(mayaMainWindowPtr), QWidget) 
+mayaMainWindow = wrapInstance(long(mayaMainWindowPtr), QWidget)
 
-class CreateUI(QWidget):
-    def __init__(self, *args, **kwargs):
-        super(CreateUI, self).__init__(*args, **kwargs)
-        self.setParent(mayaMainWindow)
-        self.setWindowFlags(Qt.Window)
-        self.address = 'localhost'
-        self.port = 8080
-        self.meshList = []
-        self.currentMeshIndex = 0
+class ServerMessenger(object):
+    def __init__(self):
+        self.serverAddress = ''
+
+    def setServer(self, address, port):
+        self.serverAddress = "http://"+ address + ":" + str(port)
+
+    def requestAllMeshes(self):
+        if not self.serverAddress : return
+        try:
+            response = urllib2.urlopen( self.serverAddress + "/")
+            data = json.load(response)
+            response.close()
+            return data
+        except urllib2.URLError, e:
+            data = {}
+            data["status"] = 404
+            return data
+
+    def deleteMesh(self, meshId):
+        if not self.serverAddress : return
+        if not meshId : return
+        response = urllib2.urlopen( self.serverAddress + "/" + meshId + "/delete")
+        response.close()
+
+    def heartbeat(self):
+        try:
+            response = urllib2.urlopen( self.serverAddress + "/heartbeat")
+            data = json.load(response)
+            response.close()
+            if data['status'] is 200 :
+                return True
+            else:
+                return False
+        except urllib2.URLError, e:
+            return False
+
+class serverConnectWidget(QFrame):
+
+    connected = Signal()
+
+    def __init__(self, messenger):
+        super(serverConnectWidget, self).__init__()
+        self.messenger = messenger
         self.initUI()
-        
+        # perform hertbeat func every 10 seconds
+        self.heartbeatWait = 5.0
+        self.heartbeatTimer = Timer(self.heartbeatWait, self.heartbeatFunc)
+        self.setFrameStyle(QFrame.StyledPanel)
+
+    def __del__(self):
+        self.heartbeatTimer.cancel()
+
     def initUI(self):
-        # controls
-        self.send_btn = QPushButton('Send', self)
-        self.send_btn.clicked.connect(self.send)
-        self.update_btn = QPushButton('Update', self)
-        self.update_btn.clicked.connect(self.update)
+        self.connect_btn = QPushButton('Connect', self)
+        self.connect_btn.clicked.connect(self.connectToServer)
+        self.connection_label = QLabel('disconnected')
+        self.connection_label.setStyleSheet('color: red')
 
+        button_layout = QHBoxLayout()
+        button_layout.setContentsMargins(2, 2, 2, 2)
+        button_layout.addWidget(self.connect_btn)
+        button_layout.addWidget(self.connection_label)
+
+        self.user_id_line = QLineEdit()
         self.address_line = QLineEdit()
-        self.address_line.setText(self.address)
-        self.address_line.textChanged[str].connect(self.addressChanged)
-
+        self.address_line.setText('localhost')
         self.port_spin = QSpinBox()
         self.port_spin.setRange(1, 65536)
-        self.port_spin.setValue(self.port)
-        self.port_spin.valueChanged[int].connect(self.portChanged)
-
-        self.mesh_combo = QComboBox();
-        self.mesh_combo.currentIndexChanged[int].connect(self.meshChanged)
-        # test
-        self.updateMeshList()
-
-        # layout code
+        self.port_spin.setValue(8080)
         settings_layout = QFormLayout()
         settings_layout.setContentsMargins(2, 2, 2, 2)
+        settings_layout.addRow(QLabel('User ID (optional)'), self.user_id_line)
         settings_layout.addRow(QLabel('Network address'), self.address_line)
         settings_layout.addRow(QLabel('Port number'), self.port_spin)
-        settings_layout.addRow(QLabel('Mesh select'), self.mesh_combo)
+
+        main_layout = QVBoxLayout()
+        main_layout.setContentsMargins(2, 2, 2, 2)
+        main_layout.addLayout(settings_layout)
+        main_layout.addLayout(button_layout)
+        self.setLayout(main_layout)
+
+    def connectToServer(self):
+        self.stopHeartbeat()
+        address = self.address_line.text()
+        port = self.port_spin.value()
+        userID = self.user_id_line.text()
+        # add one to the port
+        self.messenger.setServer(address, port + 1)
+        request = self.messenger.requestAllMeshes()
+        if request['status'] is 200 :
+            self.setConnectedLabel(True)
+            self.setServerCmd(address, port, userID)
+            self.startHeartbeat()
+            self.connected.emit()
+        else:
+            self.setConnectedLabel(False)
+
+    def startHeartbeat(self):
+        def interval_wrapper():
+            self.startHeartbeat() 
+            self.heartbeatFunc()
+        self.heartbeatTimer = Timer(self.heartbeatWait, interval_wrapper)
+        self.heartbeatTimer.start()
+
+    def stopHeartbeat(self):
+        self.heartbeatTimer.cancel()
+
+    def heartbeatFunc(self):
+        self.setConnectedLabel(self.messenger.heartbeat())
+
+    def setConnectedLabel(self, isConnected):
+        if isConnected is True:
+            self.connection_label.setText('connected')
+            self.connection_label.setStyleSheet('color: green')
+        else :
+            self.connection_label.setText('disconnected')
+            self.connection_label.setStyleSheet('color: red')
+
+
+    def setServerCmd(self, address, port, userID):
+        if not userID:
+            userID = socket.gethostbyname(socket.gethostname())
+        cmd = 'SetServer -a "' + address + '" -p ' + str(port) + ' -uid "' + userID + '"'
+        print cmd
+        mel.eval(cmd)
+
+class meshSelectionWidget(QFrame):
+
+    meshRequested = Signal(str)
+
+    def __init__(self, messenger):
+        super(meshSelectionWidget, self).__init__()
+        self.messenger = messenger
+        self.initUI()
+        self.setFrameStyle(QFrame.StyledPanel)
+        self.meshTuples = []
+
+    def initUI(self):
+        self.list = QListWidget()
+
+        self.getMesh_btn = QPushButton('Get', self)
+        self.delMesh_btn = QPushButton('Delete', self)
+        self.updateMeshes_btn = QPushButton('Request All Meshes', self)
+
+        self.getMesh_btn.clicked.connect(self.getMesh)
+        self.delMesh_btn.clicked.connect(self.delMesh)
+        self.updateMeshes_btn.clicked.connect(self.requestAllMesh)
+
+        button_layout = QHBoxLayout()
+        button_layout.setContentsMargins(2, 2, 2, 2)
+        button_layout.addWidget(self.getMesh_btn)
+        button_layout.addWidget(self.delMesh_btn)
+
+        main_layout = QVBoxLayout()
+        main_layout.setContentsMargins(2, 2, 2, 2)
+        main_layout.addWidget(self.updateMeshes_btn)
+        main_layout.addWidget(self.list)
+        main_layout.addLayout(button_layout)
+        self.setLayout(main_layout)
+
+    def requestAllMesh(self):
+        request = self.messenger.requestAllMeshes()
+        self.list.clear()
+        self.meshTuples = []
+        for i in range(len(request['meshNames'])):
+            self.meshTuples.append((request['meshNames'][i], request['meshIds'][i]))
+            newItem = QListWidgetItem()
+            newItem.setText(request['meshNames'][i])
+            self.list.addItem(newItem)
+
+    def getMesh(self):
+        index = self.list.currentRow()
+        meshId = self.meshTuples[index][1]
+        self.requestMeshCmd(meshId)
+        self.meshRequested.emit(self.meshTuples[index][0])
+
+    def requestMeshCmd(self, meshId):
+        clearCmd = 'ClearCurrentMesh'
+        reqCmd = 'RequestMesh -id "' + meshId + '"'
+        mel.eval(clearCmd)
+        mel.eval(reqCmd)
+
+    def delMesh(self):
+        index = self.list.currentRow()
+        meshId = self.meshTuples[index][1]
+        self.messenger.deleteMesh(meshId)
+        self.requestAllMesh()
+
+class currentMeshWidget(QFrame):
+
+    meshRegistered = Signal()
+
+    def __init__(self, messenger):
+        super(currentMeshWidget, self).__init__()
+        self.messenger = messenger
+        self.initUI()
+        self.setFrameStyle(QFrame.StyledPanel)
+
+    def initUI(self):
+        self.currentMesh_label = QLabel('current Mesh:', self)
+        
+        self.send_btn = QPushButton('send', self)
+        self.update_btn = QPushButton('update', self)
+
+        self.reg_btn = QPushButton('register selected', self)
+        self.clear_btn = QPushButton('clear', self)
 
         button_layout = QHBoxLayout()
         button_layout.setContentsMargins(2, 2, 2, 2)
         button_layout.addWidget(self.send_btn)
         button_layout.addWidget(self.update_btn)
 
+        self.send_btn.clicked.connect(self.forceSendCmd)
+        self.update_btn.clicked.connect(self.forceUpdateCmd)
+
+        button1_layout = QHBoxLayout()
+        button1_layout.setContentsMargins(2, 2, 2, 2)
+        button1_layout.addWidget(self.reg_btn)
+        button1_layout.addWidget(self.clear_btn)
+
+        self.reg_btn.clicked.connect(self.registerMeshCmd)
+        self.clear_btn.clicked.connect(self.clearCmd)
+
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(2, 2, 2, 2)
-        main_layout.addLayout(settings_layout)
+        main_layout.addWidget(self.currentMesh_label)
         main_layout.addLayout(button_layout)
-
+        main_layout.addLayout(button1_layout)
         self.setLayout(main_layout)
+
+    def registerMeshCmd(self):
+        cmd = "RegisterMesh"
+        mel.eval(cmd)
+
+        self.updateCurrentMeshLabel(self.getSelectedMesh())
+        self.meshRegistered.emit()
+        
+    def clearCmd(self):
+        cmd = 'ClearCurrentMesh'
+        mel.eval(cmd)
+        self.updateCurrentMeshLabel('')
+
+    def forceSendCmd(self):
+        cmd = "SendUpdates"
+        mel.eval(cmd)
+            
+    def forceUpdateCmd(self):
+        cmd = 'RequestUpdate'
+        mel.eval(cmd)
+
+    def updateCurrentMeshLabel(self, meshName):
+        self.currentMesh_label.setText('current Mesh: ' + meshName)
+
+    def getSelectedMesh(self):
+        meshes = cmds.ls(sl=True, type='transform')
+        if not meshes: return ''
+        return meshes[0]
     
-    def addressChanged(self, text):
-        self.address = text
 
-    def portChanged(self, port):
-        self.port = port
+class settingsWidget(QFrame):
 
-    def meshChanged(self, index):
-        self.currentMeshIndex = index
+    def __init__(self):
+        super(settingsWidget, self).__init__()
+        self.initUI()
+        self.setFrameStyle(QFrame.StyledPanel)
 
-    def updateMeshList(self):
-        self.requestInfo()
-        self.mesh_combo.clear()
-        for i in self.meshList : 
-            self.mesh_combo.addItem(i[0])
-        self.meshChanged(0)
+    def initUI(self):
+        self.settings_label = QLabel('Settings', self)
+        main_layout = QVBoxLayout()
+        main_layout.setContentsMargins(2, 2, 2, 2)
+        main_layout.addWidget(self.settings_label)
+        self.setLayout(main_layout)
 
-    def requestInfo(self):
-        sendCmd = 'getInfo -a "' + self.address + '" -p ' + str(self.port)
-        meshResult = mel.eval(sendCmd)
-        self.meshList = []
-        if meshResult is not None :  
-            for i in range(0, len(meshResult), 2):
-                meshVal = [meshResult[i], meshResult[i+1]]
-                self.meshList.append(meshVal)
 
-        
-    def send(self):
-        sendCmd = 'ScanSend -a "' + self.address + '" -p ' + str(self.port)
-        mel.eval(sendCmd)
-        
-    def update(self):
-        updateCmd = 'ReceiveUpdate -a "' + self.address + '" -p ' + str(self.port) + ' -id "' + self.meshList[self.currentMeshIndex][1] + '"'
-        mel.eval(updateCmd)
+class CreateUI(QWidget):
+    def __init__(self, *args, **kwargs):
+        super(CreateUI, self).__init__(*args, **kwargs)
+        self.setParent(mayaMainWindow)
+        self.setWindowFlags(Qt.Window)
+        self.messenger = ServerMessenger()
+        self.initUI()
+
+    def initUI(self):
+        self.connectionWid = serverConnectWidget(self.messenger)
+        self.meshSelectWid = meshSelectionWidget(self.messenger)
+        self.currentMeshWid = currentMeshWidget(self.messenger)
+        #self.settingsWid = settingsWidget()
+
+        # connect items
+        self.connectionWid.connected.connect(self.meshSelectWid.requestAllMesh)
+        self.connectionWid.connected.connect(self.enableWidgets)
+        self.currentMeshWid.meshRegistered.connect(self.meshSelectWid.requestAllMesh)
+        self.meshSelectWid.meshRequested.connect(self.currentMeshWid.updateCurrentMeshLabel)
+
+        main_layout = QVBoxLayout()
+        main_layout.setContentsMargins(2, 2, 2, 2)
+        main_layout.addWidget(self.connectionWid)
+        main_layout.addWidget(self.meshSelectWid)
+        main_layout.addWidget(self.currentMeshWid)
+        #main_layout.addWidget(self.settingsWid)
+        self.setLayout(main_layout)
+        self.disableWidgets()
+
+    def disableWidgets(self):
+        self.meshSelectWid.setEnabled(False)
+        self.currentMeshWid.setEnabled(False)
+        #self.settingsWid.setEnabled(False)
+
+    def enableWidgets(self):
+        self.meshSelectWid.setEnabled(True)
+        self.currentMeshWid.setEnabled(True)
+        #self.settingsWid.setEnabled(True)
             
 def main():
+    # todo
+    # add plugin loading stuff here
     ui = CreateUI()
     ui.show()
     return ui

@@ -2,14 +2,23 @@
 #include <maya/MStatus.h>
 #include <maya/MString.h>
 #include <maya/MFnPlugin.h>
-#include <maya/MArgList.h>
 
 #include <memory>
-#include "scan.h"
-#include "update.h"
-#include "info.h"
+#include "sendRegister.h"
+#include "requestMesh.h"
+#include "requestUpdate.h"
+#include "sendUpdate.h"
+#include "setServerCmd.h"
+#include "clearCurrentMesh.h"
 
 // initialise our plugin and commands
+
+static const MString registerCmd = "RegisterMesh";
+static const MString sendUpdateCmd = "SendUpdates";
+static const MString RequestMeshCmd = "RequestMesh";
+static const MString RequestUpdateCmd = "RequestUpdate";
+static const MString setServerCmd = "SetServer";
+static const MString clearCurrentCmd = "ClearCurrentMesh";
 
 MStatus initializePlugin(MObject obj)
 {
@@ -17,19 +26,37 @@ MStatus initializePlugin(MObject obj)
 
 	MFnPlugin plugin(obj, PLUGIN_COMPANY, "5.0", "Any");
 
-	status = plugin.registerCommand("ScanSend", Scan::creator, Scan::newSyntax);
+	status = plugin.registerCommand(registerCmd, SendRegister::creator);
 	if (!status)
 	{
 		status.perror("registerCommand");
 	}
 
-	status = plugin.registerCommand("ReceiveUpdate", Update::creator, Update::newSyntax);
+	status = plugin.registerCommand(sendUpdateCmd, SendUpdate::creator);
 	if (!status)
 	{
 		status.perror("registerCommand");
 	}
 
-	status = plugin.registerCommand("getInfo", Info::creator, Info::newSyntax);
+	status = plugin.registerCommand(clearCurrentCmd, ClearCurrentMesh::creator);
+	if (!status)
+	{
+		status.perror("registerCommand");
+	}
+
+	status = plugin.registerCommand(RequestMeshCmd, RequestMesh::creator, RequestAbstract::newSyntax);
+	if (!status)
+	{
+		status.perror("registerCommand");
+	}
+
+	status = plugin.registerCommand(RequestUpdateCmd, RequestUpdate::creator);
+	if (!status)
+	{
+		status.perror("registerCommand");
+	}
+
+	status = plugin.registerCommand(setServerCmd, SetServerCmd::creator, SetServerCmd::newSyntax);
 	if (!status)
 	{
 		status.perror("registerCommand");
@@ -44,18 +71,37 @@ MStatus uninitializePlugin(MObject obj)
 
 	MFnPlugin plugin(obj);
 
-	status = plugin.deregisterCommand("ScanSend");
-	if (!status)
-	{
-		status.perror("deregisterCommand");
-	}
-	status = plugin.deregisterCommand("ReceiveUpdate");
+	status = plugin.deregisterCommand(registerCmd);
 	if (!status)
 	{
 		status.perror("deregisterCommand");
 	}
 
-	status = plugin.deregisterCommand("getInfo");
+	status = plugin.deregisterCommand(sendUpdateCmd);
+	if (!status)
+	{
+		status.perror("deregisterCommand");
+	}
+
+	status = plugin.deregisterCommand(RequestMeshCmd);
+	if (!status)
+	{
+		status.perror("deregisterCommand");
+	}
+
+	status = plugin.deregisterCommand(RequestUpdateCmd);
+	if (!status)
+	{
+		status.perror("deregisterCommand");
+	}
+
+	status = plugin.deregisterCommand(setServerCmd);
+	if (!status)
+	{
+		status.perror("deregisterCommand");
+	}
+
+	status = plugin.deregisterCommand(clearCurrentCmd);
 	if (!status)
 	{
 		status.perror("deregisterCommand");

@@ -84,12 +84,12 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\..\common;C:\libs\json;C:\libs\libzmq\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\boost_1_63_0;C:\libs\crow\include;..\..\common;C:\libs\json;C:\libs\libzmq\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NOMINMAX;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\libs\libzmq\bin\x64\Debug\v140\dynamic;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\boost_1_63_0\lib64-msvc-14.0;C:\libs\libzmq\bin\x64\Debug\v140\dynamic;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>libzmq.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
@@ -117,14 +117,14 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\..\common;C:\libs\json;C:\libs\libzmq\include;</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\boost_1_63_0;C:\libs\crow\include;C:\libs\crow\include;..\..\common;C:\libs\json;C:\libs\libzmq\include;</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NOMINMAX;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>C:\libs\libzmq\bin\x64\Release\v140\dynamic;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\boost_1_63_0\lib64-msvc-14.0;C:\libs\libzmq\bin\x64\Release\v140\dynamic;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>libzmq.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
@@ -133,20 +133,20 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="database.cpp" />
-    <ClCompile Include="infoHandler.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="requestHandler.cpp" />
     <ClCompile Include="server.cpp" />
     <ClCompile Include="updateHandler.cpp" />
+    <ClCompile Include="userInfo.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\common\json.h" />
     <ClInclude Include="..\..\common\testTypes.h" />
     <ClInclude Include="database.h" />
-    <ClInclude Include="infoHandler.h" />
     <ClInclude Include="requestHandler.h" />
     <ClInclude Include="server.h" />
     <ClInclude Include="updateHandler.h" />
+    <ClInclude Include="userInfo.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
