@@ -18,9 +18,9 @@ public:
 private:
 	void updateAndStoreMesh(json _mesh, std::string userID);
 
-	void removeNodefromList(json _node, std::vector<json> _nodeList);
-	void editNodeInList(json _node, std::vector<json> _nodeList);
-	void insertNodeIntoList(json _node, std::vector<json> _nodeList);
+	void removeNodefromList(json& _node, std::vector<json>& _nodeList);
+	void editNodeInList(json& _node, std::vector<json>& _nodeList);
+	void insertNodeIntoList(json& _node, std::vector<json>& _nodeList);
 
 private:
 	std::shared_ptr<Database> pDB;

@@ -82,7 +82,7 @@ void UpdateHandler::updateAndStoreMesh(json _mesh, std::string userID)
 	}
 }
 
-void UpdateHandler::insertNodeIntoList(json _node, std::vector<json> _nodeList)
+void UpdateHandler::insertNodeIntoList(json& _node, std::vector<json>& _nodeList)
 {
 	std::string inID; 
 	std::string outID; 
@@ -109,7 +109,7 @@ void UpdateHandler::insertNodeIntoList(json _node, std::vector<json> _nodeList)
 
 	for (unsigned int i = 0; i < _nodeList.size(); ++i)
 	{
-		// TODO should probable check the original values instead of ovverwriting
+		// TODO should probable check the original values instead of overwriting
 
 		if (inID.compare(_nodeList[i]["id"]) == 0)
 		{
@@ -123,44 +123,54 @@ void UpdateHandler::insertNodeIntoList(json _node, std::vector<json> _nodeList)
 	}
 }
 
-void UpdateHandler::removeNodefromList(json _node, std::vector<json> _nodeList)
+void UpdateHandler::removeNodefromList(json& _node, std::vector<json>& _nodeList)
 {
 	std::string id = _node["id"];
 	std::string inID;
 	std::string outID;
 
-	// find the "in" node
-	if (!_node["in"].is_null())
-	{
-		inID = _node["in"].get<std::string>();
-	}
-
-	if (!_node["out"].is_null())
-	{
-		outID = _node["out"].get<std::string>();
-	}
-
+	// brute force find our node because we need its in's and outs
 	for (unsigned int i = 0; i < _nodeList.size(); ++i)
 	{
 		if (id.compare(_nodeList[i]["id"]) == 0)
 		{
 			std::cout << "del : " << id << std::endl;
+			if (_nodeList[i]["in"] != nullptr)
+			{
+				inID = _nodeList[i]["in"].get<std::string>();
+			}
+
+			if (_nodeList[i]["out"] != nullptr)
+			{
+				outID = _nodeList[i]["out"].get<std::string>();
+			}
+
 			_nodeList.erase(_nodeList.begin() + i);
+			break;
+		}
+	}
+
+	for (unsigned int i = 0; i < _nodeList.size(); ++i)
+	{
+		if (_nodeList[i]["in"] != nullptr)
+		{
+			if (outID.compare(_nodeList[i]["in"].get<std::string>()) == 0)
+			{
+				_nodeList[i]["in"] = inID;
+			}
 		}
 
-		if (outID.compare(_nodeList[i]["in"]) == 0)
+		if (_nodeList[i]["out"] != nullptr)
 		{
-			_nodeList[i]["in"] = inID;
-		}
-
-		if (inID.compare(_nodeList[i]["out"]) == 0)
-		{
-			_nodeList[i]["out"] = outID;
+			if (inID.compare(_nodeList[i]["out"].get<std::string>()) == 0)
+			{
+				_nodeList[i]["out"] = outID;
+			}
 		}
 	}
 }
 
-void UpdateHandler::editNodeInList(json _node, std::vector<json> _nodeList)
+void UpdateHandler::editNodeInList(json& _node, std::vector<json>& _nodeList)
 {
 	std::string id = _node["id"];
 
