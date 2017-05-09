@@ -2,6 +2,8 @@
 
 #include <maya/MSelectionList.h>
 #include <maya/MUuid.h>
+#include <maya/MPlug.h>
+#include <maya/MPlugArray.h>
 
 MayaUtils::MayaUtils()
 {
@@ -41,5 +43,57 @@ bool MayaUtils::doesItExist(std::string& _id)
 	return (status == MStatus::kSuccess);
 }
 
+MStatus MayaUtils::getIncomingNodeObject(MFnDependencyNode& node, MFnDependencyNode& incomingNode)
+{
+	MStatus status;
+	MPlug inMeshPlug;
+	inMeshPlug = MayaUtils::getInPlug(node, status);
 
+	if (inMeshPlug.isConnected())
+	{
+		MPlugArray tempPlugArray;
+		inMeshPlug.connectedTo(tempPlugArray, true, false);
+		// Only one connection should exist on meshNodeShape.inMesh!
+		MPlug upstreamNodeSrcPlug = tempPlugArray[0];
+		incomingNode.setObject(upstreamNodeSrcPlug.node());
+		return MStatus::kSuccess;
+	}
 
+	return status;
+}
+
+MStatus MayaUtils::getOutgoingNodeObject(MFnDependencyNode& node, MFnDependencyNode& outgoingNode)
+{
+	MStatus status;
+	MPlug outMeshPlug;
+	outMeshPlug = MayaUtils::getOutPlug(node, status);
+
+	if (outMeshPlug.isConnected())
+	{
+		MPlugArray tempPlugArray;
+		outMeshPlug.connectedTo(tempPlugArray, false, true);
+		MPlug downStreamNodeSrcPlug = tempPlugArray[0];
+		outgoingNode.setObject(downStreamNodeSrcPlug.node());
+		return MStatus::kSuccess;
+	}
+
+	return status;
+}
+
+MPlug MayaUtils::getInPlug(MFnDependencyNode& node, MStatus& status)
+{
+	MPlug in = node.findPlug("inputPolymesh", &status);
+
+	// if it doesnt have that plug try this one
+	if (status != MStatus::kSuccess)
+	{
+		in = node.findPlug("inMesh", &status);
+	}
+
+	return in;
+}
+
+MPlug MayaUtils::getOutPlug(MFnDependencyNode& node, MStatus &status)
+{
+	return node.findPlug("output", &status);
+}

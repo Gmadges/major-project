@@ -152,7 +152,6 @@
     <ClCompile Include="sendAbstract.cpp" />
     <ClCompile Include="messaging.cpp" />
     <ClCompile Include="plugin.cpp" />
-    <ClCompile Include="polyModifierCmd.cpp" />
     <ClCompile Include="sendRegister.cpp" />
     <ClCompile Include="sendUpdate.cpp" />
     <ClCompile Include="serverAddress.cpp" />
@@ -171,7 +170,6 @@
     <ClInclude Include="requestUpdate.h" />
     <ClInclude Include="sendAbstract.h" />
     <ClInclude Include="messaging.h" />
-    <ClInclude Include="polyModifierCmd.h" />
     <ClInclude Include="sendRegister.h" />
     <ClInclude Include="sendUpdate.h" />
     <ClInclude Include="serverAddress.h" />

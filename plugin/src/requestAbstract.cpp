@@ -7,6 +7,7 @@
 #include <maya/MGlobal.h>
 #include <maya/MUuid.h>
 #include <maya/MFnDependencyNode.h>
+#include <maya/MPlugArray.h>
 
 RequestAbstract::RequestAbstract()
 	:
@@ -154,11 +155,9 @@ MStatus RequestAbstract::createNode(json& _node)
 	return fDGModifier.doIt();
 }
 
-MStatus RequestAbstract::setConnections(json& _mesh, json& _node)
+MStatus RequestAbstract::setConnections(json& _node)
 {
-	MStatus status;
-
-	// TODO rewrite to connect based on in and out connections.
+	MStatus status = MStatus::kSuccess;
 
 	// if its not a mesh we'll have to wire it in
 	std::string type = _node["type"];
@@ -166,43 +165,77 @@ MStatus RequestAbstract::setConnections(json& _mesh, json& _node)
 	if (type.compare("polySplitRing") == 0 ||
 		type.compare("polyTweak") == 0)
 	{
-		// get mesh and set it to be the one we're effecting
-		MString meshID(_mesh["id"].get<std::string>().c_str());
-		MObject meshNode;
-		status = MayaUtils::getNodeObjectFromUUID(meshID, meshNode);
-		if (status != MStatus::kSuccess) return status;
+		// redo of our connecting code.
 
-		MDagPath dagPath;
-		MDagPath::getAPathTo(meshNode, dagPath);
-		dagPath.extendToShape();
-		setMeshNode(dagPath);
+		MFnDependencyNode inNode, outNode, newNode;
 
-		// get node and do the connections
-		MString nodeID(_node["id"].get<std::string>().c_str());
-		MObject node;
-		status = MayaUtils::getNodeObjectFromUUID(nodeID, node);
-		if (status != MStatus::kSuccess) return status;
-
-		//// and add it to the DAG
-		status = doModifyPoly(node);
-		if (status != MStatus::kSuccess) return status;
-
-		// this is if we require extra connections
-		if (type.compare("polySplitRing") == 0)
+		// grab the in and out nodes from this node
+		if (_node["in"] != nullptr)
 		{
-			MString connectCmd;
-			connectCmd += "connectAttr ";
-			std::string meshName = _mesh["name"];
-			connectCmd += meshName.c_str();
-			connectCmd += ".worldMatrix[0] ";
-			std::string nodeName = _node["name"];
-			connectCmd += nodeName.c_str();
-			connectCmd += ".manipMatrix;";
-			MGlobal::executeCommand(connectCmd);
+			MString inNodeID(_node["in"].get<std::string>().c_str());
+			MObject tmp;
+			status = MayaUtils::getNodeObjectFromUUID(inNodeID, tmp);
+			if (status != MStatus::kSuccess) return status;
+			inNode.setObject(tmp);
 		}
+
+		if (_node["out"] != nullptr)
+		{
+			MString outNodeID(_node["out"].get<std::string>().c_str());
+			MObject tmp;
+			status = MayaUtils::getNodeObjectFromUUID(outNodeID, tmp);
+			if (status != MStatus::kSuccess) return status;
+			outNode.setObject(tmp);
+		}
+
+		MString newNodeID(_node["id"].get<std::string>().c_str());
+		MObject tmp;
+		status = MayaUtils::getNodeObjectFromUUID(newNodeID, tmp);
+		if (status != MStatus::kSuccess) return status;
+		newNode.setObject(tmp);
+
+	
+		// attach everything
+		MPlug nodeOutPlug = MayaUtils::getOutPlug(newNode, status);
+		MPlug nodeInPlug = MayaUtils::getInPlug(newNode, status);
+
+		MPlug inNodePlug = MayaUtils::getOutPlug(inNode, status);
+		MPlug outNodePlug = MayaUtils::getInPlug(outNode, status);
+
+		if (inNodePlug.isConnected())
+		{
+			MPlugArray tempPlugArray;
+			inNodePlug.connectedTo(tempPlugArray, false, true);
+			status = fDGModifier.disconnect(inNodePlug, tempPlugArray[0]);
+		}
+
+		if (outNodePlug.isConnected())
+		{
+			MPlugArray tempPlugArray;
+			outNodePlug.connectedTo(tempPlugArray, true, false);
+			status = fDGModifier.disconnect(tempPlugArray[0], outNodePlug);
+		}
+
+		status = fDGModifier.connect(inNodePlug, nodeInPlug);
+		status = fDGModifier.connect(nodeOutPlug, outNodePlug);
+		status = fDGModifier.doIt();
+
+		// this connection method assumes that the new node isnt connected to anything and that we dont care about what the other nodes were connected to before hand.
+
+		//// this is if we require extra connections //TODO
+		//if (type.compare("polySplitRing") == 0)
+		//{
+		//	MString connectCmd;
+		//	connectCmd += "connectAttr ";
+		//	std::string meshName = _mesh["name"];
+		//	connectCmd += meshName.c_str();
+		//	connectCmd += ".worldMatrix[0] ";
+		//	std::string nodeName = _node["name"];
+		//	connectCmd += nodeName.c_str();
+		//	connectCmd += ".manipMatrix;";
+		//	MGlobal::executeCommand(connectCmd);
+		//}
 	}
 
-	return MStatus::kSuccess;
+	return status;
 }
-
-

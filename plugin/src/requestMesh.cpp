@@ -106,7 +106,7 @@ MStatus	RequestMesh::doIt(const MArgList& args)
 	// set and check connections
 	for (auto& itr : nodeList)
 	{
-		status = setConnections(data, itr);
+		status = setConnections(itr);
 	}
 
 	// set callbacks
@@ -193,13 +193,7 @@ void RequestMesh::matchIDs(MFnDependencyNode & node, json& mesh)
 	// If the inputPolymesh is connected, we have history
 	MStatus status;
 	MPlug inMeshPlug;
-	inMeshPlug = node.findPlug("inputPolymesh", &status);
-
-	// if it doesnt have that plug try this one
-	if (status != MStatus::kSuccess)
-	{
-		inMeshPlug = node.findPlug("inMesh");
-	}
+	inMeshPlug = MayaUtils::getInPlug(node, status);
 
 	if (inMeshPlug.isConnected())
 	{
