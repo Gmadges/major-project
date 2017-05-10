@@ -159,11 +159,7 @@ MStatus RequestAbstract::setConnections(json& _node)
 {
 	MStatus status = MStatus::kSuccess;
 
-	// if its not a mesh we'll have to wire it in
-	std::string type = _node["type"];
-
-	if (type.compare("polySplitRing") == 0 ||
-		type.compare("polyTweak") == 0)
+	if (MayaUtils::DoesItRequireConnections(MString(_node["type"].get<std::string>().c_str())))
 	{
 		// redo of our connecting code.
 

@@ -20,8 +20,14 @@ bool MayaUtils::isValidNodeType(MString& _type)
 	return (_type == MString("transform") ||
 			_type == MString("mesh") ||
 			_type == MString("polyTweak") ||
-			//_type == MString("polySplitRing") ||
+			_type == MString("polyExtrudeFace") ||
 			_type == MString("polyCube"));
+}
+
+bool MayaUtils::DoesItRequireConnections(MString& _type)
+{
+	return (_type == MString("polyTweak") ||
+			_type == MString("polyExtrudeFace"));
 }
 
 MStatus MayaUtils::getNodeObjectFromUUID(MString& uuid, MObject& _node)
