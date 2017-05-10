@@ -71,19 +71,7 @@ MStatus uninitializePlugin(MObject obj)
 
 	MFnPlugin plugin(obj);
 
-	status = plugin.deregisterCommand(registerCmd);
-	if (!status)
-	{
-		status.perror("deregisterCommand");
-	}
-
-	status = plugin.deregisterCommand(sendUpdateCmd);
-	if (!status)
-	{
-		status.perror("deregisterCommand");
-	}
-
-	status = plugin.deregisterCommand(RequestMeshCmd);
+	status = plugin.deregisterCommand(setServerCmd);
 	if (!status)
 	{
 		status.perror("deregisterCommand");
@@ -95,13 +83,25 @@ MStatus uninitializePlugin(MObject obj)
 		status.perror("deregisterCommand");
 	}
 
-	status = plugin.deregisterCommand(setServerCmd);
+	status = plugin.deregisterCommand(RequestMeshCmd);
 	if (!status)
 	{
 		status.perror("deregisterCommand");
 	}
 
 	status = plugin.deregisterCommand(clearCurrentCmd);
+	if (!status)
+	{
+		status.perror("deregisterCommand");
+	}
+
+	status = plugin.deregisterCommand(sendUpdateCmd);
+	if (!status)
+	{
+		status.perror("deregisterCommand");
+	}
+
+	status = plugin.deregisterCommand(registerCmd);
 	if (!status)
 	{
 		status.perror("deregisterCommand");

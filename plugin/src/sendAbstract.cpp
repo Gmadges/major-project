@@ -226,7 +226,7 @@ MStatus SendAbstract::getAttribFromPlug(MPlug& _plug, json& _attribs)
 	MString sValue;
 	if (_plug.getValue(sValue) == MStatus::kSuccess)
 	{
-		_attribs[attribName] = std::string(sValue.asChar());
+		_attribs[attribName] = sValue.asChar();
 		return MStatus::kSuccess;
 	}
 
