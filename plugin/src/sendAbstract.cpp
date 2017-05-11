@@ -39,63 +39,6 @@
 #include "callbackHandler.h"
 #include "mayaUtils.h"
 
-
-MStatus printCompList(MPlug& _plug)
-{
-	MStatus status;
-	MString result;
-
-	if (MS::kSuccess == status)
-	{
-		MObject icsData;
-
-		MString componentType;
-		MIntArray elements;
-		MIntArray sIndexArray;
-		MIntArray tIndexArray;
-		MIntArray uIndexArray;
-		MIntArray vIndexArray;
-		unsigned int e;
-
-		// Read the data object from the '.inputComponents' plug.
-		// If this returns an error it means the data is _empty_,
-		// and not that the command failed to execute properly.
-		//
-		MStatus dataStatus = _plug.getValue(icsData);
-		if (MS::kSuccess == dataStatus)
-		{
-			// Wrap the data in its function set.
-			//
-			MFnComponentListData fnComponent(icsData);
-			unsigned int numComponents = fnComponent.length();
-
-			// Append each component's representation to the command results.
-			//
-			while (numComponents--)
-			{
-				MObject component = fnComponent[numComponents];
-
-				if (component.hasFn(MFn::kSingleIndexedComponent))
-				{
-					MFnSingleIndexedComponent fnSingleComponent(component);
-					
-					componentType = fnSingleComponent.className();
-
-					fnSingleComponent.getElements(elements);
-					for (e = 0; e < elements.length(); e++)
-					{
-						result += (componentType + "[" + elements[e] + "]");
-					}
-				}
-			}
-		}
-	}
-
-	HackPrint::print(result);
-
-	return status;
-}
-
 SendAbstract::SendAbstract()
 	:
 	pMessaging(new Messaging("localhost", 8080)),
@@ -506,8 +449,12 @@ MStatus SendAbstract::getTypeDataFromAttrib(MPlug& _plug, json& _attribs)
 			}
 			case MFnData::kComponentList:
 			{
-				printCompList(_plug);
-				_attribs[attribName] = "complist";
+				MStatus status;
+				auto compList = getCompList(_plug, status);
+				if (status == MStatus::kSuccess)
+				{
+					_attribs[attribName] = compList;
+				}
 				return MStatus::kSuccess;
 			}
 			case MFnData::kMesh:
@@ -670,4 +617,57 @@ MStatus SendAbstract::getOtherDataFromAttrib(MPlug& _plug, json& _attribs)
 	}
 
 	return MStatus::kFailure;
+}
+
+std::vector<std::string> SendAbstract::getCompList(MPlug& _plug, MStatus& status)
+{
+	std::vector<std::string> commandListStrings;
+
+	MObject icsData;
+	MString componentType;
+	MIntArray elements;
+
+	MStatus dataStatus = _plug.getValue(icsData);
+	if (dataStatus != MStatus::kSuccess) return commandListStrings;
+	
+	MFnComponentListData fnComponent(icsData);
+
+	for (unsigned int i = 0; i < fnComponent.length(); i++)
+	{
+			MObject component = fnComponent[i];
+
+		if (component.hasFn(MFn::kSingleIndexedComponent))
+		{
+			MFnSingleIndexedComponent fnSingleComponent(component);
+
+			switch (component.apiType())
+			{
+				case MFn::kMeshVertComponent:
+				{
+					componentType = "vtx";
+					break;
+				}
+				case MFn::kMeshEdgeComponent:
+				{
+					componentType = "e";
+					break;
+				}
+				case MFn::kMeshPolygonComponent:
+				{
+					componentType = "f";
+					break;
+				}
+			}
+
+			fnSingleComponent.getElements(elements);
+
+			for (unsigned int e = 0; e < elements.length(); e++)
+			{
+				MString item = componentType + "[" + elements[e] + "]";
+				commandListStrings.push_back(item.asChar());
+			}
+		}
+	}
+
+	return commandListStrings;
 }

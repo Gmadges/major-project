@@ -39,6 +39,8 @@ protected:
 	MStatus getTypeDataFromAttrib(MPlug& _plug, json& _attribs);
 	MStatus getOtherDataFromAttrib(MPlug& _plug, json& _attribs);
 	MStatus getUnitDataFromAttrib(MPlug& _plug, json& _attribs);
+	std::vector<std::string> getCompList(MPlug& _plug, MStatus& status);
+
 	MStatus getIncomingID(MFnDependencyNode & _inNode, MString& _id);
 	MStatus getOutgoingID(MFnDependencyNode & _inNode, MString& _id);
 
