@@ -2,12 +2,14 @@
 
 #include "mayaUtils.h"
 #include "tweakHandler.h"
+#include "hackPrint.h"
 
 #include <maya/MArgDatabase.h>
 #include <maya/MGlobal.h>
 #include <maya/MUuid.h>
 #include <maya/MFnDependencyNode.h>
 #include <maya/MPlugArray.h>
+#include <maya/MMatrix.h>
 
 RequestAbstract::RequestAbstract()
 	:
@@ -115,9 +117,23 @@ MStatus RequestAbstract::setAttribs(MFnDependencyNode& node, json& attribs)
 				{
 					std::vector<json> tweakVals = it.value();
 					pTweakHandler->setTweakPlugFromArray(plug, tweakVals);
+					continue;
 				}
 
-				//TODO all other cases
+				if (it.key().compare("ics") == 0)
+				{
+					std::vector<std::string> componentList = it.value();
+					setComponentListAttribute(componentList, plug);
+					continue;
+				}
+
+				if (it.value().size() == 16)
+				{
+					// if it has 16 items and they are all floats then surely it has to be a matrix.
+					//TODO
+					// matrices
+				}
+			
 				continue;
 			}
 
@@ -234,4 +250,21 @@ MStatus RequestAbstract::setConnections(json& _node)
 	}
 
 	return status;
+}
+
+MStatus RequestAbstract::setComponentListAttribute(std::vector<std::string> components, MPlug& _plug)
+{
+	MString cmd;
+	cmd += "setAttr ";
+	cmd += _plug.name();
+	cmd += " -type \"componentList\" ";
+	cmd += std::to_string(components.size()).c_str();
+	cmd += " ";
+	for(std::string& item : components)
+	{
+		cmd += item.c_str();
+		cmd += " ";
+	}
+
+	return MGlobal::executeCommand(cmd);
 }
