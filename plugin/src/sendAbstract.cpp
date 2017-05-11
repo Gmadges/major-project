@@ -295,14 +295,18 @@ MStatus SendAbstract::getNumericDataFromAttrib(MPlug& _plug, json& _attribs)
 			}
 			case MFnNumericData::k3Float:
 			{
-				MVector float3;
-				_plug.child(0).getValue(float3.x);
-				_plug.child(1).getValue(float3.y);
-				_plug.child(2).getValue(float3.z);
+				float X, Y, Z;
+				_plug.child(0).getValue(X);
+				_plug.child(1).getValue(Y);
+				_plug.child(2).getValue(Z);
 
-				//TODO
-				//_attribs[attribName] = "3float";
-				return MStatus::kFailure;
+				std::vector<float> values;
+				values.push_back(X);
+				values.push_back(Y);
+				values.push_back(Z);
+
+				_attribs[attribName] = values;
+				return MStatus::kSuccess;
 			}
 			case MFnNumericData::kByte:
 			case MFnNumericData::kChar:
@@ -321,8 +325,17 @@ MStatus SendAbstract::getNumericDataFromAttrib(MPlug& _plug, json& _attribs)
 			}
 			case MFnNumericData::k3Short:
 			{
-				//TODO
-				//_attribs[attribName] = "3short";
+				short X, Y, Z;
+				_plug.child(0).getValue(X);
+				_plug.child(1).getValue(Y);
+				_plug.child(2).getValue(Z);
+
+				std::vector<short> values;
+				values.push_back(X);
+				values.push_back(Y);
+				values.push_back(Z);
+
+				_attribs[attribName] = values;
 				return MStatus::kFailure;
 			}
 			case MFnNumericData::k2Int:
@@ -333,8 +346,17 @@ MStatus SendAbstract::getNumericDataFromAttrib(MPlug& _plug, json& _attribs)
 			}
 			case MFnNumericData::k3Int:
 			{
-				//TODO
-				//_attribs[attribName] = "3int";
+				int X, Y, Z;
+				_plug.child(0).getValue(X);
+				_plug.child(1).getValue(Y);
+				_plug.child(2).getValue(Z);
+
+				std::vector<int> values;
+				values.push_back(X);
+				values.push_back(Y);
+				values.push_back(Z);
+
+				_attribs[attribName] = values;
 				return MStatus::kFailure;
 			}
 			case MFnNumericData::k2Float:
@@ -351,8 +373,17 @@ MStatus SendAbstract::getNumericDataFromAttrib(MPlug& _plug, json& _attribs)
 			}
 			case MFnNumericData::k3Double:
 			{
-				//TODO
-				//_attribs[attribName] = "3double";
+				MVector double3;
+				_plug.child(0).getValue(double3.x);
+				_plug.child(1).getValue(double3.y);
+				_plug.child(2).getValue(double3.z);
+
+				std::vector<double> values;
+				values.push_back(double3.x);
+				values.push_back(double3.y);
+				values.push_back(double3.z);
+
+				_attribs[attribName] = values;
 				return MStatus::kFailure;
 			}
 			case MFnNumericData::k4Double:

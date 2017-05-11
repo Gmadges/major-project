@@ -131,28 +131,15 @@ MStatus RequestAbstract::setAttribs(MFnDependencyNode& node, json& attribs)
 
 				if (it.value().size() == 16)
 				{
-					MObject oMat;
-					plug.getValue(oMat);
-					MFnMatrixData fnMat(oMat);
-					MMatrix mat = fnMat.matrix();
 					try
 					{
 						std::vector<double> nums = it.value();
-
-						for (int i = 0; i < 4; i++)
-						{
-							for (int j = 0; j < 4; j++)
-							{
-								mat[i][j] = nums[i + j];
-							}
-						}
+						//setMatrixAttribute(nums, plug);
 					}
 					catch (std::exception& e)
 					{
 						HackPrint::print(e.what());
 					}
-
-					continue;
 				}
 			
 				continue;
@@ -287,5 +274,25 @@ MStatus RequestAbstract::setComponentListAttribute(std::vector<std::string> comp
 		cmd += " ";
 	}
 
+	return MGlobal::executeCommand(cmd);
+}
+
+MStatus RequestAbstract::setMatrixAttribute(std::vector<double> numbers, MPlug& _plug)
+{
+	MString cmd;
+	cmd += "setAttr ";
+	cmd += _plug.name();
+	cmd += " -type \"matrix\" ";
+	for (double& item : numbers)
+	{
+		if (abs(item) < 0.0000000000000000000000000000001 || abs(item) > 100000000000000000000000000000000.0)
+		{
+			item = 0;
+		}
+		cmd += std::to_string(item).c_str();;
+		cmd += " ";
+	}
+
+	HackPrint::print(cmd);
 	return MGlobal::executeCommand(cmd);
 }
