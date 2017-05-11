@@ -24,9 +24,12 @@
 #include <maya/MFnUnitAttribute.h>
 #include <maya/MDistance.h>
 #include <maya/MAngle.h>
+#include <maya/MTime.h>
 #include <maya/MDataHandle.h>
 #include <maya/MFnMatrixData.h>
 #include <maya/MMatrix.h>
+#include "maya/MFnComponentListData.h"
+#include <maya/MFnSingleIndexedComponent.h>
 
 #include "messaging.h"
 #include "tweakHandler.h"
@@ -35,6 +38,63 @@
 
 #include "callbackHandler.h"
 #include "mayaUtils.h"
+
+
+MStatus printCompList(MPlug& _plug)
+{
+	MStatus status;
+	MString result;
+
+	if (MS::kSuccess == status)
+	{
+		MObject icsData;
+
+		MString componentType;
+		MIntArray elements;
+		MIntArray sIndexArray;
+		MIntArray tIndexArray;
+		MIntArray uIndexArray;
+		MIntArray vIndexArray;
+		unsigned int e;
+
+		// Read the data object from the '.inputComponents' plug.
+		// If this returns an error it means the data is _empty_,
+		// and not that the command failed to execute properly.
+		//
+		MStatus dataStatus = _plug.getValue(icsData);
+		if (MS::kSuccess == dataStatus)
+		{
+			// Wrap the data in its function set.
+			//
+			MFnComponentListData fnComponent(icsData);
+			unsigned int numComponents = fnComponent.length();
+
+			// Append each component's representation to the command results.
+			//
+			while (numComponents--)
+			{
+				MObject component = fnComponent[numComponents];
+
+				if (component.hasFn(MFn::kSingleIndexedComponent))
+				{
+					MFnSingleIndexedComponent fnSingleComponent(component);
+					
+					componentType = fnSingleComponent.className();
+
+					fnSingleComponent.getElements(elements);
+					for (e = 0; e < elements.length(); e++)
+					{
+						result += (componentType + "[" + elements[e] + "]");
+					}
+				}
+			}
+		}
+	}
+
+	HackPrint::print(result);
+
+	return status;
+}
 
 SendAbstract::SendAbstract()
 	:
@@ -250,7 +310,7 @@ MStatus SendAbstract::getNumericDataFromAttrib(MPlug& _plug, json& _attribs)
 		{
 			case MFnNumericData::kInvalid:
 			{
-				_attribs[attribName] = "invalid";
+				_attribs[attribName] = nullptr;
 				return MStatus::kSuccess;
 			}
 			case MFnNumericData::kBoolean:
@@ -295,7 +355,8 @@ MStatus SendAbstract::getNumericDataFromAttrib(MPlug& _plug, json& _attribs)
 				_plug.child(1).getValue(float3.y);
 				_plug.child(2).getValue(float3.z);
 
-				_attribs[attribName] = "3float";
+				//TODO
+				//_attribs[attribName] = "3float";
 				return MStatus::kSuccess;
 			}
 			case MFnNumericData::kByte:
@@ -309,47 +370,56 @@ MStatus SendAbstract::getNumericDataFromAttrib(MPlug& _plug, json& _attribs)
 			}
 			case MFnNumericData::k2Short:
 			{
-				_attribs[attribName] = "2short";
+				//TODO
+				//_attribs[attribName] = "2short";
 				return MStatus::kSuccess;
 			}
 			case MFnNumericData::k3Short:
 			{
-				_attribs[attribName] = "3short";
+				//TODO
+				//_attribs[attribName] = "3short";
 				return MStatus::kSuccess;
 			}
 			case MFnNumericData::k2Int:
 			{
-				_attribs[attribName] = "2int";
+				//TODO
+				//_attribs[attribName] = "2int";
 				return MStatus::kSuccess;
 			}
 			case MFnNumericData::k3Int:
 			{
-				_attribs[attribName] = "3int";
+				//TODO
+				//_attribs[attribName] = "3int";
 				return MStatus::kSuccess;
 			}
 			case MFnNumericData::k2Float:
 			{
-				_attribs[attribName] = "2float";
+				//TODO
+				//_attribs[attribName] = "2float";
 				return MStatus::kSuccess;
 			}
 			case MFnNumericData::k2Double:
 			{
-				_attribs[attribName] = "2double";
+				//TODO
+				//_attribs[attribName] = "2double";
 				return MStatus::kSuccess;
 			}
 			case MFnNumericData::k3Double:
 			{
-				_attribs[attribName] = "3double";
+				//TODO
+				//_attribs[attribName] = "3double";
 				return MStatus::kSuccess;
 			}
 			case MFnNumericData::k4Double:
 			{
-				_attribs[attribName] = "4double";
+				//TODO
+				//_attribs[attribName] = "4double";
 				return MStatus::kSuccess;
 			}
 			case MFnNumericData::kAddr:
 			{
-				_attribs[attribName] = "address";
+				//TODO
+				//_attribs[attribName] = "address";
 				return MStatus::kSuccess;
 			}
 		}
@@ -372,7 +442,7 @@ MStatus SendAbstract::getTypeDataFromAttrib(MPlug& _plug, json& _attribs)
 		{
 			case MFnData::kInvalid:
 			{
-				_attribs[attribName] = "invalid";
+				_attribs[attribName] = nullptr;
 				return MStatus::kSuccess;
 			}
 			case MFnData::kString:
@@ -400,97 +470,116 @@ MStatus SendAbstract::getTypeDataFromAttrib(MPlug& _plug, json& _attribs)
 			}
 			case MFnData::kNumeric:
 			{
-				_attribs[attribName] = "number";
-				return MStatus::kSuccess;
-			}
-			case MFnData::kPlugin:
-			{
-				_attribs[attribName] = "plugin";
-				return MStatus::kSuccess;
-			}
-			case MFnData::kPluginGeometry:
-			{
-				_attribs[attribName] = "pluginGeo";
+				//TODO
+				//_attribs[attribName] = "number";
 				return MStatus::kSuccess;
 			}
 			case MFnData::kStringArray:
 			{
-				_attribs[attribName] = "stringArray";
+				//TODO
+				//_attribs[attribName] = "stringArray";
 				return MStatus::kSuccess;
 			}
 			case MFnData::kDoubleArray:
 			{
-				_attribs[attribName] = "doubleArray";
+				//TODO
+				//_attribs[attribName] = "doubleArray";
 				return MStatus::kSuccess;
 			}
 			case MFnData::kIntArray:
 			{
-				_attribs[attribName] = "intArray";
+				//TODO
+				//_attribs[attribName] = "intArray";
 				return MStatus::kSuccess;
 			}
 			case MFnData::kPointArray:
 			{
-				_attribs[attribName] = "pointArray";
+				//TODO
+				//_attribs[attribName] = "pointArray";
 				return MStatus::kSuccess;
 			}
 			case MFnData::kVectorArray:
 			{
-				_attribs[attribName] = "vecArray";
+				//TODO
+				//_attribs[attribName] = "vecArray";
 				return MStatus::kSuccess;
 			}
 			case MFnData::kComponentList:
 			{
+				printCompList(_plug);
 				_attribs[attribName] = "complist";
 				return MStatus::kSuccess;
 			}
 			case MFnData::kMesh:
 			{
-				_attribs[attribName] = "mesh";
+				//TODO maybe not
+				//_attribs[attribName] = "mesh";
 				return MStatus::kSuccess;
 			}
 			case MFnData::kLattice:
 			{
-				_attribs[attribName] = "lattice";
+				//TODO
+				//_attribs[attribName] = "lattice";
 				return MStatus::kSuccess;
 			}
 			case MFnData::kNurbsCurve:
 			{
-				_attribs[attribName] = "nurbscurve";
+				//TODO
+				//_attribs[attribName] = "nurbscurve";
 				return MStatus::kSuccess;
 			}
 			case MFnData::kNurbsSurface:
 			{
-				_attribs[attribName] = "nurbSurface";
+				//TODO
+				//_attribs[attribName] = "nurbSurface";
 				return MStatus::kSuccess;
 			}
 			case MFnData::kSphere:
 			{
-				_attribs[attribName] = "sphere";
+				//TODO
+				//_attribs[attribName] = "sphere";
 				return MStatus::kSuccess;
 			}
 			case MFnData::kDynArrayAttrs:
 			{
-				_attribs[attribName] = "dynAttri";
+				//TODO
+				//_attribs[attribName] = "dynAttri";
 				return MStatus::kSuccess;
 			}
 			case MFnData::kDynSweptGeometry:
 			{
-				_attribs[attribName] = "sweptGeo";
+				//TODO
+				//_attribs[attribName] = "sweptGeo";
 				return MStatus::kSuccess;
 			}
 			case MFnData::kSubdSurface:
 			{
-				_attribs[attribName] = "subdSurface";
+				//TODO
+				//_attribs[attribName] = "subdSurface";
 				return MStatus::kSuccess;
 			}
 			case MFnData::kNObject:
 			{
-				_attribs[attribName] = "Object";
+				//TODO
+				//_attribs[attribName] = "Object";
 				return MStatus::kSuccess;
 			}
 			case MFnData::kNId:
 			{
-				_attribs[attribName] = "ID";
+				//TODO
+				//_attribs[attribName] = "ID";
+				return MStatus::kSuccess;
+			}
+			case MFnData::kPlugin:
+			{
+				//TODO
+				//_attribs[attribName] = "plugin";
+				return MStatus::kSuccess;
+			}
+			case MFnData::kPluginGeometry:
+			{
+				//TODO
+				//_attribs[attribName] = "pluginGeo";
 				return MStatus::kSuccess;
 			}
 		}
@@ -513,7 +602,7 @@ MStatus SendAbstract::getUnitDataFromAttrib(MPlug& _plug, json& _attribs)
 		{
 			case MFnUnitAttribute::kInvalid:
 			{
-				_attribs[attribName] = "invalid";
+				_attribs[attribName] = nullptr;
 				return MStatus::kSuccess;
 			}
 			case MFnUnitAttribute::kAngle:
@@ -532,7 +621,9 @@ MStatus SendAbstract::getUnitDataFromAttrib(MPlug& _plug, json& _attribs)
 			}
 			case MFnUnitAttribute::kTime:
 			{
-				_attribs[attribName] = "time";
+				MTime value;
+				_plug.getValue(value);
+				_attribs[attribName] = value.value();
 				return MStatus::kSuccess;
 			}
 		}
