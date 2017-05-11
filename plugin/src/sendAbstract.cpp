@@ -17,6 +17,8 @@
 #include <maya/MUuid.h>
 #include <maya/MSelectionList.h>
 #include <maya/MItSelectionList.h>
+#include <maya/MFnNumericAttribute.h>
+#include <maya/MFnNumericData.h>
 
 #include "messaging.h"
 #include "tweakHandler.h"
@@ -208,40 +210,52 @@ MStatus SendAbstract::getAttribFromPlug(MPlug& _plug, json& _attribs)
 		return MStatus::kSuccess;
 	}
 
-	//MString value;
-	float fValue;
-	if (_plug.getValue(fValue) == MStatus::kSuccess)
-	{
-		_attribs[attribName] = fValue;
-		return MStatus::kSuccess;
-	}
+	MObject attribute = _plug.attribute();
 
-	double dValue;
-	if (_plug.getValue(dValue) == MStatus::kSuccess)
+	if (attribute.hasFn(MFn::kNumericAttribute))
 	{
-		_attribs[attribName] = dValue;
-		return MStatus::kSuccess;
-	}
+		MFnNumericAttribute fnAttrib(attribute);
 
-	MString sValue;
-	if (_plug.getValue(sValue) == MStatus::kSuccess)
-	{
-		_attribs[attribName] = sValue.asChar();
-		return MStatus::kSuccess;
-	}
-
-	int iValue;
-	if (_plug.getValue(iValue) == MStatus::kSuccess)
-	{
-		_attribs[attribName] = iValue;
-		return MStatus::kSuccess;
-	}
-
-	bool bValue;
-	if (_plug.getValue(bValue) == MStatus::kSuccess)
-	{
-		_attribs[attribName] = bValue;
-		return MStatus::kSuccess;
+		switch (fnAttrib.unitType())
+		{
+			case MFnNumericData::kBoolean:
+			{
+				bool value;
+				_plug.getValue(value);
+				break;
+			}
+			case MFnNumericData::kShort:
+			{
+				short value;
+				_plug.getValue(value);
+				break;
+			}
+			case MFnNumericData::kLong:
+			{
+				int value;
+				_plug.getValue(value);
+				break;
+			}
+			case MFnNumericData::kFloat:
+			{
+				float value;
+				_plug.getValue(value);
+				break;
+			}
+			case MFnNumericData::kDouble:
+			{
+				double value;
+				_plug.getValue(value);
+				break;
+			}
+			case MFnNumericData::k3Float:
+			{
+				MVector float3;
+				_plug.child(0).getValue(float3.x);
+				_plug.child(1).getValue(float3.y);
+				_plug.child(2).getValue(float3.z);
+			}
+		}
 	}
 
 	//// TODO more maya data types
