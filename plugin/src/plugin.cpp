@@ -10,6 +10,7 @@
 #include "sendUpdate.h"
 #include "setServerCmd.h"
 #include "clearCurrentMesh.h"
+#include "callbackHandler.h"
 
 // initialise our plugin and commands
 
@@ -106,6 +107,9 @@ MStatus uninitializePlugin(MObject obj)
 	{
 		status.perror("deregisterCommand");
 	}
+
+	// just making sure we get rid of the callbacks
+	CallbackHandler::getInstance().clearCallbacks();
 
 	return status;
 }
