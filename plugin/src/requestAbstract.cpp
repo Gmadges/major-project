@@ -242,19 +242,21 @@ MStatus RequestAbstract::setConnections(json& _node)
 
 		// this connection method assumes that the new node isnt connected to anything and that we dont care about what the other nodes were connected to before hand.
 
-		//// this is if we require extra connections //TODO
-		//if (type.compare("polySplitRing") == 0)
-		//{
-		//	MString connectCmd;
-		//	connectCmd += "connectAttr ";
-		//	std::string meshName = _mesh["name"];
-		//	connectCmd += meshName.c_str();
-		//	connectCmd += ".worldMatrix[0] ";
-		//	std::string nodeName = _node["name"];
-		//	connectCmd += nodeName.c_str();
-		//	connectCmd += ".manipMatrix;";
-		//	MGlobal::executeCommand(connectCmd);
-		//}
+		if (_node["type"].get<std::string>().compare("polyTweak") != 0)
+		{
+			MDagPath dagPath;
+			MDagPath::getAPathTo(newNode.object(), dagPath);
+			dagPath.extendToShape();
+			MFnDependencyNode shapeNode(dagPath.node());
+
+			MString connectCmd;
+			connectCmd += "connectAttr ";
+			connectCmd += shapeNode.name();
+			connectCmd += ".worldMatrix[0] ";
+			connectCmd += newNode.name();
+			connectCmd += ".manipMatrix;";
+			MGlobal::executeCommand(connectCmd);
+		}
 	}
 
 	return status;
