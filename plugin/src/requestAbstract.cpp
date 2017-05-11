@@ -9,6 +9,8 @@
 #include <maya/MUuid.h>
 #include <maya/MFnDependencyNode.h>
 #include <maya/MPlugArray.h>
+#include <maya/MFnMatrixData.h>
+#include <maya/MDataHandle.h>
 #include <maya/MMatrix.h>
 
 RequestAbstract::RequestAbstract()
@@ -129,9 +131,28 @@ MStatus RequestAbstract::setAttribs(MFnDependencyNode& node, json& attribs)
 
 				if (it.value().size() == 16)
 				{
-					// if it has 16 items and they are all floats then surely it has to be a matrix.
-					//TODO
-					// matrices
+					MObject oMat;
+					plug.getValue(oMat);
+					MFnMatrixData fnMat(oMat);
+					MMatrix mat = fnMat.matrix();
+					try
+					{
+						std::vector<double> nums = it.value();
+
+						for (int i = 0; i < 4; i++)
+						{
+							for (int j = 0; j < 4; j++)
+							{
+								mat[i][j] = nums[i + j];
+							}
+						}
+					}
+					catch (std::exception& e)
+					{
+						HackPrint::print(e.what());
+					}
+
+					continue;
 				}
 			
 				continue;

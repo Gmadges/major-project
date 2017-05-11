@@ -170,6 +170,8 @@ MStatus SendAbstract::getAttribFromPlug(MPlug& _plug, json& _attribs)
 {
 	std::string attribName = _plug.partialName().asChar();
 
+	if (attribName.empty()) return MStatus::kFailure;
+
 	if (_plug.isNull())
 	{
 		_attribs[attribName] = nullptr;
@@ -300,7 +302,7 @@ MStatus SendAbstract::getNumericDataFromAttrib(MPlug& _plug, json& _attribs)
 
 				//TODO
 				//_attribs[attribName] = "3float";
-				return MStatus::kSuccess;
+				return MStatus::kFailure;
 			}
 			case MFnNumericData::kByte:
 			case MFnNumericData::kChar:
@@ -315,55 +317,55 @@ MStatus SendAbstract::getNumericDataFromAttrib(MPlug& _plug, json& _attribs)
 			{
 				//TODO
 				//_attribs[attribName] = "2short";
-				return MStatus::kSuccess;
+				return MStatus::kFailure;
 			}
 			case MFnNumericData::k3Short:
 			{
 				//TODO
 				//_attribs[attribName] = "3short";
-				return MStatus::kSuccess;
+				return MStatus::kFailure;
 			}
 			case MFnNumericData::k2Int:
 			{
 				//TODO
 				//_attribs[attribName] = "2int";
-				return MStatus::kSuccess;
+				return MStatus::kFailure;
 			}
 			case MFnNumericData::k3Int:
 			{
 				//TODO
 				//_attribs[attribName] = "3int";
-				return MStatus::kSuccess;
+				return MStatus::kFailure;
 			}
 			case MFnNumericData::k2Float:
 			{
 				//TODO
 				//_attribs[attribName] = "2float";
-				return MStatus::kSuccess;
+				return MStatus::kFailure;
 			}
 			case MFnNumericData::k2Double:
 			{
 				//TODO
 				//_attribs[attribName] = "2double";
-				return MStatus::kSuccess;
+				return MStatus::kFailure;
 			}
 			case MFnNumericData::k3Double:
 			{
 				//TODO
 				//_attribs[attribName] = "3double";
-				return MStatus::kSuccess;
+				return MStatus::kFailure;
 			}
 			case MFnNumericData::k4Double:
 			{
 				//TODO
 				//_attribs[attribName] = "4double";
-				return MStatus::kSuccess;
+				return MStatus::kFailure;
 			}
 			case MFnNumericData::kAddr:
 			{
 				//TODO
 				//_attribs[attribName] = "address";
-				return MStatus::kSuccess;
+				return MStatus::kFailure;
 			}
 		}
 	}
@@ -415,37 +417,37 @@ MStatus SendAbstract::getTypeDataFromAttrib(MPlug& _plug, json& _attribs)
 			{
 				//TODO
 				//_attribs[attribName] = "number";
-				return MStatus::kSuccess;
+				return MStatus::kFailure;
 			}
 			case MFnData::kStringArray:
 			{
 				//TODO
 				//_attribs[attribName] = "stringArray";
-				return MStatus::kSuccess;
+				return MStatus::kFailure;
 			}
 			case MFnData::kDoubleArray:
 			{
 				//TODO
 				//_attribs[attribName] = "doubleArray";
-				return MStatus::kSuccess;
+				return MStatus::kFailure;
 			}
 			case MFnData::kIntArray:
 			{
 				//TODO
 				//_attribs[attribName] = "intArray";
-				return MStatus::kSuccess;
+				return MStatus::kFailure;
 			}
 			case MFnData::kPointArray:
 			{
 				//TODO
 				//_attribs[attribName] = "pointArray";
-				return MStatus::kSuccess;
+				return MStatus::kFailure;
 			}
 			case MFnData::kVectorArray:
 			{
 				//TODO
 				//_attribs[attribName] = "vecArray";
-				return MStatus::kSuccess;
+				return MStatus::kFailure;
 			}
 			case MFnData::kComponentList:
 			{
@@ -461,73 +463,73 @@ MStatus SendAbstract::getTypeDataFromAttrib(MPlug& _plug, json& _attribs)
 			{
 				//TODO maybe not
 				//_attribs[attribName] = "mesh";
-				return MStatus::kSuccess;
+				return MStatus::kFailure;
 			}
 			case MFnData::kLattice:
 			{
 				//TODO
 				//_attribs[attribName] = "lattice";
-				return MStatus::kSuccess;
+				return MStatus::kFailure;
 			}
 			case MFnData::kNurbsCurve:
 			{
 				//TODO
 				//_attribs[attribName] = "nurbscurve";
-				return MStatus::kSuccess;
+				return MStatus::kFailure;
 			}
 			case MFnData::kNurbsSurface:
 			{
 				//TODO
 				//_attribs[attribName] = "nurbSurface";
-				return MStatus::kSuccess;
+				return MStatus::kFailure;
 			}
 			case MFnData::kSphere:
 			{
 				//TODO
 				//_attribs[attribName] = "sphere";
-				return MStatus::kSuccess;
+				return MStatus::kFailure;
 			}
 			case MFnData::kDynArrayAttrs:
 			{
 				//TODO
-				//_attribs[attribName] = "dynAttri";
-				return MStatus::kSuccess;
+				//_attribs[attribNamekFailure = "dynAttri";
+				return MStatus::kFailure;
 			}
 			case MFnData::kDynSweptGeometry:
 			{
 				//TODO
 				//_attribs[attribName] = "sweptGeo";
-				return MStatus::kSuccess;
+				return MStatus::kFailure;
 			}
 			case MFnData::kSubdSurface:
 			{
 				//TODO
 				//_attribs[attribName] = "subdSurface";
-				return MStatus::kSuccess;
+				return MStatus::kFailure;
 			}
 			case MFnData::kNObject:
 			{
 				//TODO
 				//_attribs[attribName] = "Object";
-				return MStatus::kSuccess;
+				return MStatus::kFailure;
 			}
 			case MFnData::kNId:
 			{
 				//TODO
 				//_attribs[attribName] = "ID";
-				return MStatus::kSuccess;
+				return MStatus::kFailure;
 			}
 			case MFnData::kPlugin:
 			{
 				//TODO
 				//_attribs[attribName] = "plugin";
-				return MStatus::kSuccess;
+				return MStatus::kFailure;
 			}
 			case MFnData::kPluginGeometry:
 			{
 				//TODO
 				//_attribs[attribName] = "pluginGeo";
-				return MStatus::kSuccess;
+				return MStatus::kFailure;
 			}
 		}
 	}
