@@ -122,7 +122,7 @@ MStatus SendRegister::registerAndSendMesh(MDagPath & meshDAGPath)
 
 	std::vector<json> nodeList;
 
-	std::function<void(MFnDependencyNode&)> getNodeAddCallbackFunc = [this, &nodeList](MFnDependencyNode& node) {
+	std::function<bool(MFnDependencyNode&)> getNodeAddCallbackFunc = [this, &nodeList](MFnDependencyNode& node) {
 
 		json genNode;
 		if (getGenericNode(node, genNode) == MStatus::kSuccess)
@@ -132,6 +132,8 @@ MStatus SendRegister::registerAndSendMesh(MDagPath & meshDAGPath)
 			nodeList.push_back(genNode);
 			CallbackHandler::getInstance().registerCallbacksToNode(node.object());
 		}
+		
+		return false;
 	};
 
 	traverseAllValidNodesForMesh(meshDAGPath, getNodeAddCallbackFunc);

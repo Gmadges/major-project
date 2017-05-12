@@ -180,22 +180,31 @@ bool SendUpdate::isNodeFromRegisteredMesh(MObject& _node)
 
 	if (id.asString() != currentMeshID)
 	{
-		// try and grab the mesh that the node is in
+		// TODO
+		// a more efficient method of doing this.
+
+		bool isConnected = false;
+
+		std::function<bool(MFnDependencyNode&)> checkOurIDFunc = [this, &isConnected, &id](MFnDependencyNode& node) {
+
+			if (id == node.uuid())
+			{
+				isConnected = true;
+			}
+
+			return isConnected;
+		};
+
 		MDagPath dagPath;
-		status = MDagPath::getAPathTo(_node, dagPath);
-		MString test = status.errorString();
-		if (status != MStatus::kSuccess) return false;
-
+		MObject tmp;
+		status = MayaUtils::getNodeObjectFromUUID(currentMeshID, tmp);
+		if (status != MStatus::kSuccess) return status;
+		status = MDagPath::getAPathTo(tmp, dagPath);
 		status = dagPath.extendToShape();
-		if (status != MStatus::kSuccess) return false;
 
-		MFnDependencyNode meshDepNode(dagPath.node(), &status);
-		if (status != MStatus::kSuccess) return false;
+		traverseAllValidNodesForMesh(dagPath, checkOurIDFunc);
 
-		// get the ids for comparison
-		id = meshDepNode.uuid();
-
-		return id.asString() == currentMeshID;
+		return isConnected;
 	}
 
 	return true;

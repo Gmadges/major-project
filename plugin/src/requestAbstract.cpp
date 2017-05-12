@@ -2,12 +2,17 @@
 
 #include "mayaUtils.h"
 #include "tweakHandler.h"
+#include "hackPrint.h"
 
 #include <maya/MArgDatabase.h>
 #include <maya/MGlobal.h>
 #include <maya/MUuid.h>
 #include <maya/MFnDependencyNode.h>
 #include <maya/MPlugArray.h>
+#include <maya/MFnMatrixData.h>
+#include <maya/MDataHandle.h>
+#include <maya/MMatrix.h>
+#include "callbackHandler.h"
 
 RequestAbstract::RequestAbstract()
 	:
@@ -115,9 +120,31 @@ MStatus RequestAbstract::setAttribs(MFnDependencyNode& node, json& attribs)
 				{
 					std::vector<json> tweakVals = it.value();
 					pTweakHandler->setTweakPlugFromArray(plug, tweakVals);
+					continue;
 				}
 
-				//TODO all other cases
+				if (it.key().compare("ics") == 0)
+				{
+					std::vector<std::string> componentList = it.value();
+					setComponentListAttribute(componentList, plug);
+					continue;
+				}
+
+				if (it.value().size() == 16)
+				{
+					try
+					{
+						std::vector<double> nums = it.value();
+						setMatrixAttribute(nums, plug);
+					}
+					catch (std::exception& e)
+					{
+						HackPrint::print(e.what());
+						HackPrint::print(it.key());
+						HackPrint::print(it.value().dump(4));
+					}
+				}
+			
 				continue;
 			}
 
@@ -159,11 +186,7 @@ MStatus RequestAbstract::setConnections(json& _node)
 {
 	MStatus status = MStatus::kSuccess;
 
-	// if its not a mesh we'll have to wire it in
-	std::string type = _node["type"];
-
-	if (type.compare("polySplitRing") == 0 ||
-		type.compare("polyTweak") == 0)
+	if (MayaUtils::doesItRequireConnections(MString(_node["type"].get<std::string>().c_str())))
 	{
 		// redo of our connecting code.
 
@@ -189,10 +212,10 @@ MStatus RequestAbstract::setConnections(json& _node)
 		}
 
 		MString newNodeID(_node["id"].get<std::string>().c_str());
-		MObject tmp;
-		status = MayaUtils::getNodeObjectFromUUID(newNodeID, tmp);
+		MObject nodeObj;
+		status = MayaUtils::getNodeObjectFromUUID(newNodeID, nodeObj);
 		if (status != MStatus::kSuccess) return status;
-		newNode.setObject(tmp);
+		newNode.setObject(nodeObj);
 
 	
 		// attach everything
@@ -222,20 +245,58 @@ MStatus RequestAbstract::setConnections(json& _node)
 
 		// this connection method assumes that the new node isnt connected to anything and that we dont care about what the other nodes were connected to before hand.
 
-		//// this is if we require extra connections //TODO
-		//if (type.compare("polySplitRing") == 0)
-		//{
-		//	MString connectCmd;
-		//	connectCmd += "connectAttr ";
-		//	std::string meshName = _mesh["name"];
-		//	connectCmd += meshName.c_str();
-		//	connectCmd += ".worldMatrix[0] ";
-		//	std::string nodeName = _node["name"];
-		//	connectCmd += nodeName.c_str();
-		//	connectCmd += ".manipMatrix;";
-		//	MGlobal::executeCommand(connectCmd);
-		//}
+		if (_node["type"].get<std::string>().compare("polyTweak") != 0)
+		{
+			// Really long winded way to grab the shape nodes name
+			MDagPath dagPath;
+			MObject tmp;
+			MString id = CallbackHandler::getInstance().getCurrentRegisteredMesh().c_str();
+			status = MayaUtils::getNodeObjectFromUUID(id, tmp);
+			if (status != MStatus::kSuccess) return status;
+			status = MDagPath::getAPathTo(tmp, dagPath);
+			status = dagPath.extendToShape();
+			MFnDependencyNode shapeNode(dagPath.node());
+
+			MString connectCmd;
+			connectCmd += "connectAttr ";
+			connectCmd += shapeNode.name();
+			connectCmd += ".worldMatrix[0] ";
+			connectCmd += newNode.name();
+			connectCmd += ".manipMatrix;";
+			MGlobal::executeCommand(connectCmd);
+		}
 	}
 
 	return status;
+}
+
+MStatus RequestAbstract::setComponentListAttribute(std::vector<std::string> components, MPlug& _plug)
+{
+	MString cmd;
+	cmd += "setAttr ";
+	cmd += _plug.name();
+	cmd += " -type \"componentList\" ";
+	cmd += std::to_string(components.size()).c_str();
+	cmd += " ";
+	for(std::string& item : components)
+	{
+		cmd += item.c_str();
+		cmd += " ";
+	}
+
+	return MGlobal::executeCommand(cmd);
+}
+
+MStatus RequestAbstract::setMatrixAttribute(std::vector<double> numbers, MPlug& _plug)
+{
+	MString cmd;
+	cmd += "setAttr ";
+	cmd += _plug.name();
+	cmd += " -type \"matrix\" ";
+	for (double& item : numbers)
+	{
+		cmd += std::to_string(item).c_str();;
+		cmd += " ";
+	}
+	return MGlobal::executeCommand(cmd);
 }
