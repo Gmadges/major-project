@@ -135,11 +135,13 @@ MStatus RequestAbstract::setAttribs(MFnDependencyNode& node, json& attribs)
 					try
 					{
 						std::vector<double> nums = it.value();
-						//setMatrixAttribute(nums, plug);
+						setMatrixAttribute(nums, plug);
 					}
 					catch (std::exception& e)
 					{
 						HackPrint::print(e.what());
+						HackPrint::print(it.key());
+						HackPrint::print(it.value().dump(4));
 					}
 				}
 			
@@ -184,7 +186,7 @@ MStatus RequestAbstract::setConnections(json& _node)
 {
 	MStatus status = MStatus::kSuccess;
 
-	if (MayaUtils::DoesItRequireConnections(MString(_node["type"].get<std::string>().c_str())))
+	if (MayaUtils::doesItRequireConnections(MString(_node["type"].get<std::string>().c_str())))
 	{
 		// redo of our connecting code.
 
@@ -293,14 +295,8 @@ MStatus RequestAbstract::setMatrixAttribute(std::vector<double> numbers, MPlug& 
 	cmd += " -type \"matrix\" ";
 	for (double& item : numbers)
 	{
-		if (abs(item) < 0.0000000000000000000000000000001 || abs(item) > 100000000000000000000000000000000.0)
-		{
-			item = 0;
-		}
 		cmd += std::to_string(item).c_str();;
 		cmd += " ";
 	}
-
-	HackPrint::print(cmd);
 	return MGlobal::executeCommand(cmd);
 }

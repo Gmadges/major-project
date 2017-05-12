@@ -430,18 +430,18 @@ MStatus SendAbstract::getTypeDataFromAttrib(MPlug& _plug, json& _attribs)
 			}
 			case MFnData::kMatrix:
 			{
-				MDataHandle data = _plug.asMDataHandle();
-				MMatrix matrix = data.asMatrix();
-				std::vector<double> matData;
-				for (int i = 0; i < 4; i++)
+				MString cmd;
+				cmd += "getAttr \"";
+				cmd += _plug.name();
+				cmd += "\"";
+				MDoubleArray dubs;
+				MGlobal::executeCommand(cmd, dubs);
+				std::vector<double> matdata;
+				for (unsigned int i = 0; i < dubs.length(); i++)
 				{
-					for (int j = 0; j < 4; j++)
-					{
-						matData.push_back(matrix[i][j]);
-					}
+					matdata.push_back(dubs[i]);
 				}
-				_attribs[attribName] = matData;
-				_plug.destructHandle(data);
+				_attribs[attribName] = matdata;
 				return MStatus::kSuccess;
 			}
 			case MFnData::kNumeric:
