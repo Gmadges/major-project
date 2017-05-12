@@ -184,107 +184,85 @@ MStatus RequestAbstract::setConnections(json& _node)
 {
 	MStatus status = MStatus::kSuccess;
 
-	// redo of our connecting code.
-
-	MFnDependencyNode inNode, outNode, newNode;
-
-	// grab the in and out nodes from this node
-	if (_node["in"] != nullptr)
+	if (MayaUtils::DoesItRequireConnections(MString(_node["type"].get<std::string>().c_str())))
 	{
-		MString inNodeID(_node["in"].get<std::string>().c_str());
-		MObject tmp;
-		status = MayaUtils::getNodeObjectFromUUID(inNodeID, tmp);
-		if (status != MStatus::kSuccess) return status;
-		inNode.setObject(tmp);
-	}
+		// redo of our connecting code.
 
-	if (_node["out"] != nullptr)
-	{
-		MString outNodeID(_node["out"].get<std::string>().c_str());
-		MObject tmp;
-		status = MayaUtils::getNodeObjectFromUUID(outNodeID, tmp);
-		if (status != MStatus::kSuccess) return status;
-		outNode.setObject(tmp);
-	}
+		MFnDependencyNode inNode, outNode, newNode;
 
-	MString newNodeID(_node["id"].get<std::string>().c_str());
-	MObject nodeObj;
-	status = MayaUtils::getNodeObjectFromUUID(newNodeID, nodeObj);
-	if (status != MStatus::kSuccess) return status;
-	newNode.setObject(nodeObj);
-
-	// attach everything
-	MPlug nodeOutPlug = MayaUtils::getOutPlug(newNode, status);
-	MPlug nodeInPlug = MayaUtils::getInPlug(newNode, status);
-
-	MPlug inNodePlug = MayaUtils::getOutPlug(inNode, status);
-	MPlug outNodePlug = MayaUtils::getInPlug(outNode, status);
-
-	bool inAlreadyConnected = false;
-	bool outAlreadyConnected = false;
-
-	if (inNodePlug.isConnected())
-	{
-		MPlugArray tempPlugArray;
-		inNodePlug.connectedTo(tempPlugArray, false, true);
-
-		MFnDependencyNode testNode(tempPlugArray[0].node());
-
-		// check to see if we're already connected the correct node
-		if (testNode.uuid() != newNode.uuid())
+		// grab the in and out nodes from this node
+		if (_node["in"] != nullptr)
 		{
+			MString inNodeID(_node["in"].get<std::string>().c_str());
+			MObject tmp;
+			status = MayaUtils::getNodeObjectFromUUID(inNodeID, tmp);
+			if (status != MStatus::kSuccess) return status;
+			inNode.setObject(tmp);
+		}
+
+		if (_node["out"] != nullptr)
+		{
+			MString outNodeID(_node["out"].get<std::string>().c_str());
+			MObject tmp;
+			status = MayaUtils::getNodeObjectFromUUID(outNodeID, tmp);
+			if (status != MStatus::kSuccess) return status;
+			outNode.setObject(tmp);
+		}
+
+		MString newNodeID(_node["id"].get<std::string>().c_str());
+		MObject nodeObj;
+		status = MayaUtils::getNodeObjectFromUUID(newNodeID, nodeObj);
+		if (status != MStatus::kSuccess) return status;
+		newNode.setObject(nodeObj);
+
+	
+		// attach everything
+		MPlug nodeOutPlug = MayaUtils::getOutPlug(newNode, status);
+		MPlug nodeInPlug = MayaUtils::getInPlug(newNode, status);
+
+		MPlug inNodePlug = MayaUtils::getOutPlug(inNode, status);
+		MPlug outNodePlug = MayaUtils::getInPlug(outNode, status);
+
+		if (inNodePlug.isConnected())
+		{
+			MPlugArray tempPlugArray;
+			inNodePlug.connectedTo(tempPlugArray, false, true);
 			status = fDGModifier.disconnect(inNodePlug, tempPlugArray[0]);
-			status = fDGModifier.connect(inNodePlug, nodeInPlug);
 		}
-		else
+
+		if (outNodePlug.isConnected())
 		{
-			inAlreadyConnected = true;
-		}
-	}
-
-	if (outNodePlug.isConnected())
-	{
-		MPlugArray tempPlugArray;
-		outNodePlug.connectedTo(tempPlugArray, true, false);
-
-		MFnDependencyNode testNode(tempPlugArray[0].node());
-
-		// check to see if we're already connected the correct node
-		if (testNode.uuid() != newNode.uuid())
-		{
+			MPlugArray tempPlugArray;
+			outNodePlug.connectedTo(tempPlugArray, true, false);
 			status = fDGModifier.disconnect(tempPlugArray[0], outNodePlug);
-			status = fDGModifier.connect(nodeOutPlug, outNodePlug);
 		}
-		else
+
+		status = fDGModifier.connect(inNodePlug, nodeInPlug);
+		status = fDGModifier.connect(nodeOutPlug, outNodePlug);
+		status = fDGModifier.doIt();
+
+		// this connection method assumes that the new node isnt connected to anything and that we dont care about what the other nodes were connected to before hand.
+
+		if (_node["type"].get<std::string>().compare("polyTweak") != 0)
 		{
-			outAlreadyConnected = true;
+			// Really long winded way to grab the shape nodes name
+			MDagPath dagPath;
+			MObject tmp;
+			MString id = CallbackHandler::getInstance().getCurrentRegisteredMesh().c_str();
+			status = MayaUtils::getNodeObjectFromUUID(id, tmp);
+			if (status != MStatus::kSuccess) return status;
+			status = MDagPath::getAPathTo(tmp, dagPath);
+			status = dagPath.extendToShape();
+			MFnDependencyNode shapeNode(dagPath.node());
+
+			MString connectCmd;
+			connectCmd += "connectAttr ";
+			connectCmd += shapeNode.name();
+			connectCmd += ".worldMatrix[0] ";
+			connectCmd += newNode.name();
+			connectCmd += ".manipMatrix;";
+			MGlobal::executeCommand(connectCmd);
 		}
-	}
-
-	// both nodes are already connected
-	if (inAlreadyConnected && outAlreadyConnected) return MStatus::kSuccess;
-
-	status = fDGModifier.doIt();
-
-	if (MayaUtils::DoesItRequireExtraConnections(MString(_node["type"].get<std::string>().c_str())))
-	{
-		// Really long winded way to grab the shape nodes name
-		MDagPath dagPath;
-		MObject tmp;
-		MString id = CallbackHandler::getInstance().getCurrentRegisteredMesh().c_str();
-		status = MayaUtils::getNodeObjectFromUUID(id, tmp);
-		if (status != MStatus::kSuccess) return status;
-		status = MDagPath::getAPathTo(tmp, dagPath);
-		status = dagPath.extendToShape();
-		MFnDependencyNode shapeNode(dagPath.node());
-
-		MString connectCmd;
-		connectCmd += "connectAttr ";
-		connectCmd += shapeNode.name();
-		connectCmd += ".worldMatrix[0] ";
-		connectCmd += newNode.name();
-		connectCmd += ".manipMatrix;";
-		MGlobal::executeCommand(connectCmd);
 	}
 
 	return status;
@@ -315,8 +293,14 @@ MStatus RequestAbstract::setMatrixAttribute(std::vector<double> numbers, MPlug& 
 	cmd += " -type \"matrix\" ";
 	for (double& item : numbers)
 	{
+		if (abs(item) < 0.0000000000000000000000000000001 || abs(item) > 100000000000000000000000000000000.0)
+		{
+			item = 0;
+		}
 		cmd += std::to_string(item).c_str();;
 		cmd += " ";
 	}
+
+	HackPrint::print(cmd);
 	return MGlobal::executeCommand(cmd);
 }

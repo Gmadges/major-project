@@ -88,8 +88,6 @@ MStatus	RequestUpdate::doIt(const MArgList& args)
 			else if (itr["edit"] == EditType::EDIT)
 			{
 				status = setNodeValues(itr);
-				// check its all connected correctly
-				status = setConnections(itr);
 			}
 			else if (itr["edit"] == EditType::DEL)
 			{

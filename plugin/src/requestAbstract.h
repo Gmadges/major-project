@@ -27,7 +27,6 @@ protected:
 	MStatus setAttribs(MFnDependencyNode& node, json& attribs);
 	MStatus setComponentListAttribute(std::vector<std::string> components, MPlug& _plug);
 	MStatus setMatrixAttribute(std::vector<double> numbers, MPlug& _plug);
-	MStatus isEverythingConnected(MPlug& nodeIn, MPlug& nodeOut, MPlug& in, MPlug& out, json& nodeData);
 
 protected:
 	std::unique_ptr<TweakHandler> pTweakHandler;

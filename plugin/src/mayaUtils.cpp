@@ -25,9 +25,9 @@ bool MayaUtils::isValidNodeType(MString& _type)
 			_type == MString("polyCube"));
 }
 
-bool MayaUtils::DoesItRequireExtraConnections(MString& _type)
+bool MayaUtils::DoesItRequireConnections(MString& _type)
 {
-	return (_type == MString() ||
+	return (_type == MString("polyTweak") ||
 			_type == MString("polySplitRing") ||
 			_type == MString("polyExtrudeFace"));
 }
