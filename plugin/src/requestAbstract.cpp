@@ -12,6 +12,7 @@
 #include <maya/MFnMatrixData.h>
 #include <maya/MDataHandle.h>
 #include <maya/MMatrix.h>
+#include "callbackHandler.h"
 
 RequestAbstract::RequestAbstract()
 	:
@@ -209,10 +210,10 @@ MStatus RequestAbstract::setConnections(json& _node)
 		}
 
 		MString newNodeID(_node["id"].get<std::string>().c_str());
-		MObject tmp;
-		status = MayaUtils::getNodeObjectFromUUID(newNodeID, tmp);
+		MObject nodeObj;
+		status = MayaUtils::getNodeObjectFromUUID(newNodeID, nodeObj);
 		if (status != MStatus::kSuccess) return status;
-		newNode.setObject(tmp);
+		newNode.setObject(nodeObj);
 
 	
 		// attach everything
@@ -244,9 +245,14 @@ MStatus RequestAbstract::setConnections(json& _node)
 
 		if (_node["type"].get<std::string>().compare("polyTweak") != 0)
 		{
+			// Really long winded way to grab the shape nodes name
 			MDagPath dagPath;
-			MDagPath::getAPathTo(newNode.object(), dagPath);
-			dagPath.extendToShape();
+			MObject tmp;
+			MString id = CallbackHandler::getInstance().getCurrentRegisteredMesh().c_str();
+			status = MayaUtils::getNodeObjectFromUUID(id, tmp);
+			if (status != MStatus::kSuccess) return status;
+			status = MDagPath::getAPathTo(tmp, dagPath);
+			status = dagPath.extendToShape();
 			MFnDependencyNode shapeNode(dagPath.node());
 
 			MString connectCmd;

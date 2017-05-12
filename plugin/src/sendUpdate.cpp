@@ -183,7 +183,6 @@ bool SendUpdate::isNodeFromRegisteredMesh(MObject& _node)
 		// try and grab the mesh that the node is in
 		MDagPath dagPath;
 		status = MDagPath::getAPathTo(_node, dagPath);
-		MString test = status.errorString();
 		if (status != MStatus::kSuccess) return false;
 
 		status = dagPath.extendToShape();
