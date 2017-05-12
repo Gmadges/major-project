@@ -51,7 +51,7 @@ SendAbstract::~SendAbstract()
 {
 }
 
-void SendAbstract::traverseAllValidNodesForMesh(MDagPath& dagPath, std::function<void(MFnDependencyNode&)>& func)
+void SendAbstract::traverseAllValidNodesForMesh(MDagPath& dagPath, std::function<bool(MFnDependencyNode&)>& func)
 {
 	// first do the transforms node
 	MFnDependencyNode transformNode(dagPath.transform());
@@ -64,11 +64,11 @@ void SendAbstract::traverseAllValidNodesForMesh(MDagPath& dagPath, std::function
 	traverseAllValidNodes(meshShapeNode, func);
 }
 
-void SendAbstract::traverseAllValidNodes(MFnDependencyNode & node, std::function<void(MFnDependencyNode&)>& func)
+void SendAbstract::traverseAllValidNodes(MFnDependencyNode & node, std::function<bool(MFnDependencyNode&)>& func)
 {
 	if (MayaUtils::isValidNodeType(node.typeName()))
 	{
-		func(node);
+		if (func(node)) return;
 	}
 
 	// now lets see if it has a parent

@@ -28,10 +28,10 @@ public:
 protected:
 
 	// gets goes over all nodes for mesh and performs the specified func(including transform)
-	void traverseAllValidNodesForMesh(MDagPath & dagPath, std::function<void(MFnDependencyNode&)>& func);
+	void traverseAllValidNodesForMesh(MDagPath & dagPath, std::function<bool(MFnDependencyNode&)>& func);
 
 	// goes over all nodes starting from one passed to it
-	void traverseAllValidNodes(MFnDependencyNode & node, std::function<void(MFnDependencyNode&)>& func);
+	void traverseAllValidNodes(MFnDependencyNode & node, std::function<bool(MFnDependencyNode&)>& func);
 
 	MStatus getGenericNode(MFnDependencyNode & _inNode, json& _outNode);
 	MStatus getAttribFromPlug(MPlug& _plug, json& _attribs);
