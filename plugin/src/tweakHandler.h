@@ -18,8 +18,8 @@ public:
 
 	bool hasTweaks(MDagPath & meshDAGPath);
 	// create a tweak node and removed tweaks from mesh
-	MStatus createPolyTweakNode(MDagPath & meshDAGPath, MObject& tweakNode);
-	MStatus connectTweakNodes(MObject& tweakNode, MObject& meshNode);
+	MStatus createPolyTweakNode(MDagPath & meshDAGPath, MObject tweakNode);
+	MStatus connectTweakNodes(MObject tweakNode, MObject meshNode);
 
 	// this method returns the tweak values in and array that we send
 	MStatus setTweakPlugFromArray(MPlug& _plug, std::vector<json>& tweakArray);

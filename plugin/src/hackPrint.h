@@ -14,12 +14,12 @@ public:
 		MGlobal::displayInfo(text);
 	}
 
-	static void print(MString& text)
+	static void print(MString text)
 	{
 		MGlobal::displayInfo(text);
 	}
 
-	static void print(std::string& text)
+	static void print(std::string text)
 	{
 		MGlobal::displayInfo(text.c_str());
 	}

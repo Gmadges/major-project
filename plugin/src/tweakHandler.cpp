@@ -64,7 +64,7 @@ bool TweakHandler::hasTweaks(MDagPath& meshDAGPath)
 	return false;
 }
 
-MStatus TweakHandler::createPolyTweakNode(MDagPath& meshDAGPath, MObject& tweakNode)
+MStatus TweakHandler::createPolyTweakNode(MDagPath& meshDAGPath, MObject tweakNode)
 {
 	MStatus status = MS::kSuccess;
 
@@ -289,7 +289,7 @@ MStatus TweakHandler::createPolyTweakNode(MDagPath& meshDAGPath, MObject& tweakN
 	return status;
 }
 
-MStatus TweakHandler::connectTweakNodes(MObject& tweakNode, MObject& meshNode)
+MStatus TweakHandler::connectTweakNodes(MObject tweakNode, MObject meshNode)
 {
 	MFnDependencyNode tweakDepNode;
 	tweakDepNode.setObject(tweakNode);
@@ -406,7 +406,7 @@ MStatus TweakHandler::setTweakPlugFromArray(MPlug& _plug, std::vector<json>& twe
 			//tweakPlug.setValue(numDataFn.object());
 
 			// mel hack
-			MFnDependencyNode tweakNode = _plug.node();
+			MFnDependencyNode tweakNode(_plug.node());
 			MString cmd = "setAttr \"";
 			cmd += tweakNode.name();
 			cmd += ".tk[";

@@ -174,7 +174,7 @@ MStatus SendRegister::registerAndSendMesh(MDagPath & meshDAGPath)
 	message["requestType"] = ReqType::REGISTER_MESH;
 	message["mesh"] = meshData;
 
-	HackPrint::print("sending " + transformNode.name());
+	HackPrint::print(MString("sending ") + transformNode.name());
 	if (pMessaging->sendUpdate(message))
 	{
 		HackPrint::print("mesh sent succesfully");

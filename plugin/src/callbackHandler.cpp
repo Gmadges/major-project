@@ -6,7 +6,7 @@
 #include <maya/MTimerMessage.h>
 #include <maya/MDagMessage.h>
 #include <maya/MDGMessage.h>
-#include "hackprint.h"
+#include "hackPrint.h"
 #include "mayaUtils.h"
 
 #include <ctime>
@@ -126,7 +126,7 @@ MStatus CallbackHandler::clearCallbacks()
 	return status;
 }
 
-MStatus CallbackHandler::registerCallbacksToNode(MObject& _node)
+MStatus CallbackHandler::registerCallbacksToNode(MObject _node)
 {
 	MStatus status;
 

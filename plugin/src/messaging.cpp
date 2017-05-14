@@ -88,7 +88,7 @@ bool Messaging::sendUpdate(const json& data)
 	return send(request, reply);
 }
 
-bool Messaging::requestData(json& data, ReqType _type, std::string& _userID)
+bool Messaging::requestData(json& data, ReqType _type, std::string _userID)
 {
 	// pack a message up
 	json sendJSON;
@@ -114,7 +114,7 @@ bool Messaging::requestData(json& data, ReqType _type, std::string& _userID)
 	return false;
 }
 
-bool Messaging::requestMesh(json& data, ReqType _type, std::string& _meshID, std::string& _userID)
+bool Messaging::requestMesh(json& data, ReqType _type, std::string _meshID, std::string _userID)
 {
 	// pack a message up
 	json sendJSON;

@@ -15,7 +15,7 @@ MayaUtils::~MayaUtils()
 }
 
 
-bool MayaUtils::isValidNodeType(MString& _type)
+bool MayaUtils::isValidNodeType(MString _type)
 {
 	return (_type == MString("transform") ||
 			_type == MString("mesh") ||
@@ -33,7 +33,7 @@ MStatus MayaUtils::getNodeObjectFromUUID(MString& uuid, MObject& _node)
 	return sList.getDependNode(0, _node);
 }
 
-bool MayaUtils::doesItExist(std::string& _id)
+bool MayaUtils::doesItExist(std::string _id)
 {
 	MStatus status;
 	MSelectionList selList;
