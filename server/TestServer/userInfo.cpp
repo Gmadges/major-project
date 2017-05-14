@@ -16,13 +16,13 @@ UserInfo::~UserInfo()
 {
 }
 
-void UserInfo::updateUser(std::string& _id)
+void UserInfo::updateUser(std::string _id)
 {
 	// this is last time the user made a request.
 	userDB[_id] = std::time(nullptr);
 }
 
-time_t UserInfo::getUsersLastUpdate(std::string& _id)
+time_t UserInfo::getUsersLastUpdate(std::string _id)
 {
 	if (userDB.count(_id) > 0)
 	{

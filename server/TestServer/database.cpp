@@ -42,7 +42,7 @@ bool Database::putMesh(json& _mesh)
 	return false; 
 }
 
-json Database::getMesh(std::string& _id)
+json Database::getMesh(std::string _id)
 {
 	if (db.count(_id) > 0)
 	{
@@ -53,7 +53,7 @@ json Database::getMesh(std::string& _id)
 	return json();
 }
 
-json Database::getMeshWithEdits(std::string& _id)
+json Database::getMeshWithEdits(std::string _id)
 {
 	if (db.count(_id) > 0)
 	{
@@ -64,7 +64,7 @@ json Database::getMeshWithEdits(std::string& _id)
 	return json();
 }
 
-std::vector<json> Database::getMeshEdits(std::string& _id)
+std::vector<json> Database::getMeshEdits(std::string _id)
 {
 	if (db.count(_id) > 0)
 	{
@@ -106,7 +106,7 @@ void Database::storeDBToFile()
 	outputFile.close();
 }
 
-bool Database::deleteMesh(std::string& id)
+bool Database::deleteMesh(std::string id)
 {
 	if (db.count(id) > 0)
 	{

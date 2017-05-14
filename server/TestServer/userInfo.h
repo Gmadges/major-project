@@ -9,8 +9,8 @@ public:
 	UserInfo();
 	~UserInfo();
 
-	void updateUser(std::string& _id);
-	time_t getUsersLastUpdate(std::string& _id);
+	void updateUser(std::string _id);
+	time_t getUsersLastUpdate(std::string _id);
 
 private:
 	void storeUsersToFile();
