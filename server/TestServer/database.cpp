@@ -111,6 +111,7 @@ bool Database::deleteMesh(std::string id)
 	if (db.count(id) > 0)
 	{
 		db.erase(id);
+		storeDBToFile();
 		return true;
 	}
 	return false;

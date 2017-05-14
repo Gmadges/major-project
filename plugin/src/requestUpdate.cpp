@@ -79,6 +79,8 @@ MStatus	RequestUpdate::doIt(const MArgList& args)
 					status = MayaUtils::getNodeObjectFromUUID(id, node);
 					CallbackHandler::getInstance().registerCallbacksToNode(node);
 
+					// set the values
+					status = setNodeValues(itr);
 					// connect
 					status = setConnections(itr);
 				}
@@ -94,8 +96,6 @@ MStatus	RequestUpdate::doIt(const MArgList& args)
 				status = MayaUtils::getNodeObjectFromUUID(id, node);
 				deleteNode(node);
 			}
-
-			// TODO check connection order possibly?
 		}
 	}
 

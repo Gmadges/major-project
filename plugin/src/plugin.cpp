@@ -10,6 +10,7 @@
 #include "sendUpdate.h"
 #include "setServerCmd.h"
 #include "clearCurrentMesh.h"
+#include "callbackHandler.h"
 
 // initialise our plugin and commands
 
@@ -71,19 +72,7 @@ MStatus uninitializePlugin(MObject obj)
 
 	MFnPlugin plugin(obj);
 
-	status = plugin.deregisterCommand(registerCmd);
-	if (!status)
-	{
-		status.perror("deregisterCommand");
-	}
-
-	status = plugin.deregisterCommand(sendUpdateCmd);
-	if (!status)
-	{
-		status.perror("deregisterCommand");
-	}
-
-	status = plugin.deregisterCommand(RequestMeshCmd);
+	status = plugin.deregisterCommand(setServerCmd);
 	if (!status)
 	{
 		status.perror("deregisterCommand");
@@ -95,7 +84,7 @@ MStatus uninitializePlugin(MObject obj)
 		status.perror("deregisterCommand");
 	}
 
-	status = plugin.deregisterCommand(setServerCmd);
+	status = plugin.deregisterCommand(RequestMeshCmd);
 	if (!status)
 	{
 		status.perror("deregisterCommand");
@@ -106,6 +95,21 @@ MStatus uninitializePlugin(MObject obj)
 	{
 		status.perror("deregisterCommand");
 	}
+
+	status = plugin.deregisterCommand(sendUpdateCmd);
+	if (!status)
+	{
+		status.perror("deregisterCommand");
+	}
+
+	status = plugin.deregisterCommand(registerCmd);
+	if (!status)
+	{
+		status.perror("deregisterCommand");
+	}
+
+	// just making sure we get rid of the callbacks
+	CallbackHandler::getInstance().clearCallbacks();
 
 	return status;
 }
