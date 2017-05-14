@@ -12,8 +12,8 @@ public:
 	~MayaUtils();
 
 
-	static bool isValidNodeType(MString& _type);
-	static bool doesItRequireConnections(MString& _type);
+	static bool isValidNodeType(MString _type);
+	static bool doesItRequireConnections(MString _type);
 	static MStatus getNodeObjectFromUUID(MString& uuid, MObject& _node);
 	static bool doesItExist(std::string id);
 	static MStatus getIncomingNodeObject(MFnDependencyNode& node, MFnDependencyNode& incomingNode);
