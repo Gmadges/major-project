@@ -349,8 +349,10 @@ MStatus TweakHandler::setTweakPlugFromArray(MPlug& _plug, std::vector<json>& twe
 	{
 		for (auto& tweak : json::iterator_wrapper(itr))
 		{
-			unsigned int indice;
-			double x, y, z;
+			unsigned int indice = 0;
+			double x = 0.0;
+			double y = 0.0;
+			double z = 0.0;
 
 			// find tweak indici
 			try
@@ -400,11 +402,6 @@ MStatus TweakHandler::setTweakPlugFromArray(MPlug& _plug, std::vector<json>& twe
 				continue;
 			}
 
-			//MFnNumericData numDataFn;
-			//numDataFn.create(MFnNumericData::k3Float);
-			//numDataFn.setData(x, y, z);
-			//tweakPlug.setValue(numDataFn.object());
-
 			// mel hack
 			MFnDependencyNode tweakNode = _plug.node();
 			MString cmd = "setAttr \"";
@@ -418,6 +415,93 @@ MStatus TweakHandler::setTweakPlugFromArray(MPlug& _plug, std::vector<json>& twe
 			cmd += " ";
 			cmd += z;
 			//HackPrint::print(cmd);
+			status = MGlobal::executeCommand(cmd);
+		}
+	}
+
+	return status;
+}
+
+MStatus TweakHandler::setPointPlugFromArray(MPlug& _plug, std::vector<json>& pointArray)
+{
+	MStatus status = MStatus::kFailure;
+
+	// gonna do some hacky string manip to find out data from plug names
+	// in the future something better should be done. on the sending end i should
+	// also store indices in the message
+
+	for (auto& itr : pointArray)
+	{
+		for (auto& tweak : json::iterator_wrapper(itr))
+		{
+			unsigned int indice = 0;
+			double x = 0.0;
+			double y = 0.0;
+			double z = 0.0;
+
+			// find tweak indici
+			try
+			{
+				size_t pos = tweak.key().find("[") + 1;
+				std::string indString = tweak.key().substr(pos, 1);
+				indice = std::stoi(indString);
+			}
+			catch (std::exception& e)
+			{
+				HackPrint::print(e.what());
+				continue;
+			}
+
+			// iterate json array within tweak
+			for (auto& it : tweak.value())
+			{
+				if (it.is_null()) continue;
+
+				for (auto& tweakVals : json::iterator_wrapper(it))
+				{
+					if (tweakVals.value().is_null()) continue;
+					
+					// finx x y z
+					std::string name(tweakVals.key().substr(tweakVals.key().size() - 1, 1));
+
+					if (name.compare("x") == 0)
+					{
+						x = tweakVals.value().get<double>();
+					}
+
+					if (name.compare("y") == 0)
+					{
+						y = tweakVals.value().get<double>();
+					}
+
+					if (name.compare("z") == 0)
+					{
+						z = tweakVals.value().get<double>();
+					}
+				}
+			}
+
+			// apply
+			MPlug tweakPlug = _plug.elementByLogicalIndex(indice, &status);
+
+			if (status != MStatus::kSuccess)
+			{
+				continue;
+			}
+
+			// mel hack
+			MFnDependencyNode tweakNode = _plug.node();
+			MString cmd = "setAttr \"";
+			cmd += tweakNode.name();
+			cmd += ".pt[";
+			cmd += indice;
+			cmd += "] \" - type \"double3\" ";
+			cmd += x;
+			cmd += " ";
+			cmd += y;
+			cmd += " ";
+			cmd += z;
+			HackPrint::print(cmd);
 			status = MGlobal::executeCommand(cmd);
 		}
 	}

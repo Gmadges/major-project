@@ -221,14 +221,14 @@ MStatus SendAbstract::getAttribFromPlug(MPlug& _plug, json& _attribs)
 		return MStatus::kSuccess;
 	}
 
+	// this one is just stuff i know we can get
+	if (getOtherDataFromAttrib(_plug, _attribs) == MStatus::kSuccess) return MStatus::kSuccess;
+
 	if (getNumericDataFromAttrib(_plug, _attribs) == MStatus::kSuccess) return MStatus::kSuccess;
 
 	if (getTypeDataFromAttrib(_plug, _attribs) == MStatus::kSuccess) return MStatus::kSuccess;
 
 	if (getUnitDataFromAttrib(_plug, _attribs) == MStatus::kSuccess) return MStatus::kSuccess;
-
-	// this one is just stuff i know we can get
-	if (getOtherDataFromAttrib(_plug, _attribs) == MStatus::kSuccess) return MStatus::kSuccess;
 
 	MString error;
 	error += "Couldn't find a match for plug: ";

@@ -2,7 +2,7 @@
 
 #include "mayaUtils.h"
 #include "hackPrint.h"
-
+#include "tweakHandler.h"
 #include <maya/MArgDatabase.h>
 #include <maya/MGlobal.h>
 #include <maya/MUuid.h>
@@ -16,6 +16,8 @@
 #include "callbackHandler.h"
 
 RequestAbstract::RequestAbstract()
+	:
+	pTweakHandler(new TweakHandler())
 {
 }
 
@@ -115,10 +117,18 @@ MStatus RequestAbstract::setAttribs(MFnDependencyNode& node, json& attribs)
 
 			if (it.value().is_array())
 			{
+
+				if (it.key().compare("pt") == 0)
+				{
+					std::vector<json> tweakVals = it.value();
+					pTweakHandler->setPointPlugFromArray(plug, tweakVals);
+					continue;
+				}
+
 				if (it.key().compare("tk") == 0)
 				{
 					std::vector<json> tweakVals = it.value();
-					//pTweakHandler->setTweakPlugFromArray(plug, tweakVals);
+					pTweakHandler->setTweakPlugFromArray(plug, tweakVals);
 					continue;
 				}
 

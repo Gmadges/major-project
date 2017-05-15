@@ -10,6 +10,8 @@
 
 #include "json.h"
 
+class TweakHandler;
+
 class RequestAbstract : public MPxCommand
 {
 public:
@@ -28,6 +30,7 @@ protected:
 
 protected:
 	MDGModifier fDGModifier;
+	std::shared_ptr<TweakHandler> pTweakHandler;
 };
 
 #endif
