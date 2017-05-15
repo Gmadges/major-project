@@ -10,8 +10,6 @@
 
 #include "json.h"
 
-class TweakHandler;
-
 class RequestAbstract : public MPxCommand
 {
 public:
@@ -29,7 +27,6 @@ protected:
 	MStatus setMatrixAttribute(std::vector<double> numbers, MPlug& _plug);
 
 protected:
-	std::unique_ptr<TweakHandler> pTweakHandler;
 	MDGModifier fDGModifier;
 };
 

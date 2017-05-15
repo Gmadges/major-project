@@ -32,7 +32,6 @@
 #include <maya/MFnSingleIndexedComponent.h>
 
 #include "messaging.h"
-#include "tweakHandler.h"
 #include "hackPrint.h"
 #include "testTypes.h"
 
@@ -41,8 +40,7 @@
 
 SendAbstract::SendAbstract()
 	:
-	pMessaging(new Messaging("localhost", 8080)),
-	pTweaksHandler(new TweakHandler())
+	pMessaging(new Messaging("localhost", 8080))
 {
 }
 

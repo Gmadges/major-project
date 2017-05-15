@@ -1,7 +1,6 @@
 #include "requestAbstract.h"
 
 #include "mayaUtils.h"
-#include "tweakHandler.h"
 #include "hackPrint.h"
 
 #include <maya/MArgDatabase.h>
@@ -12,11 +11,11 @@
 #include <maya/MFnMatrixData.h>
 #include <maya/MDataHandle.h>
 #include <maya/MMatrix.h>
+#include <maya/MDagPath.h>
+
 #include "callbackHandler.h"
 
 RequestAbstract::RequestAbstract()
-	:
-	pTweakHandler(new TweakHandler())
 {
 }
 
@@ -119,7 +118,7 @@ MStatus RequestAbstract::setAttribs(MFnDependencyNode& node, json& attribs)
 				if (it.key().compare("tk") == 0)
 				{
 					std::vector<json> tweakVals = it.value();
-					pTweakHandler->setTweakPlugFromArray(plug, tweakVals);
+					//pTweakHandler->setTweakPlugFromArray(plug, tweakVals);
 					continue;
 				}
 
