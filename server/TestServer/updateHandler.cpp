@@ -179,6 +179,12 @@ void UpdateHandler::editNodeInList(json& _node, std::vector<json>& _nodeList)
 		if (id.compare(_nodeList[i]["id"]) == 0)
 		{
 			std::cout << "edit : " << id << std::endl;
+
+			json difference = json::diff(_nodeList[i], _node);
+			std::cout << difference.dump(4);
+
+			// this difference is a "patch" that can be used to update the old node. we can manipulate this to figure out what should be changed.
+
 			_nodeList[i] = _node;
 		}
 	}
