@@ -25,6 +25,7 @@
 
 #include "callbackHandler.h"
 #include "serverAddress.h"
+#include "mayaUtils.h"
 
 SendRegister::SendRegister()
 	:
@@ -162,8 +163,9 @@ MStatus SendRegister::registerAndSendMesh(MDagPath & meshDAGPath)
 	// transforms name, because i dunno
 	meshData["name"] = std::string(transformNode.name().asChar());
 
-	// hardcode cube for now
-	meshData["type"] = PolyType::CUBE;
+	// we pass the last node. which should be the first geo node.
+	meshData["type"] = MayaUtils::getPolyType(nodeList.back(), status);
+	if (status == MStatus::kFailure) return status;
 
 	// add all its nodes
 	// minor hack

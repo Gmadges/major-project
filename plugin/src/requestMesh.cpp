@@ -130,43 +130,78 @@ MStatus RequestMesh::createMesh(json& _mesh)
 
 	// create a mesh
 	PolyType type = _mesh["type"];
+	MString cmd;
 
 	switch (type)
 	{
 		case PolyType::CUBE:
 		{
-			MString cmd;
-			cmd += "polyCube";
-
-			HackPrint::print(cmd);
-			MStringArray result;
-			status = MGlobal::executeCommand(cmd, result);
-
-			if (status != MStatus::kSuccess) return status;
-
-			// rename the nodes
-			MSelectionList sList;
-			sList.add(result[0]);
-			MObject node;
-			if (sList.getDependNode(0, node) != MStatus::kSuccess) return MStatus::kFailure;
-
-			// rename and set correct details
-			MDagPath dagPath;
-			MDagPath::getAPathTo(node, dagPath);
-			dagPath.extendToShape();
-
-			MFnDependencyNode shapeNode(dagPath.node());
-			matchIDs(shapeNode, _mesh);
-
-			//transform node
-			MFnDependencyNode tranformNode(node);
-			matchIDs(tranformNode, _mesh);
-			
-			return status;
+			cmd = "polyCube";
+			break;
+		}
+		case PolyType::CONE:
+		{
+			cmd = "polyCone";
+			break;
+		}
+		case PolyType::CYLINDER:
+		{
+			cmd = "polyCylinder";
+			break;
+		}
+		case PolyType::PIPE:
+		{
+			cmd = "polyPipe";
+			break;
+		}
+		case PolyType::SPHERE:
+		{
+			cmd = "polySphere";
+			break;
+		}
+		case PolyType::PLANE:
+		{
+			cmd = "polyPlane";
+			break;
+		}
+		case PolyType::PYRAMID:
+		{
+			cmd = "polyPyramid";
+			break;
+		}
+		case PolyType::TORUS:
+		{
+			cmd = "polyTorus";
+			break;
+		}
+		default : 
+		{
+			return MStatus::kFailure;
 		}
 	}
 
-	return MStatus::kFailure;
+	MStringArray result;
+	HackPrint::print(cmd);
+	status = MGlobal::executeCommand(cmd, result);
+	if (status != MStatus::kSuccess) return status;
+	MSelectionList sList;
+	sList.add(result[0]);
+	MObject node;
+	if (sList.getDependNode(0, node) != MStatus::kSuccess) return MStatus::kFailure;
+
+	// rename and set correct details
+	MDagPath dagPath;
+	MDagPath::getAPathTo(node, dagPath);
+	dagPath.extendToShape();
+
+	MFnDependencyNode shapeNode(dagPath.node());
+	matchIDs(shapeNode, _mesh);
+
+	//transform node
+	MFnDependencyNode tranformNode(node);
+	matchIDs(tranformNode, _mesh);
+
+	return status;
 }
 
 void RequestMesh::matchIDs(MFnDependencyNode & node, json& mesh)

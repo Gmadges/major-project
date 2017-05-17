@@ -4,6 +4,7 @@
 #include <maya/MUuid.h>
 #include <maya/MPlug.h>
 #include <maya/MPlugArray.h>
+#include "hackPrint.h"
 
 MayaUtils::MayaUtils()
 {
@@ -32,6 +33,7 @@ bool MayaUtils::isValidNodeType(MString& _type)
 			_type == MString("polyCone") ||
 			_type == MString("polyPlane") ||
 			_type == MString("polyBevel") ||
+			_type == MString("polyBevel3") ||
 			_type == MString("polyCollapseF") ||
 			_type == MString("polyCollapseEdge"));
 }
@@ -41,7 +43,57 @@ bool MayaUtils::doesItRequireConnections(MString& _type)
 	return (_type == MString("polyTweak") ||
 			_type == MString("polySplitRing") ||
 			_type == MString("polyExtrudeFace") ||
-			_type == MString("polyBevel"));
+			_type == MString("polyBevel") ||
+			_type == MString("polyBevel3"));
+}
+
+PolyType MayaUtils::getPolyType(json& geoNode, MStatus& status)
+{
+	std::string type = geoNode["type"];
+	status = MStatus::kSuccess;
+
+	if (type.compare("polyCube") == 0)
+	{
+		return PolyType::CUBE;
+	}
+
+	if (type.compare("polyPipe") == 0)
+	{
+		return PolyType::PIPE;
+	}
+
+	if (type.compare("polySphere") == 0)
+	{
+		return PolyType::SPHERE;
+	}
+
+	if (type.compare("polyPyramid") == 0)
+	{
+		return PolyType::PYRAMID;
+	}
+
+	if (type.compare("polyCylinder") == 0)
+	{
+		return PolyType::CYLINDER;
+	}
+
+	if (type.compare("polyTorus") == 0)
+	{
+		return PolyType::TORUS;
+	}
+
+	if (type.compare("polyCone") == 0)
+	{
+		return PolyType::CONE;
+	}
+
+	if (type.compare("polyPlane") == 0)
+	{
+		return PolyType::PLANE;
+	}
+
+	status = MStatus::kFailure;
+	return PolyType::CUBE;
 }
 
 MStatus MayaUtils::getNodeObjectFromUUID(MString& uuid, MObject& _node)
