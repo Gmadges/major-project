@@ -22,14 +22,26 @@ bool MayaUtils::isValidNodeType(MString& _type)
 			_type == MString("polyTweak") ||
 			_type == MString("polyExtrudeFace") ||
 			_type == MString("polySplitRing") ||
-			_type == MString("polyCube"));
+			_type == MString("polySplit") ||
+			_type == MString("polyCube") ||
+			_type == MString("polyPipe") || 
+			_type == MString("polySphere") || 
+			_type == MString("polyPyramid") || 
+			_type == MString("polyCylinder") ||
+			_type == MString("polyTorus") || 
+			_type == MString("polyCone") ||
+			_type == MString("polyPlane") ||
+			_type == MString("polyBevel") ||
+			_type == MString("polyCollapseF") ||
+			_type == MString("polyCollapseEdge"));
 }
 
 bool MayaUtils::doesItRequireConnections(MString& _type)
 {
 	return (_type == MString("polyTweak") ||
 			_type == MString("polySplitRing") ||
-			_type == MString("polyExtrudeFace"));
+			_type == MString("polyExtrudeFace") ||
+			_type == MString("polyBevel"));
 }
 
 MStatus MayaUtils::getNodeObjectFromUUID(MString& uuid, MObject& _node)
