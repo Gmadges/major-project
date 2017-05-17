@@ -357,8 +357,9 @@ MStatus TweakHandler::setTweakPlugFromArray(MPlug& _plug, std::vector<json>& twe
 			// find tweak indici
 			try
 			{
-				size_t pos = tweak.key().find("[") + 1;
-				std::string indString = tweak.key().substr(pos, 1);
+				size_t first = tweak.key().find("[") + 1;
+				size_t last = tweak.key().find("]");
+				std::string indString = tweak.key().substr(first, last - first);
 				indice = std::stoi(indString);
 			}
 			catch (std::exception& e)
@@ -442,8 +443,9 @@ MStatus TweakHandler::setPointPlugFromArray(MPlug& _plug, std::vector<json>& poi
 			// find tweak indici
 			try
 			{
-				size_t pos = tweak.key().find("[") + 1;
-				std::string indString = tweak.key().substr(pos, 1);
+				size_t first = tweak.key().find("[") + 1;
+				size_t last = tweak.key().find("]");
+				std::string indString = tweak.key().substr(first, last - first);
 				indice = std::stoi(indString);
 			}
 			catch (std::exception& e)

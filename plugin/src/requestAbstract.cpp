@@ -120,8 +120,8 @@ MStatus RequestAbstract::setAttribs(MFnDependencyNode& node, json& attribs)
 
 				if (it.key().compare("pt") == 0)
 				{
-					std::vector<json> tweakVals = it.value();
-					pTweakHandler->setPointPlugFromArray(plug, tweakVals);
+					std::vector<json> pntVals = it.value();
+					pTweakHandler->setPointPlugFromArray(plug, pntVals);
 					continue;
 				}
 
