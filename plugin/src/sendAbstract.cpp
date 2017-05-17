@@ -571,6 +571,21 @@ MStatus SendAbstract::getUnitDataFromAttrib(MPlug& _plug, json& _attribs)
 	std::string attribName = _plug.partialName().asChar();
 	MObject attribute = _plug.attribute();
 
+	std::string funciton = attribute.apiTypeStr();
+	
+	// hack
+	std::size_t found = attribName.find("pt");
+	if (found != std::string::npos)
+	{
+		if (attribute.apiType() == MFn::kFloatLinearAttribute)
+		{
+			float value;
+			_plug.getValue(value);
+			_attribs[attribName] = value;
+			return MStatus::kSuccess;
+		}
+	}
+
 	// do the same for typed attribs
 	if (attribute.hasFn(MFn::kUnitAttribute))
 	{
