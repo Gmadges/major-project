@@ -18,7 +18,6 @@
 #include <string>
 
 #include "messaging.h"
-#include "tweakHandler.h"
 #include "hackPrint.h"
 #include "testTypes.h"
 #include "mayaUtils.h"

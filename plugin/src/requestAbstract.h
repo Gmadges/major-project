@@ -29,8 +29,8 @@ protected:
 	MStatus setMatrixAttribute(std::vector<double> numbers, MPlug& _plug);
 
 protected:
-	std::unique_ptr<TweakHandler> pTweakHandler;
 	MDGModifier fDGModifier;
+	std::shared_ptr<TweakHandler> pTweakHandler;
 };
 
 #endif

@@ -12,7 +12,6 @@
 #include "maya/MUuid.h"
 
 #include "testTypes.h"
-#include "tweakHandler.h"
 #include "serverAddress.h"
 #include "callbackHandler.h"
 #include "mayaUtils.h"
