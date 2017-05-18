@@ -51,6 +51,9 @@ MStatus	SendUpdate::doIt(const MArgList& args)
 
 	pMessaging->resetSocket(ServerAddress::getInstance().getAddress(), ServerAddress::getInstance().getPort());
 
+	// we do this here because it might get reset in the delete node method.
+	std::string currentID = CallbackHandler::getInstance().getCurrentRegisteredMesh();
+
 	std::vector<json> nodeList;
 
 	// this order is vaguely important we wanna add then update then del in databse i think
@@ -67,7 +70,7 @@ MStatus	SendUpdate::doIt(const MArgList& args)
 
 	json meshData;
 	// use shape nodes id.
-	meshData["id"] = CallbackHandler::getInstance().getCurrentRegisteredMesh();
+	meshData["id"] = currentID;
 
 	// add all its nodes
 	meshData["nodes"] = nodeList;
@@ -156,14 +159,38 @@ void SendUpdate::processDeletedNodes(std::vector<json>& nodeList)
 
 	if (list.empty()) return;
 
+	std::vector<json> deleteList;
+
+	std::string regID = CallbackHandler::getInstance().getCurrentRegisteredMesh();
+
 	for (auto& itr : list)
 	{
+		//if the ide is the same as our registered id then thats bad
+		if (regID.compare(itr.first) == 0)
+		{
+			// very important
+			// we're deleting our main mesh thing but still wanna let it send edits and stuff
+
+			// we reset the list
+			CallbackHandler::getInstance().resetDeleteList();
+			//clear callbacks
+			CallbackHandler::getInstance().clearCallbacks();
+			// clear current registered mesh
+			CallbackHandler::getInstance().setCurrentRegisteredMesh("");
+			// stop here we're done, not sending anything to be deleted.
+			return;
+
+			// TODO find a way of telling gui whats happened
+		}
+
 		json delNode;
 		delNode["id"] = itr.first;
 		delNode["time"] = itr.second;
 		delNode["edit"] = EditType::DEL;
-		nodeList.push_back(delNode);
+		deleteList.push_back(delNode);
 	}
+
+	nodeList.insert(nodeList.end(), deleteList.begin(), deleteList.end());
 
 	// clear the list
 	CallbackHandler::getInstance().resetDeleteList();
