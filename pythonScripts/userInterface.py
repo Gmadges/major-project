@@ -304,6 +304,9 @@ class CreateUI(QWidget):
         self.messenger = ServerMessenger()
         self.initUI()
 
+    def closeEvent(self, event):
+        self.connectionWid.stopHeartbeat()
+
     def initUI(self):
         self.connectionWid = serverConnectWidget(self.messenger)
         self.meshSelectWid = meshSelectionWidget(self.messenger)
