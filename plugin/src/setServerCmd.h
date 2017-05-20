@@ -19,7 +19,7 @@ public:
 
 private:
 
-	MStatus getArgs(const MArgList& args, MString& address, int& port, MString& uid);
+	MStatus getArgs(const MArgList& args, bool& query, MString& address, int& port, MString& uid);
 };
 
 #endif
