@@ -71,9 +71,6 @@ class serverConnectWidget(QFrame):
         self.heartbeatTimer = Timer(self.heartbeatWait, self.heartbeatFunc)
         self.setFrameStyle(QFrame.StyledPanel)
 
-    def __del__(self):
-        self.heartbeatTimer.cancel()
-
     def initUI(self):
         self.connect_btn = QPushButton('Connect', self)
         self.connect_btn.clicked.connect(self.connectToServer)
@@ -105,19 +102,23 @@ class serverConnectWidget(QFrame):
 
     def connectToServer(self):
         self.stopHeartbeat()
-        address = self.address_line.text()
-        port = self.port_spin.value()
-        userID = self.user_id_line.text()
-        # add one to the port
-        self.messenger.setServer(address, port + 1)
-        request = self.messenger.requestAllMeshes()
-        if request['status'] is 200 :
-            self.setConnectedLabel(True)
-            self.setServerCmd(address, port, userID)
-            self.startHeartbeat()
-            self.connected.emit()
-        else:
-            self.setConnectedLabel(False)
+        if self.pluginLoaded() is True:
+            address = self.address_line.text()
+            port = self.port_spin.value()
+            userID = self.user_id_line.text()
+            # add one to the port
+            self.messenger.setServer(address, port + 1)
+            request = self.messenger.requestAllMeshes()
+            if request['status'] is 200 :
+                self.setConnectedLabel(True)
+                self.setServerCmd(address, port, userID)
+                self.startHeartbeat()
+                self.connected.emit()
+            else:
+                self.setConnectedLabel(False)
+                cmds.confirmDialog( title='Error', message='Cannot connect to server.')
+        else :
+            cmds.confirmDialog( title='Error', message='Plugin is not loaded.')    
 
     def startHeartbeat(self):
         def interval_wrapper():
@@ -132,6 +133,9 @@ class serverConnectWidget(QFrame):
     def heartbeatFunc(self):
         self.setConnectedLabel(self.messenger.heartbeat())
 
+    def pluginLoaded(self):
+         return cmds.pluginInfo('PluginDebugTest', query=True ,loaded=True)
+
     def setConnectedLabel(self, isConnected):
         if isConnected is True:
             self.connection_label.setText('connected')
@@ -140,12 +144,10 @@ class serverConnectWidget(QFrame):
             self.connection_label.setText('disconnected')
             self.connection_label.setStyleSheet('color: red')
 
-
     def setServerCmd(self, address, port, userID):
         if not userID:
             userID = socket.gethostbyname(socket.gethostname())
         cmd = 'SetServer -a "' + address + '" -p ' + str(port) + ' -uid "' + userID + '"'
-        print cmd
         mel.eval(cmd)
 
 class meshSelectionWidget(QFrame):
@@ -157,10 +159,10 @@ class meshSelectionWidget(QFrame):
         self.messenger = messenger
         self.initUI()
         self.setFrameStyle(QFrame.StyledPanel)
-        self.meshTuples = []
 
     def initUI(self):
         self.list = QListWidget()
+        self.list.setSelectionMode(QAbstractItemView.ExtendedSelection)
 
         self.getMesh_btn = QPushButton('Get', self)
         self.delMesh_btn = QPushButton('Delete', self)
@@ -185,18 +187,22 @@ class meshSelectionWidget(QFrame):
     def requestAllMesh(self):
         request = self.messenger.requestAllMeshes()
         self.list.clear()
-        self.meshTuples = []
         for i in range(len(request['meshNames'])):
-            self.meshTuples.append((request['meshNames'][i], request['meshIds'][i]))
             newItem = QListWidgetItem()
             newItem.setText(request['meshNames'][i])
+            newItem.setData(Qt.ToolTipRole, request['meshIds'][i])
             self.list.addItem(newItem)
 
     def getMesh(self):
-        index = self.list.currentRow()
-        meshId = self.meshTuples[index][1]
-        self.requestMeshCmd(meshId)
-        self.meshRequested.emit(self.meshTuples[index][0])
+        items = self.list.selectedItems()
+        if len(items) == 1 :
+            self.requestMeshCmd(items[0].toolTip())
+            self.meshRequested.emit(items[0].toolTip())
+        else :
+            if len(items) > 1:
+                cmds.confirmDialog( title='Error', message='Only one mesh can be requested.')
+            else :
+                cmds.confirmDialog( title='Error', message='No mesh selected.')
 
     def requestMeshCmd(self, meshId):
         clearCmd = 'ClearCurrentMesh'
@@ -205,9 +211,9 @@ class meshSelectionWidget(QFrame):
         mel.eval(reqCmd)
 
     def delMesh(self):
-        index = self.list.currentRow()
-        meshId = self.meshTuples[index][1]
-        self.messenger.deleteMesh(meshId)
+        items = self.list.selectedItems()
+        for i in range(len(items)) :
+            self.messenger.deleteMesh(items[i].toolTip())
         self.requestAllMesh()
 
 class currentMeshWidget(QFrame):
