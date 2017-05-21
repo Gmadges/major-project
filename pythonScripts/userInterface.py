@@ -60,7 +60,7 @@ class ServerMessenger(object):
 
 class serverConnectWidget(QFrame):
 
-    connected = Signal()
+    connected = Signal(bool)
 
     def __init__(self, messenger):
         super(serverConnectWidget, self).__init__()
@@ -83,7 +83,7 @@ class serverConnectWidget(QFrame):
                 self.setConnectedLabel(True)
                 self.startHeartbeat()
                 self.connectionMade = True
-                self.connected.emit()
+                self.connected.emit(self.connectionMade)
             
     def initUI(self):
         self.connect_btn = QPushButton('Connect', self)
@@ -127,9 +127,11 @@ class serverConnectWidget(QFrame):
                 self.setServerCmd(address, port, userID)
                 self.startHeartbeat()
                 self.connectionMade = True
-                self.connected.emit()
+                self.connected.emit(self.connectionMade)
             else:
                 self.setConnectedLabel(False)
+                self.connectionMade = False
+                self.connected.emit(self.connectionMade)
                 cmds.confirmDialog( title='Error', message='Cannot connect to server.')
         else :
             cmds.confirmDialog( title='Error', message='Plugin is not loaded.')    
