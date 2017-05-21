@@ -42,8 +42,10 @@ json Database::getMesh(std::string& _id)
 {
 	if (db.count(_id) > 0)
 	{
-		std::cout << "getting: " << _id << std::endl;
-		return db[_id]["mesh"];
+		if (db[_id].count("mesh") > 0)
+		{
+			return db[_id]["mesh"];
+		}
 	}
 
 	return json();
@@ -53,7 +55,6 @@ json Database::getMeshWithEdits(std::string& _id)
 {
 	if (db.count(_id) > 0)
 	{
-		std::cout << "getting: " << _id << std::endl;
 		return db[_id];
 	}
 
@@ -62,10 +63,19 @@ json Database::getMeshWithEdits(std::string& _id)
 
 std::vector<json> Database::getMeshEdits(std::string& _id)
 {
-	if (db.count(_id) > 0)
+	try
 	{
-		std::cout << "getting: " << _id << std::endl;
-		return db[_id]["edits"];
+		if (db.count(_id) > 0)
+		{
+			if (db[_id].count("edits") > 0)
+			{
+				return db[_id]["edits"].get<std::vector<json>>();
+			}
+		}
+	}
+	catch (std::exception& e)
+	{
+		std::cout << e.what();
 	}
 
 	return std::vector<json>();
