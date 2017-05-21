@@ -14,9 +14,6 @@
 #include "json.h"
 #include "sendAbstract.h"
 
-class Messaging;
-class TweakHandler;
-
 class SendRegister : public SendAbstract
 {
 public:

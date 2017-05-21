@@ -15,7 +15,6 @@
 #include "json.h"
 
 class Messaging;
-class TweakHandler;
 
 class SendAbstract : public MPxCommand
 {
@@ -46,7 +45,6 @@ protected:
 
 
 	std::unique_ptr<Messaging> pMessaging;
-	std::unique_ptr<TweakHandler> pTweaksHandler;
 };
 
 #endif
