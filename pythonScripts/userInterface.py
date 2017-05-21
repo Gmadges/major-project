@@ -353,15 +353,20 @@ class CreateUI(QWidget):
         self.setLayout(main_layout)
 
         if self.connectionWid.isServerConnected() is True:
-            self.enableWidgets(True)
+            self.setWidgets(True)
             self.meshSelectWid.requestAllMesh()
             # set current mesh if there is one
         else:
-            self.enableWidgets(False)
+            self.setWidgets(False)
 
-    def enableWidgets(self, enable):
+    def setWidgets(self, enable):
         self.meshSelectWid.setEnabled(enable)
         self.currentMeshWid.setEnabled(enable)
+        #self.settingsWid.setEnabled(False)
+
+    def enableWidgets(self):
+        self.meshSelectWid.setEnabled(True)
+        self.currentMeshWid.setEnabled(True)
         #self.settingsWid.setEnabled(False)
             
 def main():
