@@ -9,14 +9,7 @@ Database::Database()
 	{
 		dbfile >> db;
 	}
-
-	std::ifstream userFile("users.json");
-	if (userFile.is_open())
-	{
-		userFile >> userDB;
-	}
 }
-
 
 Database::~Database()
 {
@@ -24,6 +17,9 @@ Database::~Database()
 
 bool Database::putMesh(json& _mesh)
 {
+	// lock
+	std::lock_guard<std::mutex> lock(mut);
+
 	if (_mesh.count("id") > 0)
 	{
 		std::string id = _mesh["id"];
@@ -77,6 +73,9 @@ std::vector<json> Database::getMeshEdits(std::string& _id)
 
 bool Database::putMeshWithEdits(json& _object)
 {
+	// lock
+	std::lock_guard<std::mutex> lock(mut);
+
 	if (_object["mesh"].count("id") > 0)
 	{
 		std::string id = _object["mesh"]["id"];
@@ -115,11 +114,4 @@ bool Database::deleteMesh(std::string& id)
 		return true;
 	}
 	return false;
-}
-
-void Database::storeUsersToFile()
-{
-	std::ofstream outputFile("users.json");
-	outputFile << std::setw(4) << userDB << std::endl;
-	outputFile.close();
 }
