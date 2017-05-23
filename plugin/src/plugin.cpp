@@ -11,6 +11,7 @@
 #include "setServerCmd.h"
 #include "clearCurrentMesh.h"
 #include "callbackHandler.h"
+#include "settingsCmd.h"
 
 // initialise our plugin and commands
 
@@ -20,6 +21,7 @@ static const MString RequestMeshCmd = "RequestMesh";
 static const MString RequestUpdateCmd = "RequestUpdate";
 static const MString setServerCmd = "SetServer";
 static const MString clearCurrentCmd = "ClearCurrentMesh";
+static const MString settingsCmd = "Settings";
 
 MStatus initializePlugin(MObject obj)
 {
@@ -63,6 +65,12 @@ MStatus initializePlugin(MObject obj)
 		status.perror("registerCommand");
 	}
 
+	status = plugin.registerCommand(settingsCmd, SettingsCmd::creator, SettingsCmd::newSyntax);
+	if (!status)
+	{
+		status.perror("registerCommand");
+	}
+
 	return status;
 }
 
@@ -71,6 +79,12 @@ MStatus uninitializePlugin(MObject obj)
 	MStatus status;
 
 	MFnPlugin plugin(obj);
+
+	status = plugin.deregisterCommand(settingsCmd);
+	if (!status)
+	{
+		status.perror("deregisterCommand");
+	}
 
 	status = plugin.deregisterCommand(setServerCmd);
 	if (!status)

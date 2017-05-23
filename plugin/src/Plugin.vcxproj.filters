@@ -41,6 +41,9 @@
     <ClCompile Include="dataStore.cpp">
       <Filter>info</Filter>
     </ClCompile>
+    <ClCompile Include="settingsCmd.cpp">
+      <Filter>info</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hackPrint.h" />
@@ -87,6 +90,9 @@
       <Filter>send</Filter>
     </ClInclude>
     <ClInclude Include="dataStore.h">
+      <Filter>info</Filter>
+    </ClInclude>
+    <ClInclude Include="settingsCmd.h">
       <Filter>info</Filter>
     </ClInclude>
   </ItemGroup>
