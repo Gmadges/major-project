@@ -12,7 +12,7 @@
 #include "maya/MUuid.h"
 
 #include "testTypes.h"
-#include "serverAddress.h"
+#include "dataStore.h"
 #include "callbackHandler.h"
 #include "mayaUtils.h"
 
@@ -65,13 +65,13 @@ MStatus	RequestUpdate::doIt(const MArgList& args)
 	MStatus status = MStatus::kSuccess;
 
 	// reset socket
-	if (!ServerAddress::getInstance().isServerSet())
+	if (!DataStore::getInstance().isServerSet())
 	{
 		HackPrint::print("Set Server using \"SetServer\" command");
 		return status;
 	}
 
-	pMessenger->resetSocket(ServerAddress::getInstance().getAddress(), ServerAddress::getInstance().getPort());
+	pMessenger->resetSocket(DataStore::getInstance().getAddress(), DataStore::getInstance().getPort());
 
 	bool bFullMesh = false;
 	getArgs(args, bFullMesh);
@@ -80,8 +80,8 @@ MStatus	RequestUpdate::doIt(const MArgList& args)
 	// if false then we couldnt connect to server
 	if (!pMessenger->requestMesh(data,
 									ReqType::REQUEST_MESH_UPDATE,
-									CallbackHandler::getInstance().getCurrentRegisteredMesh(),
-									ServerAddress::getInstance().getUserID(),
+									DataStore::getInstance().getCurrentRegisteredMesh(),
+									DataStore::getInstance().getUserID(),
 									bFullMesh))
 	{
 		return MStatus::kFailure;
@@ -94,7 +94,7 @@ MStatus	RequestUpdate::doIt(const MArgList& args)
 	}
 
 	// we should stop listening for changes because otherwise we'll keep sending back the changes we just made.
-	CallbackHandler::getInstance().ignoreChanges(true);
+	CallbackHandler::getInstance().setIgnoreChanges(true);
 
 	if (bFullMesh)
 	{
@@ -106,7 +106,7 @@ MStatus	RequestUpdate::doIt(const MArgList& args)
 	}
 
 	// we should stop listening for changes because otherwise we'll keep sending back the changes we just made.
-	CallbackHandler::getInstance().ignoreChanges(false);
+	CallbackHandler::getInstance().setIgnoreChanges(false);
 
 	return status;
 }

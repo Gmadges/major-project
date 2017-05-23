@@ -14,6 +14,7 @@
 #include <maya/MDagPath.h>
 
 #include "callbackHandler.h"
+#include "dataStore.h"
 
 RequestAbstract::RequestAbstract()
 	:
@@ -231,7 +232,7 @@ MStatus RequestAbstract::setConnections(json& _node)
 			// Really long winded way to grab the shape nodes name
 			MDagPath dagPath;
 			MObject tmp;
-			MString id = CallbackHandler::getInstance().getCurrentRegisteredMesh().c_str();
+			MString id = DataStore::getInstance().getCurrentRegisteredMesh().c_str();
 			status = MayaUtils::getNodeObjectFromUUID(id, tmp);
 			if (status != MStatus::kSuccess) return status;
 			status = MDagPath::getAPathTo(tmp, dagPath);
