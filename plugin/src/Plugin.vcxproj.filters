@@ -14,9 +14,6 @@
     <ClCompile Include="sendUpdate.cpp">
       <Filter>send</Filter>
     </ClCompile>
-    <ClCompile Include="sendRegister.cpp">
-      <Filter>register</Filter>
-    </ClCompile>
     <ClCompile Include="serverAddress.cpp">
       <Filter>info</Filter>
     </ClCompile>
@@ -41,6 +38,9 @@
     <ClCompile Include="clearCurrentMesh.cpp">
       <Filter>info</Filter>
     </ClCompile>
+    <ClCompile Include="sendRegister.cpp">
+      <Filter>send</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hackPrint.h" />
@@ -61,9 +61,6 @@
     </ClInclude>
     <ClInclude Include="sendUpdate.h">
       <Filter>send</Filter>
-    </ClInclude>
-    <ClInclude Include="sendRegister.h">
-      <Filter>register</Filter>
     </ClInclude>
     <ClInclude Include="serverAddress.h">
       <Filter>info</Filter>
@@ -89,6 +86,9 @@
     <ClInclude Include="sendAbstract.h">
       <Filter>send</Filter>
     </ClInclude>
+    <ClInclude Include="sendRegister.h">
+      <Filter>send</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="common">
@@ -105,9 +105,6 @@
     </Filter>
     <Filter Include="callbacks">
       <UniqueIdentifier>{93dc10f7-668e-4057-a906-7bdf6871d49a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="register">
-      <UniqueIdentifier>{156d3de9-f0f9-4682-96dd-be2679a97dd2}</UniqueIdentifier>
     </Filter>
     <Filter Include="send">
       <UniqueIdentifier>{e0f1f7e9-f2cb-4006-95b1-5bdc5091b676}</UniqueIdentifier>
