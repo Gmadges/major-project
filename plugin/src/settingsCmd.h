@@ -19,7 +19,7 @@ public:
 	virtual MStatus doIt(const MArgList&) override;
 
 private:
-	MStringArray getSettings(MArgDatabase& parser);
+	MStringArray getSettings();
 	void setSettings(MArgDatabase& parser);
 };
 

@@ -21,12 +21,10 @@ MSyntax SettingsCmd::newSyntax()
 {
 	MSyntax syn;
 
-	// query means your asking for the settings values
+	// query returns all our current settings in a string array
 	syn.addFlag("-q", "-query");
 
-	// settings we handle
-	// cant set the current mesh
-	syn.addFlag("-cm", "-currentMesh");
+	// settings we can change here
 	syn.addFlag("-fm", "-fullMesh", MSyntax::kBoolean);
 
 	return syn;
@@ -42,7 +40,7 @@ MStatus SettingsCmd::doIt(const MArgList& args)
 
 	if (parser.isFlagSet("-q"))
 	{
-		setResult(getSettings(parser));
+		setResult(getSettings());
 	}
 	else
 	{
@@ -52,23 +50,19 @@ MStatus SettingsCmd::doIt(const MArgList& args)
 	return status;
 }
 
-MStringArray SettingsCmd::getSettings(MArgDatabase& parser)
+MStringArray SettingsCmd::getSettings()
 {
 	MStringArray values;
 
-	if (parser.isFlagSet("-cm"))
-	{
-		values.append("currentMesh");
-		values.append(DataStore::getInstance().getCurrentRegisteredMesh().c_str());
-	}
+	// current mesh
+	values.append("currentMesh");
+	values.append(DataStore::getInstance().getCurrentRegisteredMesh().c_str());
 
-	if (parser.isFlagSet("-fm"))
-	{
-		values.append("fullMesh");
-		MString tmp;
-		tmp += DataStore::getInstance().getFullMeshRequest();
-		values.append(tmp);
-	}
+	// fullmesh enabled
+	values.append("fullMesh");
+	MString tmp;
+	tmp += DataStore::getInstance().getFullMeshRequest();
+	values.append(tmp);
 
 	return values;
 }
@@ -78,7 +72,7 @@ void SettingsCmd::setSettings(MArgDatabase& parser)
 	if (parser.isFlagSet("-fm"))
 	{
 		bool tmp;
-		parser.getFlagArgument("-p", 0, tmp);
+		parser.getFlagArgument("-fm", 0, tmp);
 		DataStore::getInstance().setFullMeshRequest(tmp);
 	}
 }
