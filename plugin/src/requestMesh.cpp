@@ -31,6 +31,34 @@ void* RequestMesh::creator()
 	return new RequestMesh;
 }
 
+MSyntax RequestMesh::newSyntax()
+{
+	MSyntax syn;
+
+	syn.addFlag("-id", "-uuid", MSyntax::kString);
+
+	return syn;
+}
+
+MStatus RequestMesh::getArgs(const MArgList& args, MString& id)
+{
+	MStatus status = MStatus::kSuccess;
+	MArgDatabase parser(syntax(), args, &status);
+
+	if (status != MS::kSuccess) return status;
+
+	if (parser.isFlagSet("-id"))
+	{
+		parser.getFlagArgument("-id", 0, id);
+	}
+	else
+	{
+		status = MStatus::kFailure;
+	}
+
+	return status;
+}
+
 MStatus	RequestMesh::doIt(const MArgList& args)
 {
 	MStatus status = MStatus::kSuccess;

@@ -31,6 +31,35 @@ void* RequestUpdate::creator()
 	return new RequestUpdate;
 }
 
+MSyntax RequestUpdate::newSyntax()
+{
+
+	MSyntax syn;
+
+	syn.addFlag("-fm", "-fullMesh", MSyntax::kBoolean);
+
+	return syn;
+}
+
+MStatus RequestUpdate::getArgs(const MArgList& args, bool& forceFullMesh)
+{
+	MStatus status = MStatus::kSuccess;
+	MArgDatabase parser(syntax(), args, &status);
+
+	if (status != MS::kSuccess) return status;
+
+	if (parser.isFlagSet("-fm"))
+	{
+		parser.getFlagArgument("-fm", 0, forceFullMesh);
+	}
+	else
+	{
+		status = MStatus::kFailure;
+	}
+
+	return status;
+}
+
 MStatus	RequestUpdate::doIt(const MArgList& args)
 {
 	MStatus status = MStatus::kSuccess;
@@ -44,10 +73,19 @@ MStatus	RequestUpdate::doIt(const MArgList& args)
 
 	pMessenger->resetSocket(ServerAddress::getInstance().getAddress(), ServerAddress::getInstance().getPort());
 
+	bool bFullMesh = false;
+	getArgs(args, bFullMesh);
+
 	json data;
-	
 	// if false then we couldnt connect to server
-	if (!pMessenger->requestMesh(data, ReqType::REQUEST_MESH_UPDATE, CallbackHandler::getInstance().getCurrentRegisteredMesh(), ServerAddress::getInstance().getUserID())) return MStatus::kFailure;
+	if (!pMessenger->requestMesh(data,
+									ReqType::REQUEST_MESH_UPDATE,
+									CallbackHandler::getInstance().getCurrentRegisteredMesh(),
+									ServerAddress::getInstance().getUserID(),
+									bFullMesh))
+	{
+		return MStatus::kFailure;
+	}
 
 	// is there actually anything?
 	if (data.empty() || data["edits"].empty())
@@ -58,48 +96,74 @@ MStatus	RequestUpdate::doIt(const MArgList& args)
 	// we should stop listening for changes because otherwise we'll keep sending back the changes we just made.
 	CallbackHandler::getInstance().ignoreChanges(true);
 
-	auto editList = data["edits"];
-
-	for (auto& edit : editList)
+	if (bFullMesh)
 	{
-		for (auto& itr : edit["nodes"])
-		{
-
-			if (itr["edit"] == EditType::ADD)
-			{
-				std::string stringID = itr["id"];
-				bool nodeExists = MayaUtils::doesItExist(stringID);
-
-				if (!nodeExists)
-				{
-					status = createNode(itr);
-					MObject node;
-					MString id = itr["id"].get<std::string>().c_str();
-					status = MayaUtils::getNodeObjectFromUUID(id, node);
-					CallbackHandler::getInstance().registerCallbacksToNode(node);
-
-					// set the values
-					status = setNodeValues(itr);
-					// connect
-					status = setConnections(itr);
-				}
-			}
-			else if (itr["edit"] == EditType::EDIT)
-			{
-				status = setNodeValues(itr);
-			}
-			else if (itr["edit"] == EditType::DEL)
-			{
-				MObject node;
-				MString id = itr["id"].get<std::string>().c_str();
-				status = MayaUtils::getNodeObjectFromUUID(id, node);
-				deleteNode(node);
-			}
-		}
+		status = applyNodes(data["edits"]);
+	}
+	else
+	{
+		status = applyEdits(data["edits"]);
 	}
 
 	// we should stop listening for changes because otherwise we'll keep sending back the changes we just made.
 	CallbackHandler::getInstance().ignoreChanges(false);
+
+	return status;
+}
+
+MStatus RequestUpdate::applyNodes(std::vector<json> nodeList)
+{
+	MStatus status;
+
+	for (auto& itr : nodeList)
+    {
+
+		if (itr["edit"] == EditType::ADD)
+		{
+			std::string stringID = itr["id"];
+			bool nodeExists = MayaUtils::doesItExist(stringID);
+
+			if (!nodeExists)
+			{
+				status = createNode(itr);
+				MObject node;
+				MString id = itr["id"].get<std::string>().c_str();
+				status = MayaUtils::getNodeObjectFromUUID(id, node);
+				CallbackHandler::getInstance().registerCallbacksToNode(node);
+
+				// set the values
+				status = setNodeValues(itr);
+				// connect
+				status = setConnections(itr);
+			}
+		}
+		else if (itr["edit"] == EditType::EDIT)
+		{
+			status = setNodeValues(itr);
+		}
+		else if (itr["edit"] == EditType::DEL)
+		{
+			MObject node;
+			MString id = itr["id"].get<std::string>().c_str();
+			status = MayaUtils::getNodeObjectFromUUID(id, node);
+			deleteNode(node);
+		}
+
+		// TODO
+		// think about what happens to nodes that we dont get a delete message for if we're in fullmesh mode
+    }
+
+	return status;
+}
+
+MStatus RequestUpdate::applyEdits(std::vector<json> editList)
+{
+	MStatus status;
+
+	for (auto& edit : editList)
+	{
+		status = applyNodes(edit["nodes"]);
+	}
 
 	return status;
 }

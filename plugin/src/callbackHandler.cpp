@@ -97,7 +97,11 @@ void timerCallback(float elapsedTime, float lastTime, void *clientData)
 	}
 	else
 	{
-		MGlobal::executeCommandOnIdle("RequestUpdate");
+		MString cmd;
+		cmd += "RequestUpdate -fm ";
+		// hardcode
+		cmd += true;
+		MGlobal::executeCommandOnIdle(cmd);
 	}
 }
 

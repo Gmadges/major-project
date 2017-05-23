@@ -45,13 +45,13 @@ MStatus initializePlugin(MObject obj)
 		status.perror("registerCommand");
 	}
 
-	status = plugin.registerCommand(RequestMeshCmd, RequestMesh::creator, RequestAbstract::newSyntax);
+	status = plugin.registerCommand(RequestMeshCmd, RequestMesh::creator, RequestMesh::newSyntax);
 	if (!status)
 	{
 		status.perror("registerCommand");
 	}
 
-	status = plugin.registerCommand(RequestUpdateCmd, RequestUpdate::creator);
+	status = plugin.registerCommand(RequestUpdateCmd, RequestUpdate::creator, RequestUpdate::newSyntax);
 	if (!status)
 	{
 		status.perror("registerCommand");
