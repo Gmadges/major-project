@@ -12,7 +12,7 @@
 #include "maya/MUuid.h"
 
 #include "testTypes.h"
-#include "serverAddress.h"
+#include "dataStore.h"
 #include "callbackHandler.h"
 #include "mayaUtils.h"
 
@@ -31,18 +31,46 @@ void* RequestMesh::creator()
 	return new RequestMesh;
 }
 
+MSyntax RequestMesh::newSyntax()
+{
+	MSyntax syn;
+
+	syn.addFlag("-id", "-uuid", MSyntax::kString);
+
+	return syn;
+}
+
+MStatus RequestMesh::getArgs(const MArgList& args, MString& id)
+{
+	MStatus status = MStatus::kSuccess;
+	MArgDatabase parser(syntax(), args, &status);
+
+	if (status != MS::kSuccess) return status;
+
+	if (parser.isFlagSet("-id"))
+	{
+		parser.getFlagArgument("-id", 0, id);
+	}
+	else
+	{
+		status = MStatus::kFailure;
+	}
+
+	return status;
+}
+
 MStatus	RequestMesh::doIt(const MArgList& args)
 {
 	MStatus status = MStatus::kSuccess;
 
 	// reset socket
-	if (!ServerAddress::getInstance().isServerSet())
+	if (!DataStore::getInstance().isServerSet())
 	{
 		HackPrint::print("Set Server using \"SetServer\" command");
 		return status;
 	}
 
-	pMessenger->resetSocket(ServerAddress::getInstance().getAddress(), ServerAddress::getInstance().getPort());
+	pMessenger->resetSocket(DataStore::getInstance().getAddress(), DataStore::getInstance().getPort());
 
 	// ask the server for any update
 	json data;
@@ -54,7 +82,7 @@ MStatus	RequestMesh::doIt(const MArgList& args)
 	}
 
 	// if false then we couldnt connect to server
-	if (!pMessenger->requestMesh(data, ReqType::REQUEST_MESH, std::string(id.asChar()), ServerAddress::getInstance().getUserID())) return MStatus::kFailure;
+	if (!pMessenger->requestMesh(data, ReqType::REQUEST_MESH, std::string(id.asChar()), DataStore::getInstance().getUserID())) return MStatus::kFailure;
 	
 	// is there actually anything?
 	if (data.empty())
@@ -76,7 +104,7 @@ MStatus	RequestMesh::doIt(const MArgList& args)
 	}
 
 	// set this as our current mesh now
-	CallbackHandler::getInstance().setCurrentRegisteredMesh(meshID);
+	DataStore::getInstance().setCurrentRegisteredMesh(meshID);
 
 	// get nodes
 	auto nodeList = data["nodes"];

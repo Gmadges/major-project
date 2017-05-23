@@ -60,20 +60,31 @@ class ServerMessenger(object):
 
 class serverConnectWidget(QFrame):
 
-    connected = Signal()
+    connected = Signal(bool)
 
     def __init__(self, messenger):
         super(serverConnectWidget, self).__init__()
         self.messenger = messenger
         self.initUI()
+        self.connectionMade = False
         # perform hertbeat func every 10 seconds
         self.heartbeatWait = 5.0
         self.heartbeatTimer = Timer(self.heartbeatWait, self.heartbeatFunc)
         self.setFrameStyle(QFrame.StyledPanel)
-
-    def __del__(self):
-        self.heartbeatTimer.cancel()
-
+        # This code will set up the current server settings if it exists
+        if self.pluginLoaded() is True:
+            settings = mel.eval('SetServer -q')
+            if settings != None :
+                self.port_spin.setValue(int(settings[0]))
+                self.address_line.setText(settings[1])
+                if settings[2] != socket.gethostbyname(socket.gethostname()) :
+                    self.user_id_line.setText(settings[2])
+                self.messenger.setServer(settings[1], int(settings[0]) + 1)
+                self.setConnectedLabel(True)
+                self.startHeartbeat()
+                self.connectionMade = True
+                self.connected.emit(self.connectionMade)
+            
     def initUI(self):
         self.connect_btn = QPushButton('Connect', self)
         self.connect_btn.clicked.connect(self.connectToServer)
@@ -105,19 +116,25 @@ class serverConnectWidget(QFrame):
 
     def connectToServer(self):
         self.stopHeartbeat()
-        address = self.address_line.text()
-        port = self.port_spin.value()
-        userID = self.user_id_line.text()
-        # add one to the port
-        self.messenger.setServer(address, port + 1)
-        request = self.messenger.requestAllMeshes()
-        if request['status'] is 200 :
-            self.setConnectedLabel(True)
-            self.setServerCmd(address, port, userID)
-            self.startHeartbeat()
-            self.connected.emit()
-        else:
-            self.setConnectedLabel(False)
+        if self.pluginLoaded() is True:
+            address = self.address_line.text()
+            port = self.port_spin.value()
+            userID = self.user_id_line.text()
+            # add one to the port
+            self.messenger.setServer(address, port + 1)
+            if self.messenger.heartbeat() is True :
+                self.setConnectedLabel(True)
+                self.setServerCmd(address, port, userID)
+                self.startHeartbeat()
+                self.connectionMade = True
+                self.connected.emit(self.connectionMade)
+            else:
+                self.setConnectedLabel(False)
+                self.connectionMade = False
+                self.connected.emit(self.connectionMade)
+                cmds.confirmDialog( title='Error', message='Cannot connect to server.')
+        else :
+            cmds.confirmDialog( title='Error', message='Plugin is not loaded.')    
 
     def startHeartbeat(self):
         def interval_wrapper():
@@ -132,6 +149,9 @@ class serverConnectWidget(QFrame):
     def heartbeatFunc(self):
         self.setConnectedLabel(self.messenger.heartbeat())
 
+    def pluginLoaded(self):
+         return cmds.pluginInfo('PluginDebugTest', query=True ,loaded=True)
+
     def setConnectedLabel(self, isConnected):
         if isConnected is True:
             self.connection_label.setText('connected')
@@ -140,13 +160,14 @@ class serverConnectWidget(QFrame):
             self.connection_label.setText('disconnected')
             self.connection_label.setStyleSheet('color: red')
 
-
     def setServerCmd(self, address, port, userID):
         if not userID:
             userID = socket.gethostbyname(socket.gethostname())
         cmd = 'SetServer -a "' + address + '" -p ' + str(port) + ' -uid "' + userID + '"'
-        print cmd
         mel.eval(cmd)
+
+    def isServerConnected(self):
+        return self.connectionMade
 
 class meshSelectionWidget(QFrame):
 
@@ -157,10 +178,10 @@ class meshSelectionWidget(QFrame):
         self.messenger = messenger
         self.initUI()
         self.setFrameStyle(QFrame.StyledPanel)
-        self.meshTuples = []
 
     def initUI(self):
         self.list = QListWidget()
+        self.list.setSelectionMode(QAbstractItemView.ExtendedSelection)
 
         self.getMesh_btn = QPushButton('Get', self)
         self.delMesh_btn = QPushButton('Delete', self)
@@ -185,18 +206,22 @@ class meshSelectionWidget(QFrame):
     def requestAllMesh(self):
         request = self.messenger.requestAllMeshes()
         self.list.clear()
-        self.meshTuples = []
         for i in range(len(request['meshNames'])):
-            self.meshTuples.append((request['meshNames'][i], request['meshIds'][i]))
             newItem = QListWidgetItem()
             newItem.setText(request['meshNames'][i])
+            newItem.setData(Qt.ToolTipRole, request['meshIds'][i])
             self.list.addItem(newItem)
 
     def getMesh(self):
-        index = self.list.currentRow()
-        meshId = self.meshTuples[index][1]
-        self.requestMeshCmd(meshId)
-        self.meshRequested.emit(self.meshTuples[index][0])
+        items = self.list.selectedItems()
+        if len(items) == 1 :
+            self.requestMeshCmd(items[0].toolTip())
+            self.meshRequested.emit(items[0].text())
+        else :
+            if len(items) > 1:
+                cmds.confirmDialog( title='Error', message='Only one mesh can be requested.')
+            else :
+                cmds.confirmDialog( title='Error', message='No mesh selected.')
 
     def requestMeshCmd(self, meshId):
         clearCmd = 'ClearCurrentMesh'
@@ -205,9 +230,9 @@ class meshSelectionWidget(QFrame):
         mel.eval(reqCmd)
 
     def delMesh(self):
-        index = self.list.currentRow()
-        meshId = self.meshTuples[index][1]
-        self.messenger.deleteMesh(meshId)
+        items = self.list.selectedItems()
+        for i in range(len(items)) :
+            self.messenger.deleteMesh(items[i].toolTip())
         self.requestAllMesh()
 
 class currentMeshWidget(QFrame):
@@ -221,7 +246,7 @@ class currentMeshWidget(QFrame):
         self.setFrameStyle(QFrame.StyledPanel)
 
     def initUI(self):
-        self.currentMesh_label = QLabel('current Mesh:', self)
+        self.currentMesh_label = QLabel('Current Mesh:', self)
         
         self.send_btn = QPushButton('send', self)
         self.update_btn = QPushButton('update', self)
@@ -273,7 +298,7 @@ class currentMeshWidget(QFrame):
         mel.eval(cmd)
 
     def updateCurrentMeshLabel(self, meshName):
-        self.currentMesh_label.setText('current Mesh: ' + meshName)
+        self.currentMesh_label.setText('Current Mesh: ' + meshName)
 
     def getSelectedMesh(self):
         meshes = cmds.ls(sl=True, type='transform')
@@ -290,10 +315,26 @@ class settingsWidget(QFrame):
 
     def initUI(self):
         self.settings_label = QLabel('Settings', self)
+
+        self.full_mesh_check = QCheckBox()
+        self.full_mesh_check.stateChanged.connect(self.enableFullMeshSettings)
+        settings_layout = QFormLayout()
+        settings_layout.setContentsMargins(2, 2, 2, 2)
+        settings_layout.addRow(QLabel('Enable full mesh updates'), self.full_mesh_check)
+
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(2, 2, 2, 2)
         main_layout.addWidget(self.settings_label)
+        main_layout.addLayout(settings_layout)
         self.setLayout(main_layout)
+
+    def enableFullMeshSettings(self):
+        cmd = "Settings -fm "
+        if self.full_mesh_check.isChecked():
+            cmd += "1"
+        else:
+            cmd += "0"
+        mel.eval(cmd)
 
 
 class CreateUI(QWidget):
@@ -304,11 +345,14 @@ class CreateUI(QWidget):
         self.messenger = ServerMessenger()
         self.initUI()
 
+    def closeEvent(self, event):
+        self.connectionWid.stopHeartbeat()
+
     def initUI(self):
         self.connectionWid = serverConnectWidget(self.messenger)
         self.meshSelectWid = meshSelectionWidget(self.messenger)
         self.currentMeshWid = currentMeshWidget(self.messenger)
-        #self.settingsWid = settingsWidget()
+        self.settingsWid = settingsWidget()
 
         # connect items
         self.connectionWid.connected.connect(self.meshSelectWid.requestAllMesh)
@@ -321,19 +365,25 @@ class CreateUI(QWidget):
         main_layout.addWidget(self.connectionWid)
         main_layout.addWidget(self.meshSelectWid)
         main_layout.addWidget(self.currentMeshWid)
-        #main_layout.addWidget(self.settingsWid)
+        main_layout.addWidget(self.settingsWid)
         self.setLayout(main_layout)
-        self.disableWidgets()
 
-    def disableWidgets(self):
-        self.meshSelectWid.setEnabled(False)
-        self.currentMeshWid.setEnabled(False)
-        #self.settingsWid.setEnabled(False)
+        if self.connectionWid.isServerConnected() is True:
+            self.setWidgets(True)
+            self.meshSelectWid.requestAllMesh()
+            # set current mesh if there is one
+        else:
+            self.setWidgets(False)
+
+    def setWidgets(self, enable):
+        self.meshSelectWid.setEnabled(enable)
+        self.currentMeshWid.setEnabled(enable)
+        self.settingsWid.setEnabled(enable)
 
     def enableWidgets(self):
         self.meshSelectWid.setEnabled(True)
         self.currentMeshWid.setEnabled(True)
-        #self.settingsWid.setEnabled(True)
+        self.settingsWid.setEnabled(True)
             
 def main():
     # todo

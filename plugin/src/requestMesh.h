@@ -21,9 +21,10 @@ public:
 
 	static void* creator();
 	MStatus	doIt(const MArgList&);
+	static MSyntax newSyntax();
 
 private:
-
+	MStatus getArgs(const MArgList& args, MString& id);
 	MStatus createMesh(json& _mesh);
 	void matchIDs(MFnDependencyNode & node, json& mesh);
 
