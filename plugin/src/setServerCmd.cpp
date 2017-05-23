@@ -3,7 +3,7 @@
 #include <maya/MArgDatabase.h>
 
 #include "hackPrint.h"
-#include "serverAddress.h"
+#include "dataStore.h"
 
 SetServerCmd::SetServerCmd()
 {
@@ -45,14 +45,14 @@ MStatus SetServerCmd::doIt(const MArgList& args)
 	if (query)
 	{
 		MStringArray result;
-		if (ServerAddress::getInstance().isServerSet())
+		if (DataStore::getInstance().isServerSet())
 		{
 			MString portString;
-			portString += ServerAddress::getInstance().getPort();
+			portString += DataStore::getInstance().getPort();
 			result.append(portString);
 
-			result.append(ServerAddress::getInstance().getAddress().c_str());
-			result.append(ServerAddress::getInstance().getUserID().c_str());
+			result.append(DataStore::getInstance().getAddress().c_str());
+			result.append(DataStore::getInstance().getUserID().c_str());
 		}
 		setResult(result);
 		return MStatus::kSuccess;
@@ -64,9 +64,9 @@ MStatus SetServerCmd::doIt(const MArgList& args)
 		return status;
 	}
 
-	ServerAddress::getInstance().setPort(port);
-	ServerAddress::getInstance().setAddress(addr.asChar());
-	ServerAddress::getInstance().setUserID(uid.asChar());
+	DataStore::getInstance().setPort(port);
+	DataStore::getInstance().setIPAddress(addr.asChar());
+	DataStore::getInstance().setUserID(uid.asChar());
 	return MS::kSuccess;
 }
 

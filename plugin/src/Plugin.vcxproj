@@ -154,8 +154,9 @@
     <ClCompile Include="plugin.cpp" />
     <ClCompile Include="sendRegister.cpp" />
     <ClCompile Include="sendUpdate.cpp" />
-    <ClCompile Include="serverAddress.cpp" />
+    <ClCompile Include="dataStore.cpp" />
     <ClCompile Include="setServerCmd.cpp" />
+    <ClCompile Include="settingsCmd.cpp" />
     <ClCompile Include="tweakHandler.cpp" />
     <ClCompile Include="requestMesh.cpp" />
   </ItemGroup>
@@ -172,8 +173,9 @@
     <ClInclude Include="messaging.h" />
     <ClInclude Include="sendRegister.h" />
     <ClInclude Include="sendUpdate.h" />
-    <ClInclude Include="serverAddress.h" />
+    <ClInclude Include="dataStore.h" />
     <ClInclude Include="setServerCmd.h" />
+    <ClInclude Include="settingsCmd.h" />
     <ClInclude Include="tweakHandler.h" />
     <ClInclude Include="requestMesh.h" />
   </ItemGroup>

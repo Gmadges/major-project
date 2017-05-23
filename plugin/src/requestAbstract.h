@@ -17,10 +17,8 @@ class RequestAbstract : public MPxCommand
 public:
 	RequestAbstract();
 	~RequestAbstract();
-	static MSyntax newSyntax();
 
 protected:
-	MStatus getArgs(const MArgList& args, MString& id);
 	MStatus setNodeValues(json & _node);
 	MStatus createNode(json& _node);
 	MStatus setConnections(json& _node);

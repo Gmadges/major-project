@@ -8,6 +8,7 @@
 #include <maya/MDGMessage.h>
 #include "hackprint.h"
 #include "mayaUtils.h"
+#include "dataStore.h"
 
 #include <ctime>
 #include <string>
@@ -16,6 +17,8 @@
 
 void nodeChangeCallback(MNodeMessage::AttributeMessage msg, MPlug & plug, MPlug & otherPlug, void*)
 {
+	if (CallbackHandler::getInstance().ignoreChanges()) return;
+
 	if (msg & MNodeMessage::kAttributeSet ||
 		msg & MNodeMessage::kAttributeRemoved ||
 		msg & MNodeMessage::kAttributeRenamed ||
@@ -30,15 +33,17 @@ void nodeChangeCallback(MNodeMessage::AttributeMessage msg, MPlug & plug, MPlug 
 
 		MFnDependencyNode node(plug.node());
 		std::string uuid = node.uuid().asString().asChar();
-		CallbackHandler::getInstance().addNodeToEditList(uuid, std::time(nullptr));
+		DataStore::getInstance().addNodeToEditList(uuid, std::time(nullptr));
 	}
 }
 
 void preRemoveCallback(MObject& node, void*)
 {
+	if (CallbackHandler::getInstance().ignoreChanges()) return;
+
 	MFnDependencyNode depNode(node);
 	std::string uuid = depNode.uuid().asString().asChar();
-	CallbackHandler::getInstance().addNodeToDeleteList(uuid, std::time(nullptr));
+	DataStore::getInstance().addNodeToDeleteList(uuid, std::time(nullptr));
 }
 
 
@@ -53,13 +58,17 @@ void uuidChangeCallback(MObject &node, const MUuid &uuid, void *clientData)
 
 void nodeNameChangeCallback(MObject &node, const MString &str, void *clientData)
 {
+	if (CallbackHandler::getInstance().ignoreChanges()) return;
+
 	MFnDependencyNode depNode(node);
 	std::string uuid = depNode.uuid().asString().asChar();
-	CallbackHandler::getInstance().addNodeToDeleteList(uuid, std::time(nullptr));
+	DataStore::getInstance().addNodeToDeleteList(uuid, std::time(nullptr));
 }
 
 void nodeAttribAddCallback(MNodeMessage::AttributeMessage msg, MPlug &plug, void *clientData)
 {
+	if (CallbackHandler::getInstance().ignoreChanges()) return;
+
 	if (msg & MNodeMessage::kAttributeSet ||
 		msg & MNodeMessage::kAttributeRemoved ||
 		msg & MNodeMessage::kAttributeRenamed ||
@@ -74,30 +83,35 @@ void nodeAttribAddCallback(MNodeMessage::AttributeMessage msg, MPlug &plug, void
 
 		MFnDependencyNode node(plug.node());
 		std::string uuid = node.uuid().asString().asChar();
-		CallbackHandler::getInstance().addNodeToEditList(uuid, std::time(nullptr));
+		DataStore::getInstance().addNodeToEditList(uuid, std::time(nullptr));
 	}
 }
 
 void newNodeCallback(MObject &node, void *clientData)
 {
+	if (CallbackHandler::getInstance().ignoreChanges()) return;
+
 	MFnDependencyNode depNode(node);
 	if (MayaUtils::isValidNodeType(depNode.typeName()))
 	{
 		std::string uuid = depNode.uuid().asString().asChar();
-		CallbackHandler::getInstance().addNodeToAddedList(uuid, std::time(nullptr));
+		DataStore::getInstance().addNodeToAddedList(uuid, std::time(nullptr));
 	}
 }
 
 
 void timerCallback(float elapsedTime, float lastTime, void *clientData)
 {
-	if (CallbackHandler::getInstance().anyChanges())
+	if (DataStore::getInstance().anyChanges())
 	{
 		MGlobal::executeCommandOnIdle("SendUpdates");
 	}
 	else
 	{
-		MGlobal::executeCommandOnIdle("RequestUpdate");
+		MString cmd;
+		cmd += "RequestUpdate -fm ";
+		cmd += DataStore::getInstance().getFullMeshRequest();
+		MGlobal::executeCommandOnIdle(cmd);
 	}
 }
 
@@ -253,81 +267,12 @@ MStatus CallbackHandler::cleanNodeOfCallbacks(MObject& _node)
 	return status;
 }
 
-// deletes
-std::unordered_map<std::string, std::time_t> CallbackHandler::getDeletedList()
-{
-	return delList;
-}
-
-void CallbackHandler::addNodeToDeleteList(std::string uuid, time_t time)
-{
-	if (!bIgnoreChanges)
-	{
-		delList[uuid] = time;
-	}
-}
-
-void CallbackHandler::resetDeleteList()
-{
-	delList.clear();
-}
-
-// adds
-std::unordered_map<std::string, std::time_t> CallbackHandler::getAddedList()
-{
-	return addList;
-}
-
-void CallbackHandler::addNodeToAddedList(std::string uuid, time_t time)
-{
-	if (!bIgnoreChanges)
-	{
-		addList[uuid] = time;
-	}
-}
-
-void CallbackHandler::resetAddedList()
-{
-	addList.clear();
-}
-
-// edits
-std::unordered_map<std::string, std::time_t> CallbackHandler::getEditsList()
-{
-	return editList;
-}
-
-void CallbackHandler::addNodeToEditList(std::string uuid, time_t time)
-{
-	if (!bIgnoreChanges)
-	{
-		editList[uuid] = time;
-	}
-}
-
-void CallbackHandler::resetEditList()
-{
-	editList.clear();
-}
-
-std::string CallbackHandler::getCurrentRegisteredMesh()
-{
-	return currentMeshID;
-}
-
-void CallbackHandler::setCurrentRegisteredMesh(std::string meshID)
-{
-	currentMeshID = meshID;
-}
-
-bool CallbackHandler::anyChanges()
-{
-	return (!addList.empty() ||
-			!editList.empty() ||
-			!delList.empty());
-}
-
-void CallbackHandler::ignoreChanges(bool ignore)
+void CallbackHandler::setIgnoreChanges(bool ignore)
 {
 	bIgnoreChanges = ignore;
+}
+
+bool CallbackHandler::ignoreChanges()
+{
+	return bIgnoreChanges;
 }

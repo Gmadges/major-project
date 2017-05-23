@@ -23,7 +23,7 @@
 #include "mayaUtils.h"
 
 #include "callbackHandler.h"
-#include "serverAddress.h"
+#include "dataStore.h"
 
 SendUpdate::SendUpdate()
 	:
@@ -43,16 +43,16 @@ void* SendUpdate::creator()
 MStatus	SendUpdate::doIt(const MArgList& args)
 {
 	// reset socket
-	if (!ServerAddress::getInstance().isServerSet())
+	if (!DataStore::getInstance().isServerSet())
 	{
 		HackPrint::print("Set Server using \"SetServer\" command");
 		return MStatus::kFailure;
 	}
 
-	pMessaging->resetSocket(ServerAddress::getInstance().getAddress(), ServerAddress::getInstance().getPort());
+	pMessaging->resetSocket(DataStore::getInstance().getAddress(), DataStore::getInstance().getPort());
 
 	// we do this here because it might get reset in the delete node method.
-	std::string currentID = CallbackHandler::getInstance().getCurrentRegisteredMesh();
+	std::string currentID = DataStore::getInstance().getCurrentRegisteredMesh();
 
 	std::vector<json> nodeList;
 
@@ -66,7 +66,7 @@ MStatus	SendUpdate::doIt(const MArgList& args)
 	if (nodeList.empty()) return MStatus::kSuccess;
 
 	// if our valid node is still null then we have tried to delete the whole mesh.
-	if (CallbackHandler::getInstance().getCurrentRegisteredMesh().empty()) return MStatus::kFailure;
+	if (DataStore::getInstance().getCurrentRegisteredMesh().empty()) return MStatus::kFailure;
 
 	json meshData;
 	// use shape nodes id.
@@ -77,7 +77,7 @@ MStatus	SendUpdate::doIt(const MArgList& args)
 
 	// create message and attach
 	json message;
-	message["uid"] = ServerAddress::getInstance().getUserID();
+	message["uid"] = DataStore::getInstance().getUserID();
 	message["requestType"] = ReqType::MESH_UPDATE;
 	message["mesh"] = meshData;
 
@@ -94,7 +94,7 @@ MStatus	SendUpdate::doIt(const MArgList& args)
 void SendUpdate::processNewNodes(std::vector<json>& nodeList)
 {
 	// get list of things we need to send
-	auto list = CallbackHandler::getInstance().getAddedList();
+	auto list = DataStore::getInstance().getAddedList();
 
 	if (list.empty()) return;
 
@@ -121,13 +121,13 @@ void SendUpdate::processNewNodes(std::vector<json>& nodeList)
 	}
 
 	// clear the list
-	CallbackHandler::getInstance().resetAddedList();
+	DataStore::getInstance().resetAddedList();
 }
 
 void SendUpdate::processEditedNodes(std::vector<json>& nodeList)
 {
 	// get list of things we need to send
-	auto list = CallbackHandler::getInstance().getEditsList();
+	auto list = DataStore::getInstance().getEditsList();
 
 	if (list.empty()) return;
 
@@ -149,19 +149,19 @@ void SendUpdate::processEditedNodes(std::vector<json>& nodeList)
 	}
 
 	// clear the list
-	CallbackHandler::getInstance().resetEditList();
+	DataStore::getInstance().resetEditList();
 }
 
 void SendUpdate::processDeletedNodes(std::vector<json>& nodeList)
 {
 	// get list of things we need to send
-	auto list = CallbackHandler::getInstance().getDeletedList();
+	auto list = DataStore::getInstance().getDeletedList();
 
 	if (list.empty()) return;
 
 	std::vector<json> deleteList;
 
-	std::string regID = CallbackHandler::getInstance().getCurrentRegisteredMesh();
+	std::string regID = DataStore::getInstance().getCurrentRegisteredMesh();
 
 	for (auto& itr : list)
 	{
@@ -172,11 +172,11 @@ void SendUpdate::processDeletedNodes(std::vector<json>& nodeList)
 			// we're deleting our main mesh thing but still wanna let it send edits and stuff
 
 			// we reset the list
-			CallbackHandler::getInstance().resetDeleteList();
+			DataStore::getInstance().resetDeleteList();
 			//clear callbacks
 			CallbackHandler::getInstance().clearCallbacks();
 			// clear current registered mesh
-			CallbackHandler::getInstance().setCurrentRegisteredMesh("");
+			DataStore::getInstance().setCurrentRegisteredMesh("");
 			// stop here we're done, not sending anything to be deleted.
 			return;
 
@@ -193,7 +193,7 @@ void SendUpdate::processDeletedNodes(std::vector<json>& nodeList)
 	nodeList.insert(nodeList.end(), deleteList.begin(), deleteList.end());
 
 	// clear the list
-	CallbackHandler::getInstance().resetDeleteList();
+	DataStore::getInstance().resetDeleteList();
 }
 
 bool SendUpdate::isNodeFromRegisteredMesh(MObject& _node)
@@ -201,7 +201,7 @@ bool SendUpdate::isNodeFromRegisteredMesh(MObject& _node)
 	MStatus status;
 
 	MFnDependencyNode depNode(_node);
-	MString currentMeshID = CallbackHandler::getInstance().getCurrentRegisteredMesh().c_str();
+	MString currentMeshID = DataStore::getInstance().getCurrentRegisteredMesh().c_str();
 	MUuid id = depNode.uuid();
 
 	if (id.asString() != currentMeshID)

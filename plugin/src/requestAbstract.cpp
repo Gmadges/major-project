@@ -14,6 +14,7 @@
 #include <maya/MDagPath.h>
 
 #include "callbackHandler.h"
+#include "dataStore.h"
 
 RequestAbstract::RequestAbstract()
 	:
@@ -24,34 +25,6 @@ RequestAbstract::RequestAbstract()
 
 RequestAbstract::~RequestAbstract()
 {
-}
-
-MSyntax RequestAbstract::newSyntax()
-{
-	MSyntax syn;
-
-	syn.addFlag("-id", "-uuid", MSyntax::kString);
-
-	return syn;
-}
-
-MStatus RequestAbstract::getArgs(const MArgList& args, MString& id)
-{
-	MStatus status = MStatus::kSuccess;
-	MArgDatabase parser(syntax(), args, &status);
-
-	if (status != MS::kSuccess) return status;
-
-	if (parser.isFlagSet("-id"))
-	{
-		parser.getFlagArgument("-id", 0, id);
-	}
-	else
-	{
-		status = MStatus::kFailure;
-	}
-
-	return status;
 }
 
 MStatus RequestAbstract::setNodeValues(json & _node)
@@ -259,7 +232,7 @@ MStatus RequestAbstract::setConnections(json& _node)
 			// Really long winded way to grab the shape nodes name
 			MDagPath dagPath;
 			MObject tmp;
-			MString id = CallbackHandler::getInstance().getCurrentRegisteredMesh().c_str();
+			MString id = DataStore::getInstance().getCurrentRegisteredMesh().c_str();
 			status = MayaUtils::getNodeObjectFromUUID(id, tmp);
 			if (status != MStatus::kSuccess) return status;
 			status = MDagPath::getAPathTo(tmp, dagPath);

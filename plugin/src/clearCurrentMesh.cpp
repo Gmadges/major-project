@@ -1,6 +1,7 @@
 #include "clearCurrentMesh.h"
 
 #include "callbackHandler.h"
+#include "dataStore.h"
 #include <maya/MGlobal.h>
 
 ClearCurrentMesh::ClearCurrentMesh()
@@ -28,7 +29,7 @@ MStatus ClearCurrentMesh::doIt(const MArgList& args)
 	CallbackHandler::getInstance().clearCallbacks();
 
 	// select this not as the current mesh
-	CallbackHandler::getInstance().setCurrentRegisteredMesh("");
+	DataStore::getInstance().setCurrentRegisteredMesh("");
 
 	return MS::kSuccess;
 }
