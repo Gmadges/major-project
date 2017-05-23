@@ -2,6 +2,7 @@
 #define DATABASE_H
 
 #include "json.h"
+#include <mutex>
 
 class Database
 {
@@ -23,11 +24,11 @@ public:
 
 private:
 	void storeDBToFile();
-	void storeUsersToFile();
 
 private:
+	std::mutex mut;
 	json db;
-	json userDB;
+
 };
 
 #endif

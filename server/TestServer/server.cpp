@@ -181,7 +181,11 @@ void Server::handleMessage()
 				try
 				{
 					replyData = pRequestHandler->requestMesh(data);
-					pUserInfo->updateUser(data["uid"].get<std::string>());
+
+					if (!replyData.empty())
+					{
+						pUserInfo->updateUser(data["uid"].get<std::string>());
+					}
 				}
 				catch (std::exception& e)
 				{
@@ -201,7 +205,14 @@ void Server::handleMessage()
 				try
 				{
 					replyData = pRequestHandler->requestMeshUpdates(data);
-					pUserInfo->updateUser(data["uid"].get<std::string>());
+
+					if (!replyData.empty())
+					{
+						if (!replyData["edits"].empty())
+						{
+							pUserInfo->updateUser(data["uid"].get<std::string>());
+						}
+					}
 				}
 				catch (std::exception& e)
 				{

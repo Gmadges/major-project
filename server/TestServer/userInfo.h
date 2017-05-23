@@ -2,6 +2,7 @@
 #define USERINFO_H
 
 #include "json.h"
+#include <mutex>
 
 class UserInfo
 {
@@ -16,7 +17,7 @@ private:
 	void storeUsersToFile();
 
 private:
-
+	std::mutex mut;
 	json userDB;
 };
 

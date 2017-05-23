@@ -60,7 +60,7 @@ class ServerMessenger(object):
 
 class serverConnectWidget(QFrame):
 
-    connected = Signal()
+    connected = Signal(bool)
 
     def __init__(self, messenger):
         super(serverConnectWidget, self).__init__()
@@ -83,7 +83,7 @@ class serverConnectWidget(QFrame):
                 self.setConnectedLabel(True)
                 self.startHeartbeat()
                 self.connectionMade = True
-                self.connected.emit()
+                self.connected.emit(self.connectionMade)
             
     def initUI(self):
         self.connect_btn = QPushButton('Connect', self)
@@ -127,9 +127,11 @@ class serverConnectWidget(QFrame):
                 self.setServerCmd(address, port, userID)
                 self.startHeartbeat()
                 self.connectionMade = True
-                self.connected.emit()
+                self.connected.emit(self.connectionMade)
             else:
                 self.setConnectedLabel(False)
+                self.connectionMade = False
+                self.connected.emit(self.connectionMade)
                 cmds.confirmDialog( title='Error', message='Cannot connect to server.')
         else :
             cmds.confirmDialog( title='Error', message='Plugin is not loaded.')    
@@ -351,15 +353,20 @@ class CreateUI(QWidget):
         self.setLayout(main_layout)
 
         if self.connectionWid.isServerConnected() is True:
-            self.enableWidgets(True)
+            self.setWidgets(True)
             self.meshSelectWid.requestAllMesh()
             # set current mesh if there is one
         else:
-            self.enableWidgets(False)
+            self.setWidgets(False)
 
-    def enableWidgets(self, enable):
+    def setWidgets(self, enable):
         self.meshSelectWid.setEnabled(enable)
         self.currentMeshWid.setEnabled(enable)
+        #self.settingsWid.setEnabled(False)
+
+    def enableWidgets(self):
+        self.meshSelectWid.setEnabled(True)
+        self.currentMeshWid.setEnabled(True)
         #self.settingsWid.setEnabled(False)
             
 def main():
