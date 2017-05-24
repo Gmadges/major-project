@@ -18,24 +18,56 @@ MayaUtils::~MayaUtils()
 
 bool MayaUtils::isValidNodeType(MString& _type)
 {
-	return (_type == MString("transform") ||
-			_type == MString("mesh") ||
-			_type == MString("polyTweak") ||
-			_type == MString("polyExtrudeFace") ||
-			_type == MString("polySplitRing") ||
-			_type == MString("polySplit") ||
-			_type == MString("polyCube") ||
-			_type == MString("polyPipe") || 
-			_type == MString("polySphere") || 
-			_type == MString("polyPyramid") || 
-			_type == MString("polyCylinder") ||
-			_type == MString("polyTorus") || 
-			_type == MString("polyCone") ||
-			_type == MString("polyPlane") ||
-			_type == MString("polyBevel") ||
-			_type == MString("polyBevel3") ||
-			_type == MString("polyCollapseF") ||
-			_type == MString("polyCollapseEdge"));
+	// cutting these up for easier reading
+
+	// different polyBase shapes
+	if (_type == MString("polyCube") ||
+		_type == MString("polyPipe") ||
+		_type == MString("polySphere") ||
+		_type == MString("polyPyramid") ||
+		_type == MString("polyCylinder") ||
+		_type == MString("polyTorus") ||
+		_type == MString("polyCone") ||
+		_type == MString("polyPlane"))
+	{
+		return true;
+	}
+
+	// basic nodes always needed
+	if (_type == MString("transform") ||
+		_type == MString("mesh") ||
+		_type == MString("polyTweak") ||
+		_type == MString("deleteComponent"))
+	{
+		return true;
+	}
+
+	// component things
+	if (_type == MString("polyCloseBorder") ||
+		_type == MString("polyBridgeEdge") ||
+		_type == MString("polyExtrudeFace") ||
+		_type == MString("polySubdFace") ||
+		_type == MString("polyBevel") ||
+		_type == MString("polyBevel3"))
+	{
+		return true;
+	}
+
+	// tools
+	if (_type == MString("polySplitRing") ||
+		_type == MString("polySplit"))
+	{
+		return true;
+	}
+
+	// all else for now
+	if (_type == MString("polyCollapseF") ||
+		_type == MString("polyCollapseEdge"))
+	{
+		return true;
+	}
+
+	return false;
 }
 
 bool MayaUtils::doesItRequireConnections(MString& _type)
@@ -167,5 +199,13 @@ MPlug MayaUtils::getInPlug(MFnDependencyNode& node, MStatus& status)
 
 MPlug MayaUtils::getOutPlug(MFnDependencyNode& node, MStatus &status)
 {
-	return node.findPlug("output", &status);
+	MPlug out = node.findPlug("output", &status);
+
+	// if it doesnt have that plug try this one
+	if (status != MStatus::kSuccess)
+	{
+		out = node.findPlug("outputGeometry", &status);
+	}
+	
+	return out;
 }
