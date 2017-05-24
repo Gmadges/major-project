@@ -112,6 +112,13 @@ MStatus RequestAbstract::setAttribs(MFnDependencyNode& node, json& attribs)
 					continue;
 				}
 
+				if (it.key().compare("dc") == 0)
+				{
+					std::vector<std::string> componentList = it.value();
+					setComponentListAttribute(componentList, plug);
+					continue;
+				}
+
 				if (it.value().size() == 16)
 				{
 					try
@@ -253,13 +260,12 @@ MStatus RequestAbstract::setComponentListAttribute(std::vector<std::string> comp
 	cmd += _plug.name();
 	cmd += " -type \"componentList\" ";
 	cmd += std::to_string(components.size()).c_str();
-	cmd += " ";
+	cmd += " \"";
 	for(std::string& item : components)
 	{
 		cmd += item.c_str();
-		cmd += " ";
+		cmd += "\" ";
 	}
-
 	return MGlobal::executeCommand(cmd);
 }
 

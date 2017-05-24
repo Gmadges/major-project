@@ -35,13 +35,16 @@ bool MayaUtils::isValidNodeType(MString& _type)
 
 	// basic nodes always needed
 	if (_type == MString("transform") ||
-		_type == MString("mesh") ||
-		_type == MString("polyTweak") ||
-		_type == MString("deleteComponent"))
+		_type == MString("mesh"))
 	{
 		return true;
 	}
 
+	return doesItRequireConnections(_type);
+}
+
+bool MayaUtils::doesItRequireConnections(MString& _type)
+{
 	// component things
 	if (_type == MString("polyCloseBorder") ||
 		_type == MString("polyBridgeEdge") ||
@@ -62,21 +65,14 @@ bool MayaUtils::isValidNodeType(MString& _type)
 
 	// all else for now
 	if (_type == MString("polyCollapseF") ||
-		_type == MString("polyCollapseEdge"))
+		_type == MString("polyCollapseEdge") || 
+		_type == MString("polyTweak") ||
+		_type == MString("deleteComponent"))
 	{
 		return true;
 	}
 
 	return false;
-}
-
-bool MayaUtils::doesItRequireConnections(MString& _type)
-{
-	return (_type == MString("polyTweak") ||
-			_type == MString("polySplitRing") ||
-			_type == MString("polyExtrudeFace") ||
-			_type == MString("polyBevel") ||
-			_type == MString("polyBevel3"));
 }
 
 PolyType MayaUtils::getPolyType(json& geoNode, MStatus& status)
@@ -192,6 +188,11 @@ MPlug MayaUtils::getInPlug(MFnDependencyNode& node, MStatus& status)
 	if (status != MStatus::kSuccess)
 	{
 		in = node.findPlug("inMesh", &status);
+	}
+
+	if (status != MStatus::kSuccess)
+	{
+		in = node.findPlug("inputGeometry", &status);
 	}
 
 	return in;
