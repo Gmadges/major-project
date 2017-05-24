@@ -85,17 +85,6 @@ MStatus	SendRegister::doIt(const MArgList& args)
 			continue;
 		}
 
-		// // check for tweaks
-		//if (pTweaksHandler->hasTweaks(dagPath))
-		//{
-		//	MObject tweakNode;
-		//	if (pTweaksHandler->createPolyTweakNode(dagPath, tweakNode) == MStatus::kSuccess)
-		//	{
-		//		dagPath.extendToShape();
-		//		pTweaksHandler->connectTweakNodes(tweakNode, dagPath.node());
-		//	}
-		//}
-
 		// turn tweaks into a node before sending
 		if (registerAndSendMesh(dagPath) != MStatus::kSuccess) return MStatus::kFailure;
 
