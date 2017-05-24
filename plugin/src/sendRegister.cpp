@@ -24,6 +24,7 @@
 #include "testTypes.h"
 
 #include "callbackHandler.h"
+#include "mayaUtils.h"
 #include "dataStore.h"
 
 SendRegister::SendRegister()
@@ -83,17 +84,6 @@ MStatus	SendRegister::doIt(const MArgList& args)
 			status.perror("MFnDagNode constructor");
 			continue;
 		}
-
-		// // check for tweaks
-		//if (pTweaksHandler->hasTweaks(dagPath))
-		//{
-		//	MObject tweakNode;
-		//	if (pTweaksHandler->createPolyTweakNode(dagPath, tweakNode) == MStatus::kSuccess)
-		//	{
-		//		dagPath.extendToShape();
-		//		pTweaksHandler->connectTweakNodes(tweakNode, dagPath.node());
-		//	}
-		//}
 
 		// turn tweaks into a node before sending
 		if (registerAndSendMesh(dagPath) != MStatus::kSuccess) return MStatus::kFailure;
@@ -162,8 +152,9 @@ MStatus SendRegister::registerAndSendMesh(MDagPath & meshDAGPath)
 	// transforms name, because i dunno
 	meshData["name"] = std::string(transformNode.name().asChar());
 
-	// hardcode cube for now
-	meshData["type"] = PolyType::CUBE;
+	// we pass the last node. which should be the first geo node.
+	meshData["type"] = MayaUtils::getPolyType(nodeList.back(), status);
+	if (status == MStatus::kFailure) return status;
 
 	// add all its nodes
 	// minor hack

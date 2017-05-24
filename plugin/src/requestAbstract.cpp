@@ -112,6 +112,13 @@ MStatus RequestAbstract::setAttribs(MFnDependencyNode& node, json& attribs)
 					continue;
 				}
 
+				if (it.key().compare("dc") == 0)
+				{
+					std::vector<std::string> componentList = it.value();
+					setComponentListAttribute(componentList, plug);
+					continue;
+				}
+
 				if (it.value().size() == 16)
 				{
 					try
@@ -227,25 +234,19 @@ MStatus RequestAbstract::setConnections(json& _node)
 
 		// this connection method assumes that the new node isnt connected to anything and that we dont care about what the other nodes were connected to before hand.
 
-		if (_node["type"].get<std::string>().compare("polyTweak") != 0)
+		if (!_node["otherConnections"].empty())
 		{
-			// Really long winded way to grab the shape nodes name
-			MDagPath dagPath;
-			MObject tmp;
-			MString id = DataStore::getInstance().getCurrentRegisteredMesh().c_str();
-			status = MayaUtils::getNodeObjectFromUUID(id, tmp);
-			if (status != MStatus::kSuccess) return status;
-			status = MDagPath::getAPathTo(tmp, dagPath);
-			status = dagPath.extendToShape();
-			MFnDependencyNode shapeNode(dagPath.node());
-
-			MString connectCmd;
-			connectCmd += "connectAttr ";
-			connectCmd += shapeNode.name();
-			connectCmd += ".worldMatrix[0] ";
-			connectCmd += newNode.name();
-			connectCmd += ".manipMatrix;";
-			MGlobal::executeCommand(connectCmd);
+			auto connections = _node["otherConnections"];
+			
+			for (auto& item : connections)
+			{
+				MString connectCmd;
+				connectCmd += "connectAttr ";
+				connectCmd += item["out"].get<std::string>().c_str();
+				connectCmd += " ";
+				connectCmd += item["in"].get<std::string>().c_str();
+				MGlobal::executeCommand(connectCmd);
+			}
 		}
 	}
 
@@ -259,13 +260,12 @@ MStatus RequestAbstract::setComponentListAttribute(std::vector<std::string> comp
 	cmd += _plug.name();
 	cmd += " -type \"componentList\" ";
 	cmd += std::to_string(components.size()).c_str();
-	cmd += " ";
 	for(std::string& item : components)
 	{
+		cmd += " \"";
 		cmd += item.c_str();
-		cmd += " ";
+		cmd += "\" ";
 	}
-
 	return MGlobal::executeCommand(cmd);
 }
 
