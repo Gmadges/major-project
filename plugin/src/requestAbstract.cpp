@@ -260,9 +260,9 @@ MStatus RequestAbstract::setComponentListAttribute(std::vector<std::string> comp
 	cmd += _plug.name();
 	cmd += " -type \"componentList\" ";
 	cmd += std::to_string(components.size()).c_str();
-	cmd += " \"";
 	for(std::string& item : components)
 	{
+		cmd += " \"";
 		cmd += item.c_str();
 		cmd += "\" ";
 	}
