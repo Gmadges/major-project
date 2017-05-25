@@ -318,9 +318,16 @@ class settingsWidget(QFrame):
 
         self.full_mesh_check = QCheckBox()
         self.full_mesh_check.stateChanged.connect(self.enableFullMeshSettings)
+        self.update_interval_spin = QDoubleSpinBox()
+        self.update_interval_spin.setDecimals(1)
+        self.update_interval_spin.setSingleStep(0.1)
+        self.update_interval_spin.setRange(0.5, 120.0)
+        self.update_interval_spin.setValue(2.0)
+        self.update_interval_spin.valueChanged.connect(self.changeUpdateInterval)
         settings_layout = QFormLayout()
         settings_layout.setContentsMargins(2, 2, 2, 2)
         settings_layout.addRow(QLabel('Enable full mesh updates'), self.full_mesh_check)
+        settings_layout.addRow(QLabel('Set Update Interval'), self.update_interval_spin)
 
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(2, 2, 2, 2)
@@ -334,6 +341,12 @@ class settingsWidget(QFrame):
             cmd += "1"
         else:
             cmd += "0"
+        mel.eval(cmd)
+
+    def changeUpdateInterval(self, value):
+        cmd = "Settings -ui "
+        cmd += str(value)
+        self.update_interval_spin.setValue(value)
         mel.eval(cmd)
 
 

@@ -54,6 +54,9 @@ public:
 	void setFullMeshRequest(bool _fullMesh);
 	bool getFullMeshRequest();
 
+	void setUpdateInterval(double _timeInt);
+	double getUpdateInterval();
+
 private:	
 	// dont want people to be able to get this
 	DataStore();
@@ -74,6 +77,8 @@ private:
 	bool bAddressSet;
 
 	bool bFullMeshRequests;
+
+	double timeInterval;
 };
 
 #endif

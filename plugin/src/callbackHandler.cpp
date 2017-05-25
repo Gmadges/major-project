@@ -129,11 +129,13 @@ CallbackHandler::CallbackHandler()
 CallbackHandler::~CallbackHandler()
 {
 	MMessage::removeCallbacks(callbackIds);
+	MMessage::removeCallback(timerID);
 }
 
 MStatus CallbackHandler::clearCallbacks()
 {
 	MStatus status = MMessage::removeCallbacks(callbackIds);
+	MMessage::removeCallback(timerID);
 	callbackIds.clear();
 	timerCallbackEnabled = false;
 	newNodeCallbackEnabled = false;
@@ -220,20 +222,28 @@ MStatus CallbackHandler::registerCallbacksToDetectNewNodes()
 	return status;
 }
 
-MStatus CallbackHandler::startTimerCallback()
+MStatus CallbackHandler::startTimerCallback(bool forceReset)
 {
-	if (timerCallbackEnabled) return MStatus::kSuccess;
-	
+	if (forceReset && timerCallbackEnabled)
+	{
+		MMessage::removeCallback(timerID);
+	}
+	else
+	{
+		if (timerCallbackEnabled) return MStatus::kSuccess;
+	}
+
 	MStatus status;
 
-	MCallbackId id = MTimerMessage::addTimerCallback(2.0f,
-													timerCallback,
-													NULL,
-													&status);
+	float interval = DataStore::getInstance().getUpdateInterval();
+
+	timerID = MTimerMessage::addTimerCallback(interval,
+												timerCallback,
+												NULL,
+												&status);
 
 	if (status == MStatus::kSuccess)
 	{
-		callbackIds.append(id);
 		timerCallbackEnabled = true;
 	}
 

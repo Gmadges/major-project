@@ -3,6 +3,7 @@
 #include <maya/MStringArray.h>
 
 #include "dataStore.h"
+#include "callbackHandler.h"
 
 SettingsCmd::SettingsCmd()
 {
@@ -26,6 +27,7 @@ MSyntax SettingsCmd::newSyntax()
 
 	// settings we can change here
 	syn.addFlag("-fm", "-fullMesh", MSyntax::kBoolean);
+	syn.addFlag("-ui", "-updateInterval", MSyntax::kDouble);
 
 	return syn;
 }
@@ -60,9 +62,14 @@ MStringArray SettingsCmd::getSettings()
 
 	// fullmesh enabled
 	values.append("fullMesh");
-	MString tmp;
-	tmp += DataStore::getInstance().getFullMeshRequest();
-	values.append(tmp);
+	MString fullMeshString;
+	fullMeshString += DataStore::getInstance().getFullMeshRequest();
+	values.append(fullMeshString);
+
+	values.append("updateInterval");
+	MString updateIntString;
+	updateIntString += DataStore::getInstance().getUpdateInterval();
+	values.append(updateIntString);
 
 	return values;
 }
@@ -74,5 +81,13 @@ void SettingsCmd::setSettings(MArgDatabase& parser)
 		bool tmp;
 		parser.getFlagArgument("-fm", 0, tmp);
 		DataStore::getInstance().setFullMeshRequest(tmp);
+	}
+
+	if (parser.isFlagSet("-ui"))
+	{
+		double tmp;
+		parser.getFlagArgument("-ui", 0, tmp);
+		DataStore::getInstance().setUpdateInterval(tmp);
+		CallbackHandler::getInstance().startTimerCallback(true);
 	}
 }

@@ -6,7 +6,8 @@ DataStore::DataStore()
 	port(0),
 	bPortSet(false),
 	bAddressSet(false),
-	bFullMeshRequests(false)
+	bFullMeshRequests(false),
+	timeInterval(2.0)
 {
 }
 
@@ -124,4 +125,14 @@ void DataStore::setFullMeshRequest(bool _fullMesh)
 bool DataStore::getFullMeshRequest()
 {
 	return bFullMeshRequests;
+}
+
+void DataStore::setUpdateInterval(double _timeInt)
+{
+	timeInterval = _timeInt;
+}
+
+double DataStore::getUpdateInterval()
+{
+	return timeInterval;
 }

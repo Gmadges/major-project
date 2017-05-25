@@ -29,7 +29,7 @@ public:
 	MStatus clearCallbacks();
 	
 	// timer callback
-	MStatus startTimerCallback();
+	MStatus startTimerCallback(bool forceReset=false);
 
 	// registering callbacks
 	MStatus registerCallbacksToNode(MObject& _node);
@@ -47,6 +47,7 @@ private:
 
 private:
 	MCallbackIdArray callbackIds;
+	MCallbackId timerID;
 
 	bool timerCallbackEnabled;
 	bool newNodeCallbackEnabled;
