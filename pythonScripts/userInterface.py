@@ -150,7 +150,10 @@ class serverConnectWidget(QFrame):
         self.setConnectedLabel(self.messenger.heartbeat())
 
     def pluginLoaded(self):
-         return cmds.pluginInfo('PluginDebugTest', query=True ,loaded=True)
+        exists = cmds.pluginInfo('PluginDebugTest', query=True ,loaded=True)
+        if exists == False:
+            return cmds.pluginInfo('libPluginDebugTest', query=True ,loaded=True)
+        return exists
 
     def setConnectedLabel(self, isConnected):
         if isConnected is True:
