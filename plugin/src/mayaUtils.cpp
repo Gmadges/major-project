@@ -4,6 +4,7 @@
 #include <maya/MUuid.h>
 #include <maya/MPlug.h>
 #include <maya/MPlugArray.h>
+#include "hackPrint.h"
 
 MayaUtils::MayaUtils()
 {
@@ -17,19 +18,110 @@ MayaUtils::~MayaUtils()
 
 bool MayaUtils::isValidNodeType(MString& _type)
 {
-	return (_type == MString("transform") ||
-			_type == MString("mesh") ||
-			_type == MString("polyTweak") ||
-			_type == MString("polyExtrudeFace") ||
-			_type == MString("polySplitRing") ||
-			_type == MString("polyCube"));
+	// cutting these up for easier reading
+
+	// different polyBase shapes
+	if (_type == MString("polyCube") ||
+		_type == MString("polyPipe") ||
+		_type == MString("polySphere") ||
+		_type == MString("polyPyramid") ||
+		_type == MString("polyCylinder") ||
+		_type == MString("polyTorus") ||
+		_type == MString("polyCone") ||
+		_type == MString("polyPlane"))
+	{
+		return true;
+	}
+
+	// basic nodes always needed
+	if (_type == MString("transform") ||
+		_type == MString("mesh"))
+	{
+		return true;
+	}
+
+	return doesItRequireConnections(_type);
 }
 
 bool MayaUtils::doesItRequireConnections(MString& _type)
 {
-	return (_type == MString("polyTweak") ||
-			_type == MString("polySplitRing") ||
-			_type == MString("polyExtrudeFace"));
+	// component things
+	if (_type == MString("polyCloseBorder") ||
+		_type == MString("polyBridgeEdge") ||
+		_type == MString("polyExtrudeFace") ||
+		_type == MString("polySubdFace") ||
+		_type == MString("polyBevel") ||
+		_type == MString("polyBevel3"))
+	{
+		return true;
+	}
+
+	// tools
+	if (_type == MString("polySplitRing")/* ||
+		_type == MString("polySplit")*/)
+	{
+		return true;
+	}
+
+	// all else for now
+	if (_type == MString("polyCollapseF") ||
+		_type == MString("polyCollapseEdge") || 
+		_type == MString("polyTweak") ||
+		_type == MString("deleteComponent"))
+	{
+		return true;
+	}
+
+	return false;
+}
+
+PolyType MayaUtils::getPolyType(json& geoNode, MStatus& status)
+{
+	std::string type = geoNode["type"];
+	status = MStatus::kSuccess;
+
+	if (type.compare("polyCube") == 0)
+	{
+		return PolyType::CUBE;
+	}
+
+	if (type.compare("polyPipe") == 0)
+	{
+		return PolyType::PIPE;
+	}
+
+	if (type.compare("polySphere") == 0)
+	{
+		return PolyType::SPHERE;
+	}
+
+	if (type.compare("polyPyramid") == 0)
+	{
+		return PolyType::PYRAMID;
+	}
+
+	if (type.compare("polyCylinder") == 0)
+	{
+		return PolyType::CYLINDER;
+	}
+
+	if (type.compare("polyTorus") == 0)
+	{
+		return PolyType::TORUS;
+	}
+
+	if (type.compare("polyCone") == 0)
+	{
+		return PolyType::CONE;
+	}
+
+	if (type.compare("polyPlane") == 0)
+	{
+		return PolyType::PLANE;
+	}
+
+	status = MStatus::kFailure;
+	return PolyType::CUBE;
 }
 
 MStatus MayaUtils::getNodeObjectFromUUID(MString& uuid, MObject& _node)
@@ -98,10 +190,23 @@ MPlug MayaUtils::getInPlug(MFnDependencyNode& node, MStatus& status)
 		in = node.findPlug("inMesh", &status);
 	}
 
+	if (status != MStatus::kSuccess)
+	{
+		in = node.findPlug("inputGeometry", &status);
+	}
+
 	return in;
 }
 
 MPlug MayaUtils::getOutPlug(MFnDependencyNode& node, MStatus &status)
 {
-	return node.findPlug("output", &status);
+	MPlug out = node.findPlug("output", &status);
+
+	// if it doesnt have that plug try this one
+	if (status != MStatus::kSuccess)
+	{
+		out = node.findPlug("outputGeometry", &status);
+	}
+	
+	return out;
 }

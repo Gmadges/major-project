@@ -315,10 +315,39 @@ class settingsWidget(QFrame):
 
     def initUI(self):
         self.settings_label = QLabel('Settings', self)
+
+        self.full_mesh_check = QCheckBox()
+        self.full_mesh_check.stateChanged.connect(self.enableFullMeshSettings)
+        self.update_interval_spin = QDoubleSpinBox()
+        self.update_interval_spin.setDecimals(1)
+        self.update_interval_spin.setSingleStep(0.1)
+        self.update_interval_spin.setRange(0.5, 120.0)
+        self.update_interval_spin.setValue(2.0)
+        self.update_interval_spin.valueChanged.connect(self.changeUpdateInterval)
+        settings_layout = QFormLayout()
+        settings_layout.setContentsMargins(2, 2, 2, 2)
+        settings_layout.addRow(QLabel('Enable full mesh updates'), self.full_mesh_check)
+        settings_layout.addRow(QLabel('Set Update Interval'), self.update_interval_spin)
+
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(2, 2, 2, 2)
         main_layout.addWidget(self.settings_label)
+        main_layout.addLayout(settings_layout)
         self.setLayout(main_layout)
+
+    def enableFullMeshSettings(self):
+        cmd = "Settings -fm "
+        if self.full_mesh_check.isChecked():
+            cmd += "1"
+        else:
+            cmd += "0"
+        mel.eval(cmd)
+
+    def changeUpdateInterval(self, value):
+        cmd = "Settings -ui "
+        cmd += str(value)
+        self.update_interval_spin.setValue(value)
+        mel.eval(cmd)
 
 
 class CreateUI(QWidget):
@@ -336,7 +365,7 @@ class CreateUI(QWidget):
         self.connectionWid = serverConnectWidget(self.messenger)
         self.meshSelectWid = meshSelectionWidget(self.messenger)
         self.currentMeshWid = currentMeshWidget(self.messenger)
-        #self.settingsWid = settingsWidget()
+        self.settingsWid = settingsWidget()
 
         # connect items
         self.connectionWid.connected.connect(self.meshSelectWid.requestAllMesh)
@@ -349,7 +378,7 @@ class CreateUI(QWidget):
         main_layout.addWidget(self.connectionWid)
         main_layout.addWidget(self.meshSelectWid)
         main_layout.addWidget(self.currentMeshWid)
-        #main_layout.addWidget(self.settingsWid)
+        main_layout.addWidget(self.settingsWid)
         self.setLayout(main_layout)
 
         if self.connectionWid.isServerConnected() is True:
@@ -362,12 +391,12 @@ class CreateUI(QWidget):
     def setWidgets(self, enable):
         self.meshSelectWid.setEnabled(enable)
         self.currentMeshWid.setEnabled(enable)
-        #self.settingsWid.setEnabled(False)
+        self.settingsWid.setEnabled(enable)
 
     def enableWidgets(self):
         self.meshSelectWid.setEnabled(True)
         self.currentMeshWid.setEnabled(True)
-        #self.settingsWid.setEnabled(False)
+        self.settingsWid.setEnabled(True)
             
 def main():
     # todo

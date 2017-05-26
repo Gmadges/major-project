@@ -5,6 +5,7 @@ enum ReqType { REGISTER_MESH, REQUEST_MESH, INFO_REQUEST, MESH_UPDATE, REQUEST_M
 
 enum EditType { ADD, DEL, EDIT };
 
-enum PolyType { CUBE };
+// could use mayas own type system for this....its from a earlier time
+enum PolyType { CUBE, PIPE, SPHERE, PYRAMID, CYLINDER, TORUS, CONE, PLANE};
 
 #endif

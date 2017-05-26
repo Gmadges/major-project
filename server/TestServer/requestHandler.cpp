@@ -53,7 +53,17 @@ json RequestHandler::requestMeshUpdates(json& _request)
 					if (edit["uid"].get<std::string>().compare(userId) != 0)
 					{
 						// we have a change that isnt ours
-						response["edits"].push_back(edit);
+						if (_request["fullMesh"] == true)
+						{
+							// if full mesh is there we send the whole mesh currently and leave it at that.
+							json mesh = pDB->getMesh(_request["id"].get<std::string>());
+							response["edits"] = mesh["nodes"];
+							break;
+						}
+						else
+						{
+							response["edits"].push_back(edit);
+						}
 					}
 				}
 			}

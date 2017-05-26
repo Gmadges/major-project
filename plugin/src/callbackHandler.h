@@ -29,32 +29,14 @@ public:
 	MStatus clearCallbacks();
 	
 	// timer callback
-	MStatus startTimerCallback();
+	MStatus startTimerCallback(bool forceReset=false);
 
 	// registering callbacks
 	MStatus registerCallbacksToNode(MObject& _node);
 	MStatus registerCallbacksToDetectNewNodes();
 
-	std::string getCurrentRegisteredMesh();
-	void setCurrentRegisteredMesh(std::string meshID);
-
-	void ignoreChanges(bool ignore);
-	bool anyChanges();
-
-	// deletes
-	std::unordered_map<std::string, std::time_t> getDeletedList();
-	void addNodeToDeleteList(std::string uuid, time_t time);
-	void resetDeleteList();
-
-	// adds
-	std::unordered_map<std::string, std::time_t> getAddedList();
-	void addNodeToAddedList(std::string uuid, time_t time);
-	void resetAddedList();
-
-	// edits
-	std::unordered_map<std::string, std::time_t> getEditsList();
-	void addNodeToEditList(std::string uuid, time_t time);
-	void resetEditList();
+	void setIgnoreChanges(bool ignore);
+	bool ignoreChanges();
 
 private:
 	// dont want people to be able to get this
@@ -65,12 +47,7 @@ private:
 
 private:
 	MCallbackIdArray callbackIds;
-
-	std::unordered_map<std::string, std::time_t> editList;
-	std::unordered_map<std::string, std::time_t> addList;
-	std::unordered_map<std::string, std::time_t> delList;
-
-	std::string currentMeshID;
+	MCallbackId timerID;
 
 	bool timerCallbackEnabled;
 	bool newNodeCallbackEnabled;

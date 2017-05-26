@@ -95,6 +95,9 @@ MStatus SendAbstract::getGenericNode(MFnDependencyNode & _inNode, json& _outNode
 	unsigned int numAttrib = _inNode.attributeCount();
 	MStatus status;
 
+	// init this incase we need it.
+	_outNode["otherConnections"] = std::vector<json>();
+
 	json nodeAttribs;
 
 	for (unsigned int i = 0; i < numAttrib; i++)
@@ -105,6 +108,26 @@ MStatus SendAbstract::getGenericNode(MFnDependencyNode & _inNode, json& _outNode
 
 		if (status != MStatus::kSuccess) continue;
 
+		// slight hack
+		if (plug.isNetworked())
+		{
+			// interested in manip matrices
+			if (plug.partialName() == "mp")
+			{
+				// lets store these extra connections
+				// grab the thing its connected to
+				MPlugArray tempPlugArray;
+				plug.connectedTo(tempPlugArray, true, false);
+
+				if (tempPlugArray.length() > 0)
+				{
+					json conn;
+					conn["in"] = plug.name().asChar();
+					conn["out"] = tempPlugArray[0].name().asChar();
+					_outNode["otherConnections"].push_back(conn);
+				}
+			}
+		}
 
 		getAttribFromPlug(plug, nodeAttribs);
 	}
@@ -221,14 +244,13 @@ MStatus SendAbstract::getAttribFromPlug(MPlug& _plug, json& _attribs)
 		return MStatus::kSuccess;
 	}
 
-	// this one is just stuff i know we can get
-	if (getOtherDataFromAttrib(_plug, _attribs) == MStatus::kSuccess) return MStatus::kSuccess;
-
 	if (getNumericDataFromAttrib(_plug, _attribs) == MStatus::kSuccess) return MStatus::kSuccess;
 
 	if (getTypeDataFromAttrib(_plug, _attribs) == MStatus::kSuccess) return MStatus::kSuccess;
 
 	if (getUnitDataFromAttrib(_plug, _attribs) == MStatus::kSuccess) return MStatus::kSuccess;
+	// this one is just stuff i know we can get
+	if (getOtherDataFromAttrib(_plug, _attribs) == MStatus::kSuccess) return MStatus::kSuccess;
 
 	/*
 		MString error;

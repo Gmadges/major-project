@@ -88,38 +88,13 @@ bool Messaging::sendUpdate(const json& data)
 	return send(request, reply);
 }
 
-bool Messaging::requestData(json& data, ReqType _type, std::string& _userID)
+bool Messaging::requestMesh(json& data, ReqType _type, std::string& _meshID, std::string& _userID, bool bfullMesh)
 {
 	// pack a message up
 	json sendJSON;
 	sendJSON["uid"] = _userID;
 	sendJSON["requestType"] = _type;
-
-	auto sendBuff = json::to_msgpack(sendJSON);
-
-	zmq::message_t request(sendBuff.size());
-	std::memcpy(request.data(), sendBuff.data(), sendBuff.size());
-	
-	zmq::message_t reply;
-	if (send(request, reply))
-	{
-		// unpack the data and return it
-		uint8_t *uintBuf = (uint8_t*)reply.data();
-		std::vector<uint8_t> recBuffer(uintBuf, uintBuf + reply.size());
-
-		data = json::from_msgpack(recBuffer);
-		return true;
-	}
-
-	return false;
-}
-
-bool Messaging::requestMesh(json& data, ReqType _type, std::string& _meshID, std::string& _userID)
-{
-	// pack a message up
-	json sendJSON;
-	sendJSON["uid"] = _userID;
-	sendJSON["requestType"] = _type;
+	sendJSON["fullMesh"] = bfullMesh;
 	sendJSON["id"] = _meshID;
 
 	auto sendBuff = json::to_msgpack(sendJSON);
