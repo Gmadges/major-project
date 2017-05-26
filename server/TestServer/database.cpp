@@ -9,14 +9,7 @@ Database::Database()
 	{
 		dbfile >> db;
 	}
-
-	std::ifstream userFile("users.json");
-	if (userFile.is_open())
-	{
-		userFile >> userDB;
-	}
 }
-
 
 Database::~Database()
 {
@@ -24,6 +17,9 @@ Database::~Database()
 
 bool Database::putMesh(json& _mesh)
 {
+	// lock
+	std::lock_guard<std::mutex> lock(mut);
+
 	if (_mesh.count("id") > 0)
 	{
 		std::string id = _mesh["id"];
@@ -46,8 +42,10 @@ json Database::getMesh(std::string _id)
 {
 	if (db.count(_id) > 0)
 	{
-		std::cout << "getting: " << _id << std::endl;
-		return db[_id]["mesh"];
+		if (db[_id].count("mesh") > 0)
+		{
+			return db[_id]["mesh"];
+		}
 	}
 
 	return json();
@@ -57,7 +55,6 @@ json Database::getMeshWithEdits(std::string _id)
 {
 	if (db.count(_id) > 0)
 	{
-		std::cout << "getting: " << _id << std::endl;
 		return db[_id];
 	}
 
@@ -66,10 +63,19 @@ json Database::getMeshWithEdits(std::string _id)
 
 std::vector<json> Database::getMeshEdits(std::string _id)
 {
-	if (db.count(_id) > 0)
+	try
 	{
-		std::cout << "getting: " << _id << std::endl;
-		return db[_id]["edits"];
+		if (db.count(_id) > 0)
+		{
+			if (db[_id].count("edits") > 0)
+			{
+				return db[_id]["edits"].get<std::vector<json>>();
+			}
+		}
+	}
+	catch (std::exception& e)
+	{
+		std::cout << e.what();
 	}
 
 	return std::vector<json>();
@@ -77,6 +83,9 @@ std::vector<json> Database::getMeshEdits(std::string _id)
 
 bool Database::putMeshWithEdits(json& _object)
 {
+	// lock
+	std::lock_guard<std::mutex> lock(mut);
+
 	if (_object["mesh"].count("id") > 0)
 	{
 		std::string id = _object["mesh"]["id"];
@@ -115,11 +124,4 @@ bool Database::deleteMesh(std::string id)
 		return true;
 	}
 	return false;
-}
-
-void Database::storeUsersToFile()
-{
-	std::ofstream outputFile("users.json");
-	outputFile << std::setw(4) << userDB << std::endl;
-	outputFile.close();
 }

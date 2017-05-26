@@ -1,9 +1,8 @@
 #include "requestAbstract.h"
 
 #include "mayaUtils.h"
-#include "tweakHandler.h"
 #include "hackPrint.h"
-
+#include "tweakHandler.h"
 #include <maya/MArgDatabase.h>
 #include <maya/MGlobal.h>
 #include <maya/MUuid.h>
@@ -12,7 +11,10 @@
 #include <maya/MFnMatrixData.h>
 #include <maya/MDataHandle.h>
 #include <maya/MMatrix.h>
+#include <maya/MDagPath.h>
+
 #include "callbackHandler.h"
+#include "dataStore.h"
 
 RequestAbstract::RequestAbstract()
 	:
@@ -23,34 +25,6 @@ RequestAbstract::RequestAbstract()
 
 RequestAbstract::~RequestAbstract()
 {
-}
-
-MSyntax RequestAbstract::newSyntax()
-{
-	MSyntax syn;
-
-	syn.addFlag("-id", "-uuid", MSyntax::kString);
-
-	return syn;
-}
-
-MStatus RequestAbstract::getArgs(const MArgList& args, MString& id)
-{
-	MStatus status = MStatus::kSuccess;
-	MArgDatabase parser(syntax(), args, &status);
-
-	if (status != MS::kSuccess) return status;
-
-	if (parser.isFlagSet("-id"))
-	{
-		parser.getFlagArgument("-id", 0, id);
-	}
-	else
-	{
-		status = MStatus::kFailure;
-	}
-
-	return status;
 }
 
 MStatus RequestAbstract::setNodeValues(json & _node)
@@ -116,6 +90,14 @@ MStatus RequestAbstract::setAttribs(MFnDependencyNode& node, json& attribs)
 
 			if (it.value().is_array())
 			{
+
+				if (it.key().compare("pt") == 0)
+				{
+					std::vector<json> pntVals = it.value();
+					pTweakHandler->setPointPlugFromArray(plug, pntVals);
+					continue;
+				}
+
 				if (it.key().compare("tk") == 0)
 				{
 					std::vector<json> tweakVals = it.value();
@@ -124,6 +106,13 @@ MStatus RequestAbstract::setAttribs(MFnDependencyNode& node, json& attribs)
 				}
 
 				if (it.key().compare("ics") == 0)
+				{
+					std::vector<std::string> componentList = it.value();
+					setComponentListAttribute(componentList, plug);
+					continue;
+				}
+
+				if (it.key().compare("dc") == 0)
 				{
 					std::vector<std::string> componentList = it.value();
 					setComponentListAttribute(componentList, plug);
@@ -245,25 +234,19 @@ MStatus RequestAbstract::setConnections(json& _node)
 
 		// this connection method assumes that the new node isnt connected to anything and that we dont care about what the other nodes were connected to before hand.
 
-		if (_node["type"].get<std::string>().compare("polyTweak") != 0)
+		if (!_node["otherConnections"].empty())
 		{
-			// Really long winded way to grab the shape nodes name
-			MDagPath dagPath;
-			MObject tmp;
-			MString id = CallbackHandler::getInstance().getCurrentRegisteredMesh().c_str();
-			status = MayaUtils::getNodeObjectFromUUID(id, tmp);
-			if (status != MStatus::kSuccess) return status;
-			status = MDagPath::getAPathTo(tmp, dagPath);
-			status = dagPath.extendToShape();
-			MFnDependencyNode shapeNode(dagPath.node());
-
-			MString connectCmd;
-			connectCmd += "connectAttr ";
-			connectCmd += shapeNode.name();
-			connectCmd += ".worldMatrix[0] ";
-			connectCmd += newNode.name();
-			connectCmd += ".manipMatrix;";
-			MGlobal::executeCommand(connectCmd);
+			auto connections = _node["otherConnections"];
+			
+			for (auto& item : connections)
+			{
+				MString connectCmd;
+				connectCmd += "connectAttr ";
+				connectCmd += item["out"].get<std::string>().c_str();
+				connectCmd += " ";
+				connectCmd += item["in"].get<std::string>().c_str();
+				MGlobal::executeCommand(connectCmd);
+			}
 		}
 	}
 
@@ -277,13 +260,12 @@ MStatus RequestAbstract::setComponentListAttribute(std::vector<std::string> comp
 	cmd += _plug.name();
 	cmd += " -type \"componentList\" ";
 	cmd += std::to_string(components.size()).c_str();
-	cmd += " ";
 	for(std::string& item : components)
 	{
+		cmd += " \"";
 		cmd += item.c_str();
-		cmd += " ";
+		cmd += "\" ";
 	}
-
 	return MGlobal::executeCommand(cmd);
 }
 

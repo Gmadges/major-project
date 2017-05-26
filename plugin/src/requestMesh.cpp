@@ -12,8 +12,7 @@
 #include "maya/MUuid.h"
 
 #include "testTypes.h"
-#include "tweakHandler.h"
-#include "serverAddress.h"
+#include "dataStore.h"
 #include "callbackHandler.h"
 #include "mayaUtils.h"
 
@@ -32,18 +31,46 @@ void* RequestMesh::creator()
 	return new RequestMesh;
 }
 
+MSyntax RequestMesh::newSyntax()
+{
+	MSyntax syn;
+
+	syn.addFlag("-id", "-uuid", MSyntax::kString);
+
+	return syn;
+}
+
+MStatus RequestMesh::getArgs(const MArgList& args, MString& id)
+{
+	MStatus status = MStatus::kSuccess;
+	MArgDatabase parser(syntax(), args, &status);
+
+	if (status != MS::kSuccess) return status;
+
+	if (parser.isFlagSet("-id"))
+	{
+		parser.getFlagArgument("-id", 0, id);
+	}
+	else
+	{
+		status = MStatus::kFailure;
+	}
+
+	return status;
+}
+
 MStatus	RequestMesh::doIt(const MArgList& args)
 {
 	MStatus status = MStatus::kSuccess;
 
 	// reset socket
-	if (!ServerAddress::getInstance().isServerSet())
+	if (!DataStore::getInstance().isServerSet())
 	{
 		HackPrint::print("Set Server using \"SetServer\" command");
 		return status;
 	}
 
-	pMessenger->resetSocket(ServerAddress::getInstance().getAddress(), ServerAddress::getInstance().getPort());
+	pMessenger->resetSocket(DataStore::getInstance().getAddress(), DataStore::getInstance().getPort());
 
 	// ask the server for any update
 	json data;
@@ -55,7 +82,7 @@ MStatus	RequestMesh::doIt(const MArgList& args)
 	}
 
 	// if false then we couldnt connect to server
-	if (!pMessenger->requestMesh(data, ReqType::REQUEST_MESH, std::string(id.asChar()), ServerAddress::getInstance().getUserID())) return MStatus::kFailure;
+	if (!pMessenger->requestMesh(data, ReqType::REQUEST_MESH, std::string(id.asChar()), DataStore::getInstance().getUserID())) return MStatus::kFailure;
 	
 	// is there actually anything?
 	if (data.empty())
@@ -77,7 +104,7 @@ MStatus	RequestMesh::doIt(const MArgList& args)
 	}
 
 	// set this as our current mesh now
-	CallbackHandler::getInstance().setCurrentRegisteredMesh(meshID);
+	DataStore::getInstance().setCurrentRegisteredMesh(meshID);
 
 	// get nodes
 	auto nodeList = data["nodes"];
@@ -131,43 +158,78 @@ MStatus RequestMesh::createMesh(json& _mesh)
 
 	// create a mesh
 	PolyType type = _mesh["type"];
+	MString cmd;
 
 	switch (type)
 	{
 		case PolyType::CUBE:
 		{
-			MString cmd;
-			cmd += "polyCube";
-
-			HackPrint::print(cmd);
-			MStringArray result;
-			status = MGlobal::executeCommand(cmd, result);
-
-			if (status != MStatus::kSuccess) return status;
-
-			// rename the nodes
-			MSelectionList sList;
-			sList.add(result[0]);
-			MObject node;
-			if (sList.getDependNode(0, node) != MStatus::kSuccess) return MStatus::kFailure;
-
-			// rename and set correct details
-			MDagPath dagPath;
-			MDagPath::getAPathTo(node, dagPath);
-			dagPath.extendToShape();
-
-			MFnDependencyNode shapeNode(dagPath.node());
-			matchIDs(shapeNode, _mesh);
-
-			//transform node
-			MFnDependencyNode tranformNode(node);
-			matchIDs(tranformNode, _mesh);
-			
-			return status;
+			cmd = "polyCube";
+			break;
+		}
+		case PolyType::CONE:
+		{
+			cmd = "polyCone";
+			break;
+		}
+		case PolyType::CYLINDER:
+		{
+			cmd = "polyCylinder";
+			break;
+		}
+		case PolyType::PIPE:
+		{
+			cmd = "polyPipe";
+			break;
+		}
+		case PolyType::SPHERE:
+		{
+			cmd = "polySphere";
+			break;
+		}
+		case PolyType::PLANE:
+		{
+			cmd = "polyPlane";
+			break;
+		}
+		case PolyType::PYRAMID:
+		{
+			cmd = "polyPyramid";
+			break;
+		}
+		case PolyType::TORUS:
+		{
+			cmd = "polyTorus";
+			break;
+		}
+		default : 
+		{
+			return MStatus::kFailure;
 		}
 	}
 
-	return MStatus::kFailure;
+	MStringArray result;
+	HackPrint::print(cmd);
+	status = MGlobal::executeCommand(cmd, result);
+	if (status != MStatus::kSuccess) return status;
+	MSelectionList sList;
+	sList.add(result[0]);
+	MObject node;
+	if (sList.getDependNode(0, node) != MStatus::kSuccess) return MStatus::kFailure;
+
+	// rename and set correct details
+	MDagPath dagPath;
+	MDagPath::getAPathTo(node, dagPath);
+	dagPath.extendToShape();
+
+	MFnDependencyNode shapeNode(dagPath.node());
+	matchIDs(shapeNode, _mesh);
+
+	//transform node
+	MFnDependencyNode tranformNode(node);
+	matchIDs(tranformNode, _mesh);
+
+	return status;
 }
 
 void RequestMesh::matchIDs(MFnDependencyNode & node, json& mesh)
@@ -190,7 +252,6 @@ void RequestMesh::matchIDs(MFnDependencyNode & node, json& mesh)
 		}
 	}	
 
-	// If the inputPolymesh is connected, we have history
 	MStatus status;
 	MPlug inMeshPlug;
 	inMeshPlug = MayaUtils::getInPlug(node, status);

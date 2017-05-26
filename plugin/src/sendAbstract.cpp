@@ -32,7 +32,6 @@
 #include <maya/MFnSingleIndexedComponent.h>
 
 #include "messaging.h"
-#include "tweakHandler.h"
 #include "hackPrint.h"
 #include "testTypes.h"
 
@@ -41,8 +40,7 @@
 
 SendAbstract::SendAbstract()
 	:
-	pMessaging(new Messaging("localhost", 8080)),
-	pTweaksHandler(new TweakHandler())
+	pMessaging(new Messaging("localhost", 8080))
 {
 }
 
@@ -97,6 +95,9 @@ MStatus SendAbstract::getGenericNode(MFnDependencyNode & _inNode, json& _outNode
 	unsigned int numAttrib = _inNode.attributeCount();
 	MStatus status;
 
+	// init this incase we need it.
+	_outNode["otherConnections"] = std::vector<json>();
+
 	json nodeAttribs;
 
 	for (unsigned int i = 0; i < numAttrib; i++)
@@ -107,6 +108,26 @@ MStatus SendAbstract::getGenericNode(MFnDependencyNode & _inNode, json& _outNode
 
 		if (status != MStatus::kSuccess) continue;
 
+		// slight hack
+		if (plug.isNetworked())
+		{
+			// interested in manip matrices
+			if (plug.partialName() == "mp")
+			{
+				// lets store these extra connections
+				// grab the thing its connected to
+				MPlugArray tempPlugArray;
+				plug.connectedTo(tempPlugArray, true, false);
+
+				if (tempPlugArray.length() > 0)
+				{
+					json conn;
+					conn["in"] = plug.name().asChar();
+					conn["out"] = tempPlugArray[0].name().asChar();
+					_outNode["otherConnections"].push_back(conn);
+				}
+			}
+		}
 
 		getAttribFromPlug(plug, nodeAttribs);
 	}
@@ -228,17 +249,17 @@ MStatus SendAbstract::getAttribFromPlug(MPlug& _plug, json& _attribs)
 	if (getTypeDataFromAttrib(_plug, _attribs) == MStatus::kSuccess) return MStatus::kSuccess;
 
 	if (getUnitDataFromAttrib(_plug, _attribs) == MStatus::kSuccess) return MStatus::kSuccess;
-
 	// this one is just stuff i know we can get
 	if (getOtherDataFromAttrib(_plug, _attribs) == MStatus::kSuccess) return MStatus::kSuccess;
 
-	MString error;
-	error += "Couldn't find a match for plug: ";
-	error += _plug.name();
-	error += " type: ";
-	error += _plug.attribute().apiTypeStr();
-	HackPrint::print(error);
-
+	/*
+		MString error;
+		error += "Couldn't find a match for plug: ";
+		error += _plug.name();
+		error += " type: ";
+		error += _plug.attribute().apiTypeStr();
+		HackPrint::print(error);
+	*/
 	return MStatus::kFailure;
 }
 
@@ -572,6 +593,21 @@ MStatus SendAbstract::getUnitDataFromAttrib(MPlug& _plug, json& _attribs)
 {
 	std::string attribName = _plug.partialName().asChar();
 	MObject attribute = _plug.attribute();
+
+	std::string funciton = attribute.apiTypeStr();
+	
+	// hack
+	std::size_t found = attribName.find("pt");
+	if (found != std::string::npos)
+	{
+		if (attribute.apiType() == MFn::kFloatLinearAttribute)
+		{
+			float value;
+			_plug.getValue(value);
+			_attribs[attribName] = value;
+			return MStatus::kSuccess;
+		}
+	}
 
 	// do the same for typed attribs
 	if (attribute.hasFn(MFn::kUnitAttribute))

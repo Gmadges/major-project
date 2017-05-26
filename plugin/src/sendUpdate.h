@@ -13,7 +13,6 @@
 #include "sendAbstract.h"
 
 class Messaging;
-class TweakHandler;
 
 class SendUpdate : public SendAbstract
 {

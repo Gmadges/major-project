@@ -18,8 +18,12 @@ UserInfo::~UserInfo()
 
 void UserInfo::updateUser(std::string _id)
 {
+	// lock
+	std::lock_guard<std::mutex> lock(mut);
+
 	// this is last time the user made a request.
 	userDB[_id] = std::time(nullptr);
+	storeUsersToFile();
 }
 
 time_t UserInfo::getUsersLastUpdate(std::string _id)

@@ -15,8 +15,7 @@ public:
 	
 	void resetSocket(std::string _address, int _port);
 	bool sendUpdate(const json& data);
-	bool requestData(json& data, ReqType _type, std::string _userID);
-	bool requestMesh(json& data, ReqType _type, std::string _meshID, std::string _userID);
+	bool requestMesh(json& data, ReqType _type, std::string _meshID, std::string _userID, bool bfullMesh=false);
 
 private:
 	bool send(zmq::message_t& msg, zmq::message_t& reply);

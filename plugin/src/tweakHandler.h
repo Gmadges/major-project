@@ -23,6 +23,7 @@ public:
 
 	// this method returns the tweak values in and array that we send
 	MStatus setTweakPlugFromArray(MPlug& _plug, std::vector<json>& tweakArray);
+	MStatus setPointPlugFromArray(MPlug& _plug, std::vector<json>& pointArray);
 
 private:
 	MFloatVector getFloat3FromPlug(MPlug& plug);

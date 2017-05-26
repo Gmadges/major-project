@@ -24,7 +24,8 @@
 #include "testTypes.h"
 
 #include "callbackHandler.h"
-#include "serverAddress.h"
+#include "mayaUtils.h"
+#include "dataStore.h"
 
 SendRegister::SendRegister()
 	:
@@ -47,13 +48,13 @@ MStatus	SendRegister::doIt(const MArgList& args)
 	MStatus status;
 
 	// reset socket
-	if (!ServerAddress::getInstance().isServerSet())
+	if (!DataStore::getInstance().isServerSet())
 	{
 		HackPrint::print("Set Server using \"SetServer\" command");
 		return status;
 	}
 
-	pMessaging->resetSocket(ServerAddress::getInstance().getAddress(), ServerAddress::getInstance().getPort());
+	pMessaging->resetSocket(DataStore::getInstance().getAddress(), DataStore::getInstance().getPort());
 
 	MSelectionList selList;
 	MGlobal::getActiveSelectionList(selList);
@@ -82,17 +83,6 @@ MStatus	SendRegister::doIt(const MArgList& args)
 		if (!status) {
 			status.perror("MFnDagNode constructor");
 			continue;
-		}
-
-		// check for tweaks
-		if (pTweaksHandler->hasTweaks(dagPath))
-		{
-			MObject tweakNode;
-			if (pTweaksHandler->createPolyTweakNode(dagPath, tweakNode) == MStatus::kSuccess)
-			{
-				dagPath.extendToShape();
-				pTweaksHandler->connectTweakNodes(tweakNode, dagPath.node());
-			}
 		}
 
 		// turn tweaks into a node before sending
@@ -157,13 +147,14 @@ MStatus SendRegister::registerAndSendMesh(MDagPath & meshDAGPath)
 	// use shape nodes id.
 	meshData["id"] = std::string(meshShapeNode.uuid().asString().asChar());
 
-	CallbackHandler::getInstance().setCurrentRegisteredMesh(meshData["id"]);
+	DataStore::getInstance().setCurrentRegisteredMesh(meshData["id"]);
 
 	// transforms name, because i dunno
 	meshData["name"] = std::string(transformNode.name().asChar());
 
-	// hardcode cube for now
-	meshData["type"] = PolyType::CUBE;
+	// we pass the last node. which should be the first geo node.
+	meshData["type"] = MayaUtils::getPolyType(nodeList.back(), status);
+	if (status == MStatus::kFailure) return status;
 
 	// add all its nodes
 	// minor hack
@@ -172,7 +163,7 @@ MStatus SendRegister::registerAndSendMesh(MDagPath & meshDAGPath)
 	meshData["nodes"] = nodeList;
 
 	json message;
-	message["uid"] = ServerAddress::getInstance().getUserID();
+	message["uid"] = DataStore::getInstance().getUserID();
 	message["requestType"] = ReqType::REGISTER_MESH;
 	message["mesh"] = meshData;
 
