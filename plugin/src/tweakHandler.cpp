@@ -492,7 +492,7 @@ MStatus TweakHandler::setPointPlugFromArray(MPlug& _plug, std::vector<json>& poi
 			}
 
 			// mel hack
-			MFnDependencyNode tweakNode = _plug.node();
+			MFnDependencyNode tweakNode(_plug.node());
 			MString cmd = "setAttr \"";
 			cmd += tweakNode.name();
 			cmd += ".pt[";
