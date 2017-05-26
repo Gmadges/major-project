@@ -21,7 +21,6 @@ bool UpdateHandler::registerMesh(json& _request)
 	{
 		return pDB->putMesh(_request["mesh"]);
 	}
-
 	return false;
 }
 
@@ -180,8 +179,8 @@ void UpdateHandler::editNodeInList(json& _node, std::vector<json>& _nodeList)
 		{
 			std::cout << "edit : " << id << std::endl;
 
-			json difference = json::diff(_nodeList[i], _node);
-			std::cout << difference.dump(4);
+			//json difference = json::diff(_nodeList[i], _node);
+			//std::cout << difference.dump(4);
 
 			// this difference is a "patch" that can be used to update the old node. we can manipulate this to figure out what should be changed.
 
