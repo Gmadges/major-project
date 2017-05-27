@@ -119,6 +119,19 @@ MStatus RequestAbstract::setAttribs(MFnDependencyNode& node, json& attribs)
 					continue;
 				}
 
+				if (it.key().compare("e") == 0 || it.key().compare("d") == 0)
+				{
+					HackPrint::print(it.value().dump(4));
+					continue;
+				}
+
+				if (it.key().compare("dc") == 0)
+				{
+					std::vector<std::string> componentList = it.value();
+					setComponentListAttribute(componentList, plug);
+					continue;
+				}
+
 				if (it.value().size() == 16)
 				{
 					try

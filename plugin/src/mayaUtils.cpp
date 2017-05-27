@@ -57,8 +57,8 @@ bool MayaUtils::doesItRequireConnections(MString& _type)
 	}
 
 	// tools
-	if (_type == MString("polySplitRing")/* ||
-		_type == MString("polySplit")*/)
+	if (_type == MString("polySplitRing") ||
+		_type == MString("polySplit"))
 	{
 		return true;
 	}
