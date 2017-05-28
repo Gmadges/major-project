@@ -24,6 +24,14 @@ mayaMainWindow = wrapInstance(long(mayaMainWindowPtr), QWidget)
 # set timeout on our socket to be 2 seconds
 socket.setdefaulttimeout(2)
 
+# method returns a dict of settings for ease of use
+def getSettings():
+    result = mel.eval('Settings -q')
+    tmp = {}
+    for i in range(0, len(result), 2):
+        tmp[result[i]] = result[i+1]
+    return tmp
+
 class ServerMessenger(object):
     def __init__(self):
         self.serverAddress = ''
@@ -245,7 +253,19 @@ class meshSelectionWidget(QFrame):
     def delMesh(self):
         items = self.list.selectedItems()
         for i in range(len(items)) :
-            self.messenger.deleteMesh(items[i].toolTip())
+            sureMsg = 'Are you sure you want to delete ' + items[i].text() + '?'
+            result = cmds.confirmDialog( title='Confirm', message=sureMsg, button=['Yes','No'], defaultButton='Yes', cancelButton='No', dismissString='No' )
+            if result == 'Yes':
+                settings = getSettings()
+                if items[i].toolTip() == settings['currentMesh']:
+                    result = cmds.confirmDialog( title='Confirm', message='This is our current Mesh, are you really sure?', button=['Yes','No'], defaultButton='Yes', cancelButton='No', dismissString='No')
+                    if result == 'No':
+                        continue
+                    else:
+                        mel.eval('ClearCurrentMesh')
+                        self.meshRequested.emit('')
+                self.messenger.deleteMesh(items[i].toolTip())
+                
         self.requestAllMesh()
 
 class currentMeshWidget(QFrame):
