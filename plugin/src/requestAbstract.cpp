@@ -121,14 +121,7 @@ MStatus RequestAbstract::setAttribs(MFnDependencyNode& node, json& attribs)
 
 				if (it.key().compare("e") == 0 || it.key().compare("d") == 0)
 				{
-					HackPrint::print(it.value().dump(4));
-					continue;
-				}
-
-				if (it.key().compare("dc") == 0)
-				{
-					std::vector<std::string> componentList = it.value();
-					setComponentListAttribute(componentList, plug);
+					setEdgeDescAttribute(it.value(), plug);
 					continue;
 				}
 
@@ -280,6 +273,32 @@ MStatus RequestAbstract::setComponentListAttribute(std::vector<std::string> comp
 		cmd += "\" ";
 	}
 	return MGlobal::executeCommand(cmd);
+}
+
+MStatus RequestAbstract::setEdgeDescAttribute(std::vector<json> components, MPlug& _plug)
+{
+	MStatus status = MStatus::kSuccess;
+
+	MFnDependencyNode node(_plug.node());
+
+	for (json& item : components)
+	{
+		for (json::iterator it = item.begin(); it != item.end(); ++it)
+		{
+			MString cmd;
+			cmd += "setAttr -s 1 \"";
+			cmd += node.name();
+			cmd += ".";
+			cmd += it.key().c_str();
+			cmd += "\" ";
+			cmd += it.value().get<double>();
+			cmd += ";";
+
+			status = MGlobal::executeCommand(cmd);
+		}
+	}
+
+	return status;
 }
 
 MStatus RequestAbstract::setMatrixAttribute(std::vector<double> numbers, MPlug& _plug)

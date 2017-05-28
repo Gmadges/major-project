@@ -244,13 +244,6 @@ MStatus SendAbstract::getAttribFromPlug(MPlug& _plug, json& _attribs)
 		return MStatus::kSuccess;
 	}
 
-	MString error;
-	error += "Couldn't find a match for plug: ";
-	error += _plug.name();
-	error += " type: ";
-	error += _plug.attribute().apiTypeStr();
-	HackPrint::print(error);
-
 	if (getNumericDataFromAttrib(_plug, _attribs) == MStatus::kSuccess) return MStatus::kSuccess;
 
 	if (getTypeDataFromAttrib(_plug, _attribs) == MStatus::kSuccess) return MStatus::kSuccess;
@@ -258,6 +251,13 @@ MStatus SendAbstract::getAttribFromPlug(MPlug& _plug, json& _attribs)
 	if (getUnitDataFromAttrib(_plug, _attribs) == MStatus::kSuccess) return MStatus::kSuccess;
 	// this one is just stuff i know we can get
 	if (getOtherDataFromAttrib(_plug, _attribs) == MStatus::kSuccess) return MStatus::kSuccess;
+
+	//MString error;
+	//error += "Couldn't find a match for plug: ";
+	//error += _plug.name();
+	//error += " type: ";
+	//error += _plug.attribute().apiTypeStr();
+	//HackPrint::print(error);
 
 	return MStatus::kFailure;
 }
