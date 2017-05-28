@@ -24,10 +24,13 @@ bool Database::putMesh(json& _mesh)
 	{
 		std::string id = _mesh["id"];
 		std::cout << "storing: " << id << std::endl;
+		
+		_mesh["db_time"] = std::time(nullptr);
 
 		json object;
 		object["mesh"] = _mesh;
 		object["edits"] = std::vector<json>();
+
 
 		db[id] = object;
 
