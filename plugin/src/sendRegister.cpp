@@ -152,6 +152,9 @@ MStatus SendRegister::registerAndSendMesh(MDagPath & meshDAGPath)
 	// transforms name, because i dunno
 	meshData["name"] = std::string(transformNode.name().asChar());
 
+	// add user id to the mesh too
+	meshData["uid"] = DataStore::getInstance().getUserID();
+
 	// we pass the last node. which should be the first geo node.
 	meshData["type"] = MayaUtils::getPolyType(nodeList.back(), status);
 	if (status == MStatus::kFailure) return status;

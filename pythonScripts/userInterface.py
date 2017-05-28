@@ -2,6 +2,7 @@ from maya import cmds
 from maya import mel
 from maya import OpenMayaUI as omui
 from threading import Timer
+import time
 import urllib2
 import json
 import socket
@@ -20,6 +21,17 @@ except ImportError:
 
 mayaMainWindowPtr = omui.MQtUtil.mainWindow() 
 mayaMainWindow = wrapInstance(long(mayaMainWindowPtr), QWidget)
+
+# set timeout on our socket to be 2 seconds
+socket.setdefaulttimeout(2)
+
+# method returns a dict of settings for ease of use
+def getSettings():
+    result = mel.eval('Settings -q')
+    tmp = {}
+    for i in range(0, len(result), 2):
+        tmp[result[i]] = result[i+1]
+    return tmp
 
 class ServerMessenger(object):
     def __init__(self):
@@ -79,11 +91,7 @@ class serverConnectWidget(QFrame):
                 self.address_line.setText(settings[1])
                 if settings[2] != socket.gethostbyname(socket.gethostname()) :
                     self.user_id_line.setText(settings[2])
-                self.messenger.setServer(settings[1], int(settings[0]) + 1)
-                self.setConnectedLabel(True)
-                self.startHeartbeat()
-                self.connectionMade = True
-                self.connected.emit(self.connectionMade)
+                self.connectToServer()
             
     def initUI(self):
         self.connect_btn = QPushButton('Connect', self)
@@ -134,6 +142,9 @@ class serverConnectWidget(QFrame):
                 self.connected.emit(self.connectionMade)
                 cmds.confirmDialog( title='Error', message='Cannot connect to server.')
         else :
+            self.setConnectedLabel(False)
+            self.connectionMade = False
+            self.connected.emit(self.connectionMade)
             cmds.confirmDialog( title='Error', message='Plugin is not loaded.')    
 
     def startHeartbeat(self):
@@ -180,11 +191,15 @@ class meshSelectionWidget(QFrame):
         super(meshSelectionWidget, self).__init__()
         self.messenger = messenger
         self.initUI()
+        self.currentlyConnected = False
         self.setFrameStyle(QFrame.StyledPanel)
 
     def initUI(self):
-        self.list = QListWidget()
-        self.list.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.tree = QTreeWidget()
+        self.tree.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.tree.setRootIsDecorated(False)
+        self.tree.setColumnCount(3)
+        self.tree.setHeaderLabels(['Name','Date Created','User'])
 
         self.getMesh_btn = QPushButton('Get', self)
         self.delMesh_btn = QPushButton('Delete', self)
@@ -202,24 +217,35 @@ class meshSelectionWidget(QFrame):
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(2, 2, 2, 2)
         main_layout.addWidget(self.updateMeshes_btn)
-        main_layout.addWidget(self.list)
+        main_layout.addWidget(self.tree)
         main_layout.addLayout(button_layout)
         self.setLayout(main_layout)
 
-    def requestAllMesh(self):
-        request = self.messenger.requestAllMeshes()
-        self.list.clear()
-        for i in range(len(request['meshNames'])):
-            newItem = QListWidgetItem()
-            newItem.setText(request['meshNames'][i])
-            newItem.setData(Qt.ToolTipRole, request['meshIds'][i])
-            self.list.addItem(newItem)
+    def requestAllMesh(self, isConnected=None):
+        if isConnected is None:
+            isConnected = self.currentlyConnected
+
+        if isConnected is True:
+            request = self.messenger.requestAllMeshes()
+            self.tree.clear()
+            for i in range(len(request['meshNames'])):
+                newItem = QTreeWidgetItem()
+                newItem.setText(0, request['meshNames'][i])
+                newItem.setText(1, time.strftime('%d-%m-%Y %H:%M:%S', time.localtime(float(request['meshTimes'][i]))))
+                newItem.setText(2, request['meshUsers'][i])
+                newItem.setData(0, Qt.ToolTipRole, request['meshIds'][i])
+                self.tree.addTopLevelItem(newItem)
+            # resize the contents
+            self.tree.resizeColumnToContents(0)
+            self.tree.resizeColumnToContents(1)
+            self.tree.resizeColumnToContents(2)
+        self.currentlyConnected = isConnected
 
     def getMesh(self):
-        items = self.list.selectedItems()
+        items = self.tree.selectedItems()
         if len(items) == 1 :
-            self.requestMeshCmd(items[0].toolTip())
-            self.meshRequested.emit(items[0].text())
+            self.requestMeshCmd(items[0].toolTip(0))
+            self.meshRequested.emit(items[0].text(0))
         else :
             if len(items) > 1:
                 cmds.confirmDialog( title='Error', message='Only one mesh can be requested.')
@@ -233,9 +259,21 @@ class meshSelectionWidget(QFrame):
         mel.eval(reqCmd)
 
     def delMesh(self):
-        items = self.list.selectedItems()
+        items = self.tree.selectedItems()
         for i in range(len(items)) :
-            self.messenger.deleteMesh(items[i].toolTip())
+            sureMsg = 'Are you sure you want to delete ' + items[i].text(0) + '?'
+            result = cmds.confirmDialog( title='Confirm', message=sureMsg, button=['Yes','No'], defaultButton='Yes', cancelButton='No', dismissString='No' )
+            if result == 'Yes':
+                settings = getSettings()
+                if items[i].toolTip(0) == settings['currentMesh']:
+                    result = cmds.confirmDialog( title='Confirm', message='This is our current Mesh, are you really sure?', button=['Yes','No'], defaultButton='Yes', cancelButton='No', dismissString='No')
+                    if result == 'No':
+                        continue
+                    else:
+                        mel.eval('ClearCurrentMesh')
+                        self.meshRequested.emit('')
+                self.messenger.deleteMesh(items[i].toolTip(0))
+                
         self.requestAllMesh()
 
 class currentMeshWidget(QFrame):
@@ -371,8 +409,11 @@ class CreateUI(QWidget):
         self.settingsWid = settingsWidget()
 
         # connect items
+        # whether we're connected or not
         self.connectionWid.connected.connect(self.meshSelectWid.requestAllMesh)
-        self.connectionWid.connected.connect(self.enableWidgets)
+        self.connectionWid.connected.connect(self.setWidgets)
+
+        # we've slected a mesh
         self.currentMeshWid.meshRegistered.connect(self.meshSelectWid.requestAllMesh)
         self.meshSelectWid.meshRequested.connect(self.currentMeshWid.updateCurrentMeshLabel)
 
@@ -386,7 +427,7 @@ class CreateUI(QWidget):
 
         if self.connectionWid.isServerConnected() is True:
             self.setWidgets(True)
-            self.meshSelectWid.requestAllMesh()
+            self.meshSelectWid.requestAllMesh(True)
             # set current mesh if there is one
         else:
             self.setWidgets(False)
