@@ -91,11 +91,7 @@ class serverConnectWidget(QFrame):
                 self.address_line.setText(settings[1])
                 if settings[2] != socket.gethostbyname(socket.gethostname()) :
                     self.user_id_line.setText(settings[2])
-                self.messenger.setServer(settings[1], int(settings[0]) + 1)
-                self.setConnectedLabel(True)
-                self.startHeartbeat()
-                self.connectionMade = True
-                self.connected.emit(self.connectionMade)
+                self.connectToServer()
             
     def initUI(self):
         self.connect_btn = QPushButton('Connect', self)
