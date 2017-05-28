@@ -21,6 +21,9 @@ except ImportError:
 mayaMainWindowPtr = omui.MQtUtil.mainWindow() 
 mayaMainWindow = wrapInstance(long(mayaMainWindowPtr), QWidget)
 
+# set timeout on our socket to be 2 seconds
+socket.setdefaulttimeout(2)
+
 class ServerMessenger(object):
     def __init__(self):
         self.serverAddress = ''
@@ -134,6 +137,9 @@ class serverConnectWidget(QFrame):
                 self.connected.emit(self.connectionMade)
                 cmds.confirmDialog( title='Error', message='Cannot connect to server.')
         else :
+            self.setConnectedLabel(False)
+            self.connectionMade = False
+            self.connected.emit(self.connectionMade)
             cmds.confirmDialog( title='Error', message='Plugin is not loaded.')    
 
     def startHeartbeat(self):
@@ -177,6 +183,7 @@ class meshSelectionWidget(QFrame):
         super(meshSelectionWidget, self).__init__()
         self.messenger = messenger
         self.initUI()
+        self.currentlyConnected = False
         self.setFrameStyle(QFrame.StyledPanel)
 
     def initUI(self):
@@ -203,14 +210,20 @@ class meshSelectionWidget(QFrame):
         main_layout.addLayout(button_layout)
         self.setLayout(main_layout)
 
-    def requestAllMesh(self):
-        request = self.messenger.requestAllMeshes()
-        self.list.clear()
-        for i in range(len(request['meshNames'])):
-            newItem = QListWidgetItem()
-            newItem.setText(request['meshNames'][i])
-            newItem.setData(Qt.ToolTipRole, request['meshIds'][i])
-            self.list.addItem(newItem)
+    def requestAllMesh(self, isConnected=None):
+        if isConnected is None:
+            isConnected = self.currentlyConnected
+
+        if isConnected is True:
+            request = self.messenger.requestAllMeshes()
+            self.list.clear()
+            for i in range(len(request['meshNames'])):
+                newItem = QListWidgetItem()
+                newItem.setText(request['meshNames'][i])
+                newItem.setData(Qt.ToolTipRole, request['meshIds'][i])
+                self.list.addItem(newItem)
+
+        self.currentlyConnected = isConnected
 
     def getMesh(self):
         items = self.list.selectedItems()
@@ -368,8 +381,11 @@ class CreateUI(QWidget):
         self.settingsWid = settingsWidget()
 
         # connect items
+        # whether we're connected or not
         self.connectionWid.connected.connect(self.meshSelectWid.requestAllMesh)
-        self.connectionWid.connected.connect(self.enableWidgets)
+        self.connectionWid.connected.connect(self.setWidgets)
+
+        # we've slected a mesh
         self.currentMeshWid.meshRegistered.connect(self.meshSelectWid.requestAllMesh)
         self.meshSelectWid.meshRequested.connect(self.currentMeshWid.updateCurrentMeshLabel)
 
@@ -383,7 +399,7 @@ class CreateUI(QWidget):
 
         if self.connectionWid.isServerConnected() is True:
             self.setWidgets(True)
-            self.meshSelectWid.requestAllMesh()
+            self.meshSelectWid.requestAllMesh(True)
             # set current mesh if there is one
         else:
             self.setWidgets(False)
