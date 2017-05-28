@@ -2,6 +2,7 @@ from maya import cmds
 from maya import mel
 from maya import OpenMayaUI as omui
 from threading import Timer
+import time
 import urllib2
 import json
 import socket
@@ -195,8 +196,11 @@ class meshSelectionWidget(QFrame):
         self.setFrameStyle(QFrame.StyledPanel)
 
     def initUI(self):
-        self.list = QListWidget()
-        self.list.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.tree = QTreeWidget()
+        self.tree.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.tree.setRootIsDecorated(False)
+        self.tree.setColumnCount(3)
+        self.tree.setHeaderLabels(['Name','Date Created','User'])
 
         self.getMesh_btn = QPushButton('Get', self)
         self.delMesh_btn = QPushButton('Delete', self)
@@ -214,7 +218,7 @@ class meshSelectionWidget(QFrame):
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(2, 2, 2, 2)
         main_layout.addWidget(self.updateMeshes_btn)
-        main_layout.addWidget(self.list)
+        main_layout.addWidget(self.tree)
         main_layout.addLayout(button_layout)
         self.setLayout(main_layout)
 
@@ -224,20 +228,25 @@ class meshSelectionWidget(QFrame):
 
         if isConnected is True:
             request = self.messenger.requestAllMeshes()
-            self.list.clear()
+            self.tree.clear()
             for i in range(len(request['meshNames'])):
-                newItem = QListWidgetItem()
-                newItem.setText(request['meshNames'][i])
-                newItem.setData(Qt.ToolTipRole, request['meshIds'][i])
-                self.list.addItem(newItem)
-
+                newItem = QTreeWidgetItem()
+                newItem.setText(0, request['meshNames'][i])
+                newItem.setText(1, time.strftime('%d-%m-%Y %H:%M:%S', time.localtime(float(request['meshTimes'][i]))))
+                newItem.setText(2, request['meshUsers'][i])
+                newItem.setData(0, Qt.ToolTipRole, request['meshIds'][i])
+                self.tree.addTopLevelItem(newItem)
+            # resize the contents
+            self.tree.resizeColumnToContents(0)
+            self.tree.resizeColumnToContents(1)
+            self.tree.resizeColumnToContents(2)
         self.currentlyConnected = isConnected
 
     def getMesh(self):
-        items = self.list.selectedItems()
+        items = self.tree.selectedItems()
         if len(items) == 1 :
-            self.requestMeshCmd(items[0].toolTip())
-            self.meshRequested.emit(items[0].text())
+            self.requestMeshCmd(items[0].toolTip(0))
+            self.meshRequested.emit(items[0].text(0))
         else :
             if len(items) > 1:
                 cmds.confirmDialog( title='Error', message='Only one mesh can be requested.')
@@ -251,20 +260,20 @@ class meshSelectionWidget(QFrame):
         mel.eval(reqCmd)
 
     def delMesh(self):
-        items = self.list.selectedItems()
+        items = self.tree.selectedItems()
         for i in range(len(items)) :
-            sureMsg = 'Are you sure you want to delete ' + items[i].text() + '?'
+            sureMsg = 'Are you sure you want to delete ' + items[i].text(0) + '?'
             result = cmds.confirmDialog( title='Confirm', message=sureMsg, button=['Yes','No'], defaultButton='Yes', cancelButton='No', dismissString='No' )
             if result == 'Yes':
                 settings = getSettings()
-                if items[i].toolTip() == settings['currentMesh']:
+                if items[i].toolTip(0) == settings['currentMesh']:
                     result = cmds.confirmDialog( title='Confirm', message='This is our current Mesh, are you really sure?', button=['Yes','No'], defaultButton='Yes', cancelButton='No', dismissString='No')
                     if result == 'No':
                         continue
                     else:
                         mel.eval('ClearCurrentMesh')
                         self.meshRequested.emit('')
-                self.messenger.deleteMesh(items[i].toolTip())
+                self.messenger.deleteMesh(items[i].toolTip(0))
                 
         self.requestAllMesh()
 

@@ -72,16 +72,34 @@ void Server::runDataServer()
 		info["status"] = 200;
 		std::vector<std::string> meshNames;
 		std::vector<std::string> meshIds;
+		std::vector<std::string> meshTimes;
+		std::vector<std::string> meshUser;
 
 		for (auto& item : pDB->getAllMeshes())
 		{
 			json mesh = item["mesh"];
 			meshNames.push_back(mesh["name"].get<std::string>());
 			meshIds.push_back(mesh["id"].get<std::string>());
+
+			// gotta do this as a string because of a weird issue of not sending all the data otherwise
+			try
+			{
+				std::string tmp = std::to_string(mesh["db_time"].get<time_t>());
+				meshTimes.push_back(tmp);
+			}
+			catch (std::exception& e)
+			{
+				std::cout << e.what() << std::endl;
+				meshTimes.push_back(0);
+			}
+
+			meshUser.push_back(mesh["uid"].get<std::string>());;
 		}
 		
 		info["meshNames"] = meshNames;
 		info["meshIds"] = meshIds;
+		info["meshTimes"] = meshTimes;
+		info["meshUsers"] = meshUser;
 		
 		return info;
 	});
