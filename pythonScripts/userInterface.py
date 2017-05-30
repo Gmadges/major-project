@@ -316,12 +316,29 @@ class currentMeshWidget(QFrame):
         self.setLayout(main_layout)
 
     def registerMeshCmd(self):
-        cmd = "RegisterMesh"
-        mel.eval(cmd)
+        # first lets check if this is is already registered
+        if(self.checkIfRegistered()):
+            return
+        mel.eval("RegisterMesh")
 
         self.updateCurrentMeshLabel(self.getSelectedMesh())
         self.meshRegistered.emit()
         
+    def checkIfRegistered(self):
+        transforms = cmds.ls(selection=True, type='transform')
+        if len(transforms) > 0:
+            shapes = cmds.listRelatives(transforms[0])
+            id = cmds.ls(shapes[0], uuid=True)
+            # check id against the ones on the server
+            request = self.messenger.requestAllMeshes()
+            for i in range(len(request['meshIds'])):
+                if request['meshIds'][i] == id[0]:
+                    cmds.confirmDialog( title='Error', message='This mesh is already registered with the server')
+                    return True
+            return False
+        else:
+            cmds.confirmDialog( title='Error', message='Please select a mesh to register')
+    
     def clearCmd(self):
         cmd = 'ClearCurrentMesh'
         mel.eval(cmd)
