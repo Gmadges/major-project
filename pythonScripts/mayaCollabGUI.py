@@ -456,12 +456,9 @@ class CreateUI(QWidget):
         self.currentMeshWid.setEnabled(True)
         self.settingsWid.setEnabled(True)
             
-def main():
+def run():
     # todo
     # add plugin loading stuff here
     ui = CreateUI()
     ui.show()
     return ui
-    
-if __name__ == '__main__':
-    main()
