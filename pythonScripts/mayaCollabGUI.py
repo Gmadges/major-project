@@ -33,6 +33,12 @@ def getSettings():
         tmp[result[i]] = result[i+1]
     return tmp
 
+def pluginLoaded():
+    return cmds.pluginInfo('MayaCollabPlugin', query=True ,loaded=True)
+
+def loadPlugin():
+    cmds.loadPlugin ("MayaCollabPlugin.mll")
+
 class ServerMessenger(object):
     def __init__(self):
         self.serverAddress = ''
@@ -84,7 +90,7 @@ class serverConnectWidget(QFrame):
         self.heartbeatTimer = Timer(self.heartbeatWait, self.heartbeatFunc)
         self.setFrameStyle(QFrame.StyledPanel)
         # This code will set up the current server settings if it exists
-        if self.pluginLoaded() is True:
+        if pluginLoaded() is True:
             settings = mel.eval('SetServer -q')
             if settings != None :
                 self.port_spin.setValue(int(settings[0]))
@@ -124,7 +130,7 @@ class serverConnectWidget(QFrame):
 
     def connectToServer(self):
         self.stopHeartbeat()
-        if self.pluginLoaded() is True:
+        if pluginLoaded() is True:
             address = self.address_line.text()
             port = self.port_spin.value()
             userID = self.user_id_line.text()
@@ -159,12 +165,6 @@ class serverConnectWidget(QFrame):
 
     def heartbeatFunc(self):
         self.setConnectedLabel(self.messenger.heartbeat())
-
-    def pluginLoaded(self):
-        exists = cmds.pluginInfo('PluginDebugTest', query=True ,loaded=True)
-        if exists == False:
-            return cmds.pluginInfo('libPluginDebugTest', query=True ,loaded=True)
-        return exists
 
     def setConnectedLabel(self, isConnected):
         if isConnected is True:
@@ -459,12 +459,12 @@ class CreateUI(QWidget):
         self.currentMeshWid.setEnabled(True)
         self.settingsWid.setEnabled(True)
             
-def main():
-    # todo
-    # add plugin loading stuff here
+def run():
+    if pluginLoaded() is False:
+        loadPlugin()
+        if pluginLoaded() is False:
+            cmds.confirmDialog( title='Error', message='Unable to load plugin. Check user guide to make sure setup is correct.')
     ui = CreateUI()
     ui.show()
     return ui
-    
-if __name__ == '__main__':
-    main()
+
