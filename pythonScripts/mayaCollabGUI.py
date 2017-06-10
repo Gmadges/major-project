@@ -6,6 +6,7 @@ import time
 import urllib2
 import json
 import socket
+import os
 
 try:
     from PySide2.QtCore import * 
@@ -34,10 +35,16 @@ def getSettings():
     return tmp
 
 def pluginLoaded():
-    return cmds.pluginInfo('MayaCollabPlugin', query=True ,loaded=True)
+    if os.name != 'posix':
+        return cmds.pluginInfo('MayaCollabPlugin', query=True ,loaded=True)
+    else:
+        return cmds.pluginInfo('libMayaCollabPlugin', query=True ,loaded=True)
 
 def loadPlugin():
-    cmds.loadPlugin ("MayaCollabPlugin.mll")
+    if os.name != 'posix':
+        cmds.loadPlugin ("MayaCollabPlugin.mll")
+    else:
+        cmds.loadPlugin ("libMayaCollabPlugin.so")
 
 class ServerMessenger(object):
     def __init__(self):
